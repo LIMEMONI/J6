@@ -250,8 +250,8 @@ async def run_python_script(script: UploadFile):
     # 파이썬 스크립트 실행
     try:
         # 시각화 생성
-        result = {}
-        exec(open(f"{upload_dir}/{script.filename}").read(), {}, result)
+        result1 = {}
+        exec(open(f"{upload_dir}/{script.filename}").read(), {}, result1)
         plt.savefig("static/graph.png")  # 시각화를 이미지 파일로 저장
 
         # 이미지를 Base64로 인코딩
