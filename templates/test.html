@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>MySQL 연결 확인</title>
+    <title>테스트용</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -20,9 +20,72 @@
     <!-- ICONS -->
     <link rel="apple-touch-icon" sizes="76x76" href="static/img/j6.png">
     <link rel="icon" type="image/png" sizes="96x96" href="static/img/j6.png">
+    
 </head>
 <body>
     <!-- WRAPPER -->
+    <div id="wrapper">
+        <!-- NAVBAR -->
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="container-fluid">
+                <!-- 로고와 데이터 불러오기 버튼 -->
+                <div class="navbar-header">
+                    <a href="dashboard.html" class="navbar-brand"><img src="static/img/j6-v2.png" alt="J6 Logo" class="img-responsive logo"></a>
+                                   </div>
+                <!-- 오른쪽 메뉴 아이콘들 -->
+                <div id="navbar-menu">
+                    <ul class="nav navbar-nav navbar-right">
+                        <!-- 데이터 불러오기 버튼 -->
+                        
+                        <a class="btn btn-success update-pro" href="dashboard.html" title="데이터 불러오기" target="_blank"><i class="fa fa-rocket"></i> <span>데이터 불러오기(경로 설정)</span></a>
+
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle icon-menu" data-toggle="dropdown">
+                                <i class="lnr lnr-alarm"></i>
+                            </a>
+                            <ul class="dropdown-menu notifications">
+                                <li><a href="#" class="notification-item"><span class="dot bg-warning"></span>12:10:45 **컬럼의 이상발생</a></li>
+                                <li><a href="#" class="notification-item"><span class="dot bg-danger"></span>14:10:45 **컬럼의 이상발생</a></li>
+                                <li><a href="#" class="notification-item"><span class="dot bg-success"></span>16:10:45 **컬럼의 이상발생</a></li>
+                                <li><a href="#" class "notification-item"><span class="dot bg-warning"></span>18:10:45 **컬럼의 이상발생</a></li>
+                                <li><a href="#" class="notification-item"><span class="dot bg-success"></span>20:10:45 **컬럼의 이상발생</a></li>
+                            </ul>
+                        </li>
+                        <!-- 나머지 메뉴 아이콘들 -->
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="lnr lnr-question-circle"></i> <span id="selectedFacility">설비 선택</span> <i class="icon-submenu lnr lnr-chevron-down"></i>
+                            </a>
+                            <ul class="dropdown-menu" id="facilityDropdown">
+                                <li><a href="#" class="facilityItem">M01</a></li>
+                                <li><a href="#" class="facilityItem">M02</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <img src="static/img/user3.png" class="img-square" alt="Picture">
+                                <span>{{ mem_name }}</span>
+                                
+                            </a>
+                            <li><a href="/"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- END NAVBAR -->
+        <!-- LEFT SIDEBAR -->
+        <div id="sidebar-nav" class="sidebar">
+            <div class="sidebar-scroll">
+                <nav>
+                    <ul class="nav">
+                        <li><a href="dashboard.html"><i class="lnr lnr-chart-bars"></i> <span>Dashboard</span></a></li>
+                        <li><a href="test.html"><i class="lnr lnr-code"></i> <span>테스트용</span></a></li>
+                        <li><a href="charts.html"><i class="lnr lnr-alarm"></i> <span>이상탐지 알람 목록</span></a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
 
         <!-- END LEFT SIDEBAR -->
         <!-- MAIN -->
@@ -30,18 +93,31 @@
             <!-- MAIN CONTENT -->
             <div class="main-content">
                 <div class="container-fluid">
-                    <h3 class="page-title" style="text-align: center;">실시간 그래프</h3>
+                    <h3 class="page-title" style="text-align: center;">테스트</h3>
                 </div>
             </div>
-            {{result}}
             <!-- END MAIN CONTENT -->
         </div>
         <!-- END MAIN -->
         <div class="clearfix"></div>
         <footer>
             <div class="container-fluid">
-                <p class="copyright">Shared by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">BootstrapThemes</a></p>
+                <p class="copyright">Made by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">J6</a></p>
             </div>
         </footer>
     </div>
     <!-- END WRAPPER -->
+<script>
+    const facilityDropdown = document.getElementById("facilityDropdown");
+    const selectedFacility = document.getElementById("selectedFacility");
+    
+    // 드롭다운 항목 클릭 이벤트 처리
+    const facilityItems = document.querySelectorAll(".facilityItem");
+    facilityItems.forEach(item => {
+        item.addEventListener("click", () => {
+            selectedFacility.textContent = item.textContent; // 선택한 값으로 업데이트
+        });
+    });
+</script>
+</body>
+</html>
