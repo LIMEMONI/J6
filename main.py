@@ -31,7 +31,8 @@ import shutil
 import matplotlib.pyplot as plt
 import io
 import base64
-
+import logging
+import re
 
 
 # FastAPI 애플리케이션 초기화
@@ -40,6 +41,7 @@ app = FastAPI()
 # SessionMiddleware 설정
 app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # 비밀 키를 지정해야 합니다.
 
+logger = logging.getLogger(__name__)
 
 # SQLAlchemy 데이터베이스 연결 설정
 DATABASE_URL = "mysql+mysqlconnector://root:tmdghks7627@127.0.0.1/ion"
@@ -79,6 +81,7 @@ templates = Jinja2Templates(directory="templates")
 # 홈 페이지를 렌더링하는 엔드포인트
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
+    logger.info("Reached the home endpoint")
     return templates.TemplateResponse("index.html", {"request": request})
 
 # 회원가입 페이지를 렌더링하는 엔드포인트
@@ -142,7 +145,7 @@ async def logout(request: Request):
     return RedirectResponse(url="/")
 
 # 테스트 페이지를 렌더링하는 엔드포인트
-@app.get("/test.html", response_class=HTMLResponse)
+@app.get("/alram.html", response_class=HTMLResponse)
 async def render_dashboard_page(request: Request):
     # 세션에서 사용자 아이디 가져오기
     mem_id = request.session.get("mem_id", None)
@@ -166,7 +169,7 @@ async def render_dashboard_page(request: Request):
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
 
-    return templates.TemplateResponse("test.html", {"request": request, "mem_name": mem_name})
+    return templates.TemplateResponse("alram.html", {"request": request, "mem_name": mem_name})
 
 
 # MySQL 데이터베이스 연결 설정
@@ -191,39 +194,167 @@ class User(BaseModel):
     mem_id: str
     mem_pass: str
     mem_pass2: str
+    
+# 아이디 중복 확인
+@app.post("/check_username", response_class=HTMLResponse)
+async def check_username(request: Request):
+    form_data = await request.form()
+    username = form_data.get('username')
 
-# 회원가입 처리
-@app.post("/process_registration", response_class=HTMLResponse)
-async def process_registration(user: User, request: Request):
-    # 비밀번호와 비밀번호 확인 일치 여부 확인
-    if user.mem_pass != user.mem_pass2:
-        return templates.TemplateResponse("index.html", {"request": request, "message": "비밀번호가 다릅니다. 다시 시도해주세요."})
+    connection = create_connection()
+    if connection is None:
+        return HTMLResponse(content="데이터베이스 연결 오류.")
+
+    cursor = connection.cursor()
 
     # 아이디 중복 확인
-    cursor.execute("SELECT * FROM member WHERE mem_id = %s", (user.mem_id,))
+    cursor.execute("SELECT * FROM member WHERE mem_id = %s", (username,))
     existing_user = cursor.fetchone()
+    connection.close()
+
     if existing_user:
-        return templates.TemplateResponse("index.html", {"request": request, "message": "이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요."})
+        return HTMLResponse(content="이미 존재하는 아이디입니다.")
+    else:
+        return HTMLResponse(content="사용 가능한 아이디입니다.")
 
-    # 데이터베이스에 회원 정보 저장
-    insert_query = """
-        INSERT INTO member (mem_name, mem_regno, mem_ph, mem_id, mem_pass, mem_pass2)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """
-    values = (
-        user.mem_name,
-        user.mem_regno,
-        user.mem_ph,
-        user.mem_id,
-        user.mem_pass,
-        user.mem_pass2,
-    )
-    cursor.execute(insert_query, values)
-    db.commit()
+# 가입하기 버튼을 눌렀을 때 회원가입을 처리하는 엔드포인트
+@app.post("/process_registration", response_class=HTMLResponse)
+async def process_registration(request: Request, user: User):
+    # 데이터베이스 연결
+    connection = create_connection()
+    if connection is None:
+        return templates.TemplateResponse("regist.html", {"request": request, "message": "데이터베이스 연결 오류."})
 
-    # 회원가입이 완료되면 다시 대시보드 페이지로 리디렉션
+    cursor = connection.cursor()
+
+    # 데이터베이스에 사용자 정보 저장
+    try:
+        cursor.execute(
+            "INSERT INTO member (mem_name, mem_regno, mem_ph, mem_id, mem_pass, mem_pass2) VALUES (%s, %s, %s, %s, %s, %s)",
+            (user.mem_name, user.mem_regno, user.mem_ph, user.mem_id, user.mem_pass, user.mem_pass2)
+        )
+        connection.commit()
+    except Error as e:
+        return templates.TemplateResponse("regist.html", {"request": request, "message": f"데이터베이스 오류: {e}"})
+
+    # 회원가입이 완료되면 세션에 사용자 아이디 저장하고 리디렉트
     request.session["mem_id"] = user.mem_id
-    return RedirectResponse(url="/dashboard.html")
+    connection.close()
+    
+    # / 페이지로 리디렉트
+    return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
+
+
+# FastAPI에서 데이터 업로드 및 처리하는 엔드포인트
+@app.post("/upload-data/")
+async def upload_data(
+    request: Request,
+    file: UploadFile = File(...)
+):
+    # CSV 파일인지 확인
+    if not file.filename.endswith(".csv"):
+        return HTMLResponse(content="업로드한 파일은 CSV 형식이 아닙니다.", status_code=400)
+
+    # 업로드한 CSV 파일을 처리 및 그래프 생성 함수로 전달
+    graph_data = process_and_generate_graph(file.file)
+
+    # 그래프를 웹 페이지에 표시
+    plotly_figure = go.Figure(data=[go.Scatter(x=graph_data['x'], y=graph_data['y'])])
+    plot_div = plotly_figure.to_html(full_html=False)
+
+    return HTMLResponse(content=plot_div, status_code=200)
+
+# 데이터 처리 및 그래프 생성 함수 (예시)
+def process_and_generate_graph(file):
+    # 업로드한 CSV 파일을 데이터프레임으로 읽음 (pandas 사용)
+    df = pd.read_csv(file)
+
+    # 데이터 처리 및 그래프 생성 작업 수행 (예: Matplotlib 사용)
+    x = df['x']
+    y = df['y']
+
+    # 여기에서 그래프 데이터 생성 및 반환
+    graph_data = {'x': x, 'y': y}
+
+    return graph_data
+
+@app.post("/uploadfile/")
+async def upload_file(file: UploadFile):
+    # 업로드한 파일을 Pandas DataFrame으로 읽기
+    content = await file.read()
+    decoded_content = content.decode('ANSI')
+    df = pd.read_csv(StringIO(decoded_content))
+
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import numpy as np
+    plt.rc('font', family = 'Malgun Gothic', size=10)
+    
+    df.rename(columns={'2015' : '년도별','전통(재래) 시장' : '마켓별', '계' : '연령별','29.4': '이용률'}, inplace=True)
+    
+    df11 = df[df['마켓별'] == '대형마트 (3,000m2 이상)'].drop('마켓별', axis=1)
+    df11.reset_index(drop=True, inplace=True)
+     # 시각화할 그래프의 크기를 지정합니다.
+    plt.figure(figsize=[15, 8])
+
+    # 전통시장에 대한 막대 그래프를 그립니다.
+    plt.bar(df11['연령별'], df11['전통시장'], label='전통시장', 
+            color='#61b299', edgecolor='black', linewidth=1)
+
+    # 그래프의 제목을 설정합니다.
+    plt.title('테스트 년도 연령별 이용률 비교', size=18)
+    # x축의 레이블을 설정합니다.
+    plt.xlabel('연령별', fontsize=15)
+    # y축의 레이블을 설정합니다.
+    plt.ylabel('이용률 (%)', fontsize=15)
+    
+    # x축의 눈금 레이블의 크기를 설정합니다.
+    plt.xticks(fontsize=15)
+    # y축의 눈금 레이블을 지정합니다.
+    plt.yticks([0, 20, 40, 60, 80], fontsize=15)
+
+    # 범례를 표시합니다.
+    plt.legend()
+
+    # 그래프를 깔끔하게 배치합니다.
+    plt.tight_layout()
+    
+    # 그래프를 표시합니다.
+    plt.show()
+    
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format="png")
+    plt.close()
+
+    # 그래프를 base64로 인코딩된 이미지 데이터로 변환합니다.
+    buffer.seek(0)
+    plot_data = base64.b64encode(buffer.read()).decode("utf-8")
+
+    return JSONResponse(content={"plot_data": plot_data})
+
+@app.get("/plotly_graph")
+async def plotly_graph():
+    # 데이터 생성 (예시 데이터)
+    data = [
+        go.Scatter(
+            x=[1, 2, 3, 4, 5],
+            y=[10, 11, 12, 13, 14],
+            mode="lines",
+            name="Series 1"
+        )
+    ]
+
+    layout = go.Layout(
+        title="Plotly Graph Example",
+        xaxis=dict(title="X-axis"),
+        yaxis=dict(title="Y-axis")
+    )
+
+    fig = go.Figure(data=data, layout=layout)
+
+    # 그래프를 JSON 형식으로 반환
+    return fig.to_json()
 
 # FastAPI 애플리케이션 실행
 if __name__ == "__main__":
