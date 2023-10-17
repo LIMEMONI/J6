@@ -89,7 +89,7 @@ async def home(request: Request):
 async def render_registration_page(request: Request):
     return templates.TemplateResponse("regist.html", {"request": request})
 
-@app.get("/dashboard.html", response_class=HTMLResponse)
+@app.get("/dashboard1.html", response_class=HTMLResponse)
 async def render_dashboard_page(request: Request):
     # 세션에서 사용자 아이디 가져오기
     mem_id = request.session.get("mem_id", None)
@@ -108,13 +108,38 @@ async def render_dashboard_page(request: Request):
             mem_name = user_dict.get("mem_name", "Unknown")
         else:
             # 사용자를 찾을 수 없을 때 처리
-            mem_name = "Unknown"
+            return RedirectResponse(url="/")
     else:
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
 
-    return templates.TemplateResponse("dashboard.html", {"request": request, "mem_name": mem_name})
+    return templates.TemplateResponse("dashboard1.html", {"request": request, "mem_name": mem_name})
 
+@app.get("/dashboard2.html", response_class=HTMLResponse)
+async def render_dashboard_page(request: Request):
+    # 세션에서 사용자 아이디 가져오기
+    mem_id = request.session.get("mem_id", None)
+
+    if mem_id:
+        # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
+        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            # 결과를 딕셔너리로 변환
+            column_names = cursor.column_names
+            user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
+
+            # mem_name 필드 추출
+            mem_name = user_dict.get("mem_name", "Unknown")
+        else:
+            # 사용자를 찾을 수 없을 때 처리
+            return RedirectResponse(url="/")
+    else:
+        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
+        return RedirectResponse(url="/")
+
+    return templates.TemplateResponse("dashboard2.html", {"request": request, "mem_name": mem_name})
 
 # 로그인 처리
 @app.post("/login", response_class=HTMLResponse)
@@ -133,10 +158,33 @@ async def login(
     if existing_user:
         # 아이디와 비밀번호가 일치하면 대시보드 페이지로 리디렉션
         request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
-        return RedirectResponse(url="/dashboard.html")
+        return RedirectResponse(url="/dashboard1.html")
     else:
         # 아이디 또는 비밀번호가 일치하지 않을 때 오류 메시지를 표시하고 다시 index.html 페이지로 렌더링
         return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
+
+# 정기회원 로그인 처리
+@app.post("/login/premium", response_class=HTMLResponse)
+async def login(
+    request: Request,
+    mem_id: str = Form(None),
+    mem_pass: str = Form(None),
+):
+    if mem_id is None or mem_pass is None:
+        return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호를 입력하세요."})
+
+    # 데이터베이스에서 아이디와 비밀번호 확인
+    cursor.execute("SELECT * FROM memberp WHERE mem_id = %s AND mem_pass = %s", (mem_id, mem_pass))
+    existing_user = cursor.fetchone()
+
+    if existing_user:
+        # 아이디와 비밀번호가 일치하면 대시보드 페이지로 리디렉션
+        request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
+        return RedirectResponse(url="/dashboard1.html")
+    else:
+        # 아이디 또는 비밀번호가 일치하지 않을 때 오류 메시지를 표시하고 다시 index.html 페이지로 렌더링
+        return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
+
 
 # 로그아웃 처리
 @app.post("/logout", response_class=HTMLResponse)
