@@ -143,47 +143,28 @@ async def render_dashboard_page(request: Request):
 
 # 로그인 처리
 @app.post("/login", response_class=HTMLResponse)
-async def login(
-    request: Request,
-    mem_id: str = Form(None),
-    mem_pass: str = Form(None),
-):
+async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form(None)):
     if mem_id is None or mem_pass is None:
         return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호를 입력하세요."})
 
-    # 데이터베이스에서 아이디와 비밀번호 확인
-    cursor.execute("SELECT * FROM member WHERE mem_id = %s AND mem_pass = %s", (mem_id, mem_pass))
-    existing_user = cursor.fetchone()
+    # 데이터베이스에서 아이디, 비밀번호, 그리고 mem_grade 확인
+    cursor.execute("SELECT mem_pass, mem_grade FROM member WHERE mem_id = %s", (mem_id,))
+    user_data = cursor.fetchone()
 
-    if existing_user:
-        # 아이디와 비밀번호가 일치하면 대시보드 페이지로 리디렉션
-        request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
-        return RedirectResponse(url="/dashboard1.html")
-    else:
-        # 아이디 또는 비밀번호가 일치하지 않을 때 오류 메시지를 표시하고 다시 index.html 페이지로 렌더링
-        return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
+    if user_data:
+        # mem_grade 확인
+        mem_pass_db, mem_grade = user_data
+        if mem_pass_db == mem_pass:
+            # 비밀번호 일치, mem_grade에 따라 페이지 리디렉션
+            if mem_grade == 0:
+                request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
+                return RedirectResponse(url="/dashboard1.html")
+            elif mem_grade == 1:
+                request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
+                return RedirectResponse(url="/alram.html")
 
-# 정기회원 로그인 처리
-@app.post("/login/premium", response_class=HTMLResponse)
-async def login(
-    request: Request,
-    mem_id: str = Form(None),
-    mem_pass: str = Form(None),
-):
-    if mem_id is None or mem_pass is None:
-        return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호를 입력하세요."})
-
-    # 데이터베이스에서 아이디와 비밀번호 확인
-    cursor.execute("SELECT * FROM memberp WHERE mem_id = %s AND mem_pass = %s", (mem_id, mem_pass))
-    existing_user = cursor.fetchone()
-
-    if existing_user:
-        # 아이디와 비밀번호가 일치하면 대시보드 페이지로 리디렉션
-        request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
-        return RedirectResponse(url="/dashboard1.html")
-    else:
-        # 아이디 또는 비밀번호가 일치하지 않을 때 오류 메시지를 표시하고 다시 index.html 페이지로 렌더링
-        return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
+    # 아이디 또는 비밀번호가 일치하지 않을 때 오류 메시지를 표시하고 다시 index.html 페이지로 렌더링
+    return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
 
 
 # 로그아웃 처리
