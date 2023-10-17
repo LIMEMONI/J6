@@ -150,31 +150,6 @@
             </div>
         </div>
     </div>
-    <!-- 파일 업로드 모달 대화 상자 -->
-    <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="uploadModalLabel">CSV 파일 불러오기</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="uploadForm" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label for="csvFile">CSV 파일 선택</label>
-                            <input type="file" class="form-control-file" id="csvFile" name="file">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary" id="uploadButton">불러오기</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- 추가 JavaScript 및 스크립트 로드 -->
     <script src="/static/vendor/jquery/jquery.min.js"></script>
@@ -243,15 +218,6 @@
         $("#file-input").on("change", function () {
             handleFileUpload();
         });
-    </script>
-    <script>
-        // FastAPI 엔드포인트에서 그래프 데이터를 가져와 그래프를 렌더링
-        fetch("/plotly_graph")
-            .then(response => response.json())
-            .then(data => {
-                const graphDiv = document.getElementById("plotly-graph");
-                Plotly.newPlot(graphDiv, JSON.parse(data));
-            });
     </script>
 
 </body>
