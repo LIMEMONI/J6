@@ -238,8 +238,8 @@ def create_connection():
 class User(BaseModel):
     mem_name: str
     mem_regno: int
-    mem_ph: str
-    mem_id: str
+    mem_ph: int
+    mem_id: int
     mem_pass: str
     mem_pass2: str
     
