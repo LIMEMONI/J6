@@ -161,7 +161,7 @@ async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form
                 return RedirectResponse(url="/dashboard1.html")
             elif mem_grade == 1:
                 request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
-                return RedirectResponse(url="/alram.html")
+                return RedirectResponse(url="/test.html")
 
     # 아이디 또는 비밀번호가 일치하지 않을 때 오류 메시지를 표시하고 다시 index.html 페이지로 렌더링
     return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
@@ -173,32 +173,14 @@ async def logout(request: Request):
     request.session.clear()  # 세션 초기화
     return RedirectResponse(url="/")
 
-# 테스트 페이지를 렌더링하는 엔드포인트
+
 @app.get("/alram.html", response_class=HTMLResponse)
-async def render_dashboard_page(request: Request):
-    # 세션에서 사용자 아이디 가져오기
-    mem_id = request.session.get("mem_id", None)
+async def render_alram_page(request: Request):
+    return templates.TemplateResponse("alram.html", {"request": request})
 
-    if mem_id:
-        # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
-        existing_user = cursor.fetchone()
-
-        if existing_user:
-            # 결과를 딕셔너리로 변환
-            column_names = cursor.column_names
-            user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
-
-            # mem_name 필드 추출
-            mem_name = user_dict.get("mem_name", "Unknown")
-        else:
-            # 사용자를 찾을 수 없을 때 처리
-            mem_name = "Unknown"
-    else:
-        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
-        return RedirectResponse(url="/")
-
-    return templates.TemplateResponse("alram.html", {"request": request, "mem_name": mem_name})
+@app.get("/test.html", response_class=HTMLResponse)
+async def render_test_page(request: Request):
+    return templates.TemplateResponse("test.html", {"request": request})
 
 
 # MySQL 데이터베이스 연결 설정
