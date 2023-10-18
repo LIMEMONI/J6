@@ -25,26 +25,8 @@
     <script src="/static/js/slimscroll.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <style>
-        #running-time {
-            position: absolute;
-            top: 20px;
-            left: 100px; /* 가동 시간 정보 위치 조정 */
-        }
 
-        .info-box1 {
-            position: absolute;
-            top: 20px;
-            left: 270px;
-            
-        }
-
-        .info-box2 {
-            position: absolute;
-            top: 20px;
-            left: 440px;
-        }
-    </style>
+     
 </head>
 <body>
     <!-- WRAPPER -->
@@ -57,20 +39,9 @@
                     <a class="navbar-brand"><img src="static/img/j6-v2.png" alt="J6 Logo" class="img-responsive logo"></a>
                 </div>
                 <!-- 오른쪽 메뉴 아이콘들 -->
-                <div id="running-time" class="info-box">
-                    가동 시간<br>
-                    <span id="running-time-text">00:00:00</span>
-                </div>
-                <div class="info-box1" id="info-box1">
-                    <span id="info-text1">Lot:</span>
-                </div>
-                <div class="info-box2" id="info-box2">
-                    <span id="info-text2">Recipe:</span>
-                </div>
-                
                 <div id="navbar-menu">
                     <ul class="nav navbar-nav navbar-right">
-                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#uploadModal" style="margin-top: 20px;">데이터 불러오기</button>
+                        <button id="addFacilityTab" class="btn btn-primary" style="margin-top: 20px;">설비 추가</button>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
                                 <i class="lnr lnr-alarm"></i>
@@ -113,6 +84,12 @@
                         </div>
                         <!-- 나머지 메뉴 아이콘들 -->
                         <li class="dropdown">
+                            <ul class="dropdown-menu" id="facilityDropdown">
+                                <li><a href="#" class="facilityItem">M01</a></li>
+                                <li><a href="#" class="facilityItem">M02</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                 <img src="static/img/user3.png" class="img-square" alt="Picture">
                                 <span>{{ mem_name }}</span>
@@ -133,8 +110,7 @@
                     <!-- 각 탭 버튼 -->
                     <ul class="nav nav-tabs" id="myTabs">
 
-                        <li class="active"><a data-toggle="tab" href="#main">수명 알람 대시보드</a></li>
-                        <li><a data-toggle="tab" href="#dashboard1">설비1 대시보드</a></li>
+                        <li class="active"><a data-toggle="tab" href="#dashboard1">설비1 대시보드</a></li>
                         <li><a data-toggle="tab" href="#dashboard2">설비2 대시보드</a></li>
                         <li><a data-toggle="tab" href="#alram">이상탐지 알람 목록</a></li>
                         <li><a data-toggle="tab" href="#test">iframe 및 정기회원 로그인 테스트</a></li>
@@ -166,50 +142,11 @@
     </div>
     <!-- END WRAPPER -->
     <script>
-    function updateRunningTime() {
-        var runningTimeElement = document.getElementById('running-time');
-        var startTime = new Date(); // Initialize the start time
-
-        function updateTime() {
-            var currentTime = new Date();
-            var timeDiff = new Date(currentTime - startTime);
-
-            var hours = timeDiff.getUTCHours();
-            var minutes = timeDiff.getUTCMinutes();
-            var seconds = timeDiff.getUTCSeconds();
-
-            // Format the time
-            var formattedTime = hours.toString().padStart(2, '0') + ":" +
-                                minutes.toString().padStart(2, '0') + ":" +
-                                seconds.toString().padStart(2, '0');
-
-            runningTimeElement.textContent = "가동 시간: " + formattedTime;
-        }
-
-        // Update the time initially and then every second
-        updateTime();
-        setInterval(updateTime, 1000);
-    }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            updateRunningTime();
-        });
-        document.getElementById('info-text1').textContent = "Lot: "; // Lot 정보 업데이트
-        document.getElementById('info-text2').textContent = "Recipe: "; // Recipe 정보 업데이트
-            
-    </script>
-
-    <script>
         $(document).ready(function() {
             // 페이지 로드 시 첫 번째 탭을 자동으로 활성화
-            $('#myTabs a[href="#dashboard1"]').tab('show');
-        
-            // 첫 번째 탭이 활성화되면 해당 탭에 대한 iframe을 나타내도록 설정
-            $('#iframe').attr('src', 'dashboard2.html');
+            $('#myTabs a[href="#dashboard1p"]').tab('show');
         });
-        
     </script>
-        
     <script>
         $(document).ready(function() {
             $('#myTabs a').click(function(e) {
@@ -227,11 +164,27 @@
                     iframeSrc = 'test.html';
                 }
                 
+                // 새로운 설비 대시보드 탭을 처리
+                else if (tabId === "new_facility") {
+                    // 생성할 새로운 대시보드 URL (예: new_facility_dashboard_1.html)
+                    var newFacilityDashboardURL = 'new_facility_dashboard_' + new Date().getTime() + '.html';
+                    
+                    // 새로운 대시보드를 위한 iframe 생성
+                    var newFacilityTab = $('<li class="facility-tab"><a data-toggle="tab" href="#' + newFacilityDashboardURL + '">설비 ' + new Date().getTime() + ' 대시보드</a></li>');
+                    $('#myTabs').append(newFacilityTab);
+                    
+                    // 새로운 대시보드 iframe을 생성하고 URL 설정
+                    var newFacilityIframe = $('<iframe id="' + newFacilityDashboardURL + '" width="100%" height="690" frameborder="0"></iframe>');
+                    newFacilityIframe.attr('src', newFacilityDashboardURL);
+                    $('.main').append(newFacilityIframe);
+        
+                    iframeSrc = newFacilityDashboardURL;
+                }
+        
                 $('#iframe').attr('src', iframeSrc);
             });
-        });        
+        });
     </script>
-
     <script>
         $(document).ready(function() {
             // "설비 추가" 버튼 클릭 시 이벤트 처리
@@ -261,16 +214,51 @@
     <script src="/static/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
     <script src="/static/vendor/chartist/js/chartist.min.js"></script>
     <script src="/static/scripts/klorofil-common.js"></script>
+    <!-- 파일 업로드 및 시각화 스크립트 연결 -->
+    <script src="/static/js/data-visualization.js"></script>
+    <script>
+        $(document).ready(function() {
+            console.log("문서가 준비되었습니다.");
+
+            // "불러오기" 버튼을 클릭하면 모달을 열도록 합니다.
+            document.getElementById("uploadButton").addEventListener("click", function() {
+                $('#uploadModal').modal('show');
+            });
+        });
+    </script>
     <script>
         // 파일 업로드 버튼 클릭 시 호출되는 함수
         function uploadFile() {
+            // 여기에 파일 업로드 및 데이터 처리 코드를 추가하세요.
+            // 데이터를 가공하고 시각화를 수행해야 합니다.
+    
+            // 예를 들어, 파일을 업로드하고 데이터를 추출하는 방법:
             var fileInput = document.getElementById('csvFile');
             var file = fileInput.files[0];
+            var reader = new FileReader();
     
+            reader.onload = function(e) {
+                var csvContent = e.target.result;
+                // 추출된 CSV 데이터를 가공하고 처리하세요.
+                // D3.js 또는 다른 시각화 라이브러리를 사용하여 그래프를 그립니다.
+            };
+    
+            reader.readAsText(file);
+        }
+    </script>
+    <script>
+        // "main-content" div에서 그래프를 업데이트하는 함수
+        function updateGraph(graphData) {
+            // "graphData"에 base64로 인코딩된 이미지 데이터가 포함된 것으로 가정합니다.
+            var imgTag = '<img src="data:image/png;base64,' + graphData + '" />';
+            $("#graph-container").html(imgTag);
+        }
+
+        // 파일 업로드를 처리하는 함수
+        function handleFileUpload() {
             var formData = new FormData();
-            formData.append("file", file);
-    
-            // 서버에 파일을 업로드합니다.
+            formData.append("file", $("#file-input")[0].files[0]);
+
             $.ajax({
                 type: "POST",
                 url: "/uploadfile/",
@@ -278,16 +266,16 @@
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    // 파일 업로드가 성공하면 원하는 작업을 수행합니다.
-                    // response.filename를 사용하여 업로드된 파일 이름을 확인할 수 있습니다.
+                    updateGraph(response.plot_data);
                 },
-                error: function (error) {
-                    // 파일 업로드 중 오류가 발생하면 처리합니다.
-                }
             });
         }
+
+        // 파일 입력란에 변화가 있는 경우 이벤트 처리
+        $("#file-input").on("change", function () {
+            handleFileUpload();
+        });
     </script>
-    
     <script>
         $(document).ready(function() {
             // 알람 버튼을 클릭했을 때 드롭다운 메뉴 열도록 설정
@@ -296,5 +284,6 @@
             });
         });
     </script>
+
 </body>
 </html>

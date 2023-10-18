@@ -54,7 +54,9 @@
                             
                             <!-- 아래 부분은 오류 메시지를 표시하는 부분입니다. -->
                             {% if message %}
-                            <p style="color: red;">{{ message }}</p>
+                            <div class="alert alert-warning" role="alert">
+                                <strong>{{ message }}</strong>
+                            </div>
                             {% endif %}
                             
                             <!-- 로그인 버튼 -->
