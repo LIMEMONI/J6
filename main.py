@@ -31,11 +31,12 @@ import shutil
 import matplotlib.pyplot as plt
 import io
 import base64
+import time
 
 
 
 # SQLAlchemy 데이터베이스 연결 설정
-DATABASE_URL = "mysql+mysqlconnector://root:tmdghks7627@127.0.0.1/ion"
+DATABASE_URL = "mysql+mysqlconnector://root:sejong131!#!@127.0.0.1/ion"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -64,7 +65,7 @@ app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # 비밀 �
 db = mysql.connector.connect(
     host="127.0.0.1",
     user="root",
-    password="tmdghks7627",
+    password="sejong131!#!",
     database="ion",
 )
 
@@ -187,7 +188,7 @@ def create_connection():
         connection = mysql.connector.connect(
             host="127.0.0.1",
             user="root",
-            password="tmdghks7627",
+            password="sejong131!#!",
             database="ion",
         )
         return connection
@@ -261,6 +262,23 @@ async def run_python_script(script: UploadFile):
         return str(e)
 
 
+# 생명주기 HTML 생성
+@app.get("/rul-times/", response_class=HTMLResponse)
+async def get_rul_times(request: Request):
+    conn = create_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    while True:
+        try:
+            cursor.execute("SELECT rul_time FROM rul ORDER BY input_time DESC LIMIT 10;")
+            result = cursor.fetchall()
+            rul_times = [int(item['rul_time']) for item in result]
+            
+            time.sleep(4)
+            return templates.TemplateResponse("rul-times.html", {"request": request, "rul_times": rul_times})
+
+        except Exception as e:
+            return str(e)
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------- #
 # FastAPI 애플리케이션 실행
