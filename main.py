@@ -31,8 +31,12 @@ import shutil
 import matplotlib.pyplot as plt
 import io
 import base64
+<<<<<<< HEAD
 import logging
 import re
+=======
+import time
+>>>>>>> 797af4ee1c2ac409667cc73e4377a1670b121bd5
 
 
 # FastAPI 애플리케이션 초기화
@@ -44,7 +48,7 @@ app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # 비밀 �
 logger = logging.getLogger(__name__)
 
 # SQLAlchemy 데이터베이스 연결 설정
-DATABASE_URL = "mysql+mysqlconnector://root:tmdghks7627@127.0.0.1/ion"
+DATABASE_URL = "mysql+mysqlconnector://root:sejong131!#!@127.0.0.1/ion"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -65,7 +69,7 @@ class Member(Base):
 db = mysql.connector.connect(
     host="127.0.0.1",
     user="root",
-    password="tmdghks7627",
+    password="sejong131!#!",
     database="ion",
 )
 
@@ -207,7 +211,7 @@ def create_connection():
         connection = mysql.connector.connect(
             host="127.0.0.1",
             user="root",
-            password="tmdghks7627",
+            password="sejong131!#!",
             database="ion",
         )
         return connection
@@ -275,6 +279,25 @@ async def process_registration(request: Request, user: User):
 
 
 
+
+# 생명주기 HTML 생성
+@app.get("/rul-times/", response_class=HTMLResponse)
+async def get_rul_times(request: Request):
+    try:
+        conn = create_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT rul_time FROM rul ORDER BY input_time DESC LIMIT 10;")
+        result_rul = cursor.fetchall()
+        rul_times = [int(item['rul_time']) for item in result_rul]
+
+        cursor.execute("SELECT multi_pred FROM multi ORDER BY input_time DESC LIMIT 10;")
+        result_multi = cursor.fetchall()
+        multi_preds = [int(item['multi_pred']) for item in result_multi]
+
+        return templates.TemplateResponse("rul-times.html", {"request": request, "rul_times": rul_times, "multi_preds":multi_preds})
+    except Exception as e:
+        return str(e)
 
 
 # FastAPI 애플리케이션 실행
