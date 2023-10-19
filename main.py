@@ -31,20 +31,11 @@ import shutil
 import matplotlib.pyplot as plt
 import io
 import base64
-import logging
-import re
 
 
-# FastAPI 애플리케이션 초기화
-app = FastAPI()
-
-# SessionMiddleware 설정
-app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # 비밀 키를 지정해야 합니다.
-
-logger = logging.getLogger(__name__)
 
 # SQLAlchemy 데이터베이스 연결 설정
-DATABASE_URL = "mysql+mysqlconnector://root:tmdghks7627@127.0.0.1/ion"
+DATABASE_URL = "mysql+mysqlconnector://root:sejong131!#!@127.0.0.1/ion"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -65,7 +56,7 @@ class Member(Base):
 db = mysql.connector.connect(
     host="127.0.0.1",
     user="root",
-    password="tmdghks7627",
+    password="sejong131!#!",
     database="ion",
 )
 
@@ -215,7 +206,7 @@ def create_connection():
         connection = mysql.connector.connect(
             host="127.0.0.1",
             user="root",
-            password="tmdghks7627",
+            password="sejong131!#!",
             database="ion",
         )
         return connection
@@ -250,51 +241,53 @@ async def check_username(request: Request):
     connection.close()
 
     if existing_user:
-        return HTMLResponse(content="이미 존재하는 아이디입니다.")
-    else:
-        return HTMLResponse(content="사용 가능한 아이디입니다.")
+        raise HTTPException(status_code=400, detail="이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요.")
 
-# 가입하기 버튼을 눌렀을 때 회원가입을 처리하는 엔드포인트
-@app.post("/process_registration", response_class=HTMLResponse)
-async def process_registration(request: Request, user: User):
-    # 데이터베이스 연결
-    connection = create_connection()
-    if connection is None:
-        return templates.TemplateResponse("regist.html", {"request": request, "message": "데이터베이스 연결 오류."})
+    # 데이터베이스에 회원 정보 저장
+    insert_query = """
+        INSERT INTO member (mem_name, mem_regno, mem_ph, mem_id, mem_pass, mem_pass2)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    values = (
+        user.mem_name,
+        user.mem_regno,
+        user.mem_ph,
+        user.mem_id,
+        user.mem_pass,
+        user.mem_pass2,
+    )
+    cursor.execute(insert_query, values)
+    db.commit()
 
-    cursor = connection.cursor()
+    # 회원가입이 완료되면 JSON 응답 반환
+    return JSONResponse(content={"message": "회원가입이 완료되었습니다."})
 
-    # 데이터베이스에 사용자 정보 저장
+@app.post("/run_python_script/")
+async def run_python_script(script: UploadFile):
+    # 업로드한 파일을 저장할 디렉토리 지정
+    upload_dir = "uploaded_scripts"
+    Path(upload_dir).mkdir(parents=True, exist_ok=True)
+
+    # 파일을 디렉토리에 저장
+    with open(f"{upload_dir}/{script.filename}", "wb") as f:
+        shutil.copyfileobj(script.file, f)
+
+    # 파이썬 스크립트 실행
     try:
-        cursor.execute(
-            "INSERT INTO member (mem_name, mem_regno, mem_ph, mem_id, mem_pass, mem_pass2) VALUES (%s, %s, %s, %s, %s, %s)",
-            (user.mem_name, user.mem_regno, user.mem_ph, user.mem_id, user.mem_pass, user.mem_pass2)
-        )
-        connection.commit()
-    except Error as e:
-        return templates.TemplateResponse("regist.html", {"request": request, "message": f"데이터베이스 오류: {e}"})
+        # 시각화 생성
+        result1 = {}
+        exec(open(f"{upload_dir}/{script.filename}").read(), {}, result1)
+        plt.savefig("static/graph.png")  # 시각화를 이미지 파일로 저장
 
-    # 회원가입이 완료되면 세션에 사용자 아이디 저장하고 리디렉트
-    request.session["mem_id"] = user.mem_id
-    connection.close()
-    
-    # / 페이지로 리디렉트
-    return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
-
-@app.post("/uploadfile/")
-async def upload_file(file: UploadFile):
-    # 여기에 파일을 저장하거나 처리하는 코드를 추가하세요.
-    # 업로드된 파일은 'file' 매개변수로 전달됩니다.
-
-    # 예: 업로드된 파일을 서버에 저장하고 파일 이름을 반환합니다.
-    with open(file.filename, "wb") as f:
-        f.write(file.file.read())
-    
-    return {"filename": file.filename}
+        # 이미지를 Base64로 인코딩
+        img_base64 = base64.b64encode(open("static/graph.png", "rb").read()).decode("utf-8")
+        return f'<img src="data:image/png;base64,{img_base64}" alt="Graph">'
+    except Exception as e:
+        return str(e)
 
 
 
-
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------- #
 # FastAPI 애플리케이션 실행
 if __name__ == "__main__":
     import uvicorn
