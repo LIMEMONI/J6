@@ -31,8 +31,8 @@
         input[type="text"],
         input[type="password"] {
             width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 15px; /* 네모칸 내부 여백 조절 */
+            margin-bottom: 20px; /* 네모칸 간격 조절 */
             border: 1px solid #ccc;
             border-radius: 5px;
         }
@@ -40,7 +40,7 @@
         button[type="submit"] {
             background-color: #333;
             color: #fff;
-            padding: 15px 20px;
+            padding: 15px 20px; /* 버튼 크기 조절 */
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -85,7 +85,7 @@
 
     <script>
         let isUsernameValid = false;
-
+    
         // 중복 확인 버튼 클릭 시 아이디 중복 확인
         document.getElementById("check-username-button").addEventListener("click", function() {
             const username = document.getElementById("username").value;
@@ -93,14 +93,11 @@
             // 서버로 아이디 중복 확인 요청을 보냅니다.
             fetch("/check_username", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: `username=${username}`,
+                body: new URLSearchParams({ username: username }),  // Form 데이터를 사용
             })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(data => {
-                if (data.includes("사용 가능한 아이디입니다.")) {
+                if (data.is_valid) {
                     alert("사용 가능한 아이디입니다.");
                     isUsernameValid = true;
                 } else {
@@ -113,11 +110,11 @@
             });
         });
 
-        // 회원가입 버튼 클릭 시 실제 회원가입 요청
+    
+        // 회원가입 버튼 클릭 시 실제 회원가입 요청 (POST 요청으로 수정)
         document.getElementById("submit-button").addEventListener("click", function() {
             const formData = new FormData(document.getElementById("registration-form"));
             const jsonData = {};
-
             formData.forEach((value, key) => {
                 jsonData[key] = value;
             });
@@ -128,18 +125,20 @@
                 return;
             }
 
-            // 서버로 회원가입 요청을 보냅니다.
+            // 서버로 회원가입 요청을 보냅니다. (POST 요청으로 수정)
             fetch("/process_registration", {
-                method: "POST",
+                method: "POST", // POST 요청으로 수정
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(jsonData),
             })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(data => {
-                window.location.href = "/";
-                
+                alert(data.message);
+                if (data.message === "회원가입이 완료되었습니다.") {
+                    window.location.href = "/";
+                }
             })
             .catch(error => {
                 console.error("Error:", error);
