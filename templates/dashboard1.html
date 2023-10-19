@@ -25,26 +25,6 @@
     <script src="/static/js/slimscroll.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <style>
-        #running-time {
-            position: absolute;
-            top: 20px;
-            left: 100px; /* 가동 시간 정보 위치 조정 */
-        }
-
-        .info-box1 {
-            position: absolute;
-            top: 20px;
-            left: 270px;
-            
-        }
-
-        .info-box2 {
-            position: absolute;
-            top: 20px;
-            left: 440px;
-        }
-    </style>
 </head>
 <body>
     <!-- WRAPPER -->
@@ -56,18 +36,7 @@
                 <div class="navbar-header">
                     <a class="navbar-brand"><img src="static/img/j6-v2.png" alt="J6 Logo" class="img-responsive logo"></a>
                 </div>
-                <!-- 오른쪽 메뉴 아이콘들 -->
-                <div id="running-time" class="info-box">
-                    가동 시간<br>
-                    <span id="running-time-text">00:00:00</span>
-                </div>
-                <div class="info-box1" id="info-box1">
-                    <span id="info-text1">Lot:</span>
-                </div>
-                <div class="info-box2" id="info-box2">
-                    <span id="info-text2">Recipe:</span>
-                </div>
-                
+                <!-- 오른쪽 메뉴 아이콘들 -->                
                 <div id="navbar-menu">
                     <ul class="nav navbar-nav navbar-right">
                         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#uploadModal" style="margin-top: 20px;">데이터 불러오기</button>
@@ -133,12 +102,12 @@
                     <!-- 각 탭 버튼 -->
                     <ul class="nav nav-tabs" id="myTabs">
 
-                        <li class="active"><a data-toggle="tab" href="#main">수명 알람 대시보드</a></li>
-                        <li><a data-toggle="tab" href="#dashboard1">설비1 대시보드</a></li>
-                        <li><a data-toggle="tab" href="#dashboard2">설비2 대시보드</a></li>
+
+                        <li><a data-toggle="tab" href="#dashboard1">m02_01_train</a></li>
+                        <li><a data-toggle="tab" href="#dashboard2">m02_02_train</a></li>
                         <li><a data-toggle="tab" href="#alram">이상탐지 알람 목록</a></li>
                         <li><a data-toggle="tab" href="#test">iframe 및 정기회원 로그인 테스트</a></li>
-                        
+                        <li class="active"><a data-toggle="tab" href="#main">수명 알람 대시보드</a></li>
                     </ul>
                 </nav>
             </div>
@@ -166,40 +135,6 @@
     </div>
     <!-- END WRAPPER -->
     <script>
-    function updateRunningTime() {
-        var runningTimeElement = document.getElementById('running-time');
-        var startTime = new Date(); // Initialize the start time
-
-        function updateTime() {
-            var currentTime = new Date();
-            var timeDiff = new Date(currentTime - startTime);
-
-            var hours = timeDiff.getUTCHours();
-            var minutes = timeDiff.getUTCMinutes();
-            var seconds = timeDiff.getUTCSeconds();
-
-            // Format the time
-            var formattedTime = hours.toString().padStart(2, '0') + ":" +
-                                minutes.toString().padStart(2, '0') + ":" +
-                                seconds.toString().padStart(2, '0');
-
-            runningTimeElement.textContent = "가동 시간: " + formattedTime;
-        }
-
-        // Update the time initially and then every second
-        updateTime();
-        setInterval(updateTime, 1000);
-    }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            updateRunningTime();
-        });
-        document.getElementById('info-text1').textContent = "Lot: "; // Lot 정보 업데이트
-        document.getElementById('info-text2').textContent = "Recipe: "; // Recipe 정보 업데이트
-            
-    </script>
-
-    <script>
         $(document).ready(function() {
             // 페이지 로드 시 첫 번째 탭을 자동으로 활성화
             $('#myTabs a[href="#dashboard1"]').tab('show');
@@ -211,6 +146,7 @@
     </script>
         
     <script>
+        //  탭 페이지 iframe 로드
         $(document).ready(function() {
             $('#myTabs a').click(function(e) {
                 e.preventDefault();
@@ -220,7 +156,7 @@
                 if (tabId === "dashboard1") {
                     iframeSrc = 'dashboard2.html';
                 } else if (tabId === "dashboard2") {
-                    iframeSrc = 'dashboard2.html';
+                    iframeSrc = 'dashboard3.html';
                 } else if (tabId === "alram") {
                     iframeSrc = 'alram.html';
                 } else if (tabId === "test") {
