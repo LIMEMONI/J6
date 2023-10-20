@@ -33,11 +33,7 @@ import io
 import base64
 import logging
 import re
-# import model_data_input.model_conn as mc
 
-# model_conn 해서 db에 rul 및 고장여부 넣기
-
-# mc.main()
 
 # FastAPI 애플리케이션 초기화
 app = FastAPI()
