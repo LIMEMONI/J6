@@ -95,7 +95,7 @@ async def render_dashboard_page(request: Request):
 
     if mem_id:
         # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+        cursor.execute("SELECT * From ion.member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
         if existing_user:
@@ -121,7 +121,7 @@ async def render_dashboard_page(request: Request):
 
     if mem_id:
         # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+        cursor.execute("SELECT * From ion.member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
         if existing_user:
@@ -147,7 +147,7 @@ async def render_dashboard_page(request: Request):
 
     if mem_id:
         # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+        cursor.execute("SELECT * From ion.member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
         if existing_user:
@@ -244,7 +244,7 @@ async def check_username(request: Request):
     cursor = connection.cursor()
 
     # 아이디 중복 확인
-    cursor.execute("SELECT * FROM member WHERE mem_id = %s", (username,))
+    cursor.execute("SELECT * From ion.member WHERE mem_id = %s", (username,))
     existing_user = cursor.fetchone()
     connection.close()
 
