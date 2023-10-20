@@ -44,7 +44,7 @@ app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # 비밀 �
 logger = logging.getLogger(__name__)
 
 # SQLAlchemy 데이터베이스 연결 설정
-DATABASE_URL = "mysql+mysqlconnector://root:tmdghks7627@127.0.0.1/ion"
+DATABASE_URL = "mysql+mysqlconnector://oneday:1234@limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com/j6database"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -63,10 +63,10 @@ class Member(Base):
 
 # MySQL 데이터베이스 연결 설정
 db = mysql.connector.connect(
-    host="127.0.0.1",
-    user="root",
-    password="tmdghks7627",
-    database="ion",
+    host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
+    user="oneday",
+    password="1234",
+    database="j6database",
 )
 
 # 커서 생성
@@ -96,7 +96,7 @@ async def render_dashboard_page(request: Request):
 
     if mem_id:
         # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+        cursor.execute("SELECT * FROM j6database.member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
         if existing_user:
@@ -122,7 +122,7 @@ async def render_dashboard_page(request: Request):
 
     if mem_id:
         # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+        cursor.execute("SELECT * FROM j6database.member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
         if existing_user:
@@ -148,7 +148,7 @@ async def render_dashboard_page(request: Request):
 
     if mem_id:
         # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+        cursor.execute("SELECT * FROM j6database.member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
         if existing_user:
@@ -174,7 +174,7 @@ async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form
         return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호를 입력하세요."})
 
     # 데이터베이스에서 아이디, 비밀번호, 그리고 mem_grade 확인
-    cursor.execute("SELECT mem_pass, mem_grade FROM member WHERE mem_id = %s", (mem_id,))
+    cursor.execute("SELECT mem_pass, mem_grade FROM j6database.member WHERE mem_id = %s", (mem_id,))
     user_data = cursor.fetchone()
 
     if user_data:
@@ -213,10 +213,10 @@ async def render_test_page(request: Request):
 def create_connection():
     try:
         connection = mysql.connector.connect(
-            host="127.0.0.1",
-            user="root",
-            password="tmdghks7627",
-            database="ion",
+            host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
+            user="oneday",
+            password="1234",
+            database="j6database",
         )
         return connection
     except Error as e:
@@ -245,7 +245,7 @@ async def check_username(request: Request):
     cursor = connection.cursor()
 
     # 아이디 중복 확인
-    cursor.execute("SELECT * FROM member WHERE mem_id = %s", (username,))
+    cursor.execute("SELECT * FROM j6database.member WHERE mem_id = %s", (username,))
     existing_user = cursor.fetchone()
     connection.close()
 
