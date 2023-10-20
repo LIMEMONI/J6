@@ -43,7 +43,7 @@ app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # 비밀 �
 logger = logging.getLogger(__name__)
 
 # SQLAlchemy 데이터베이스 연결 설정
-DATABASE_URL = "mysql+mysqlconnector://root:dbdb1021&@127.0.0.1/ion"
+DATABASE_URL = "mysql+mysqlconnector://oneday:1234@limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com/j6database"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -59,13 +59,14 @@ class Member(Base):
     mem_name = Column(String(10))
     mem_regno = Column(String(8))
     mem_ph = Column(String(11))
+    mem_grade = Column(String(11))
 
 # MySQL 데이터베이스 연결 설정
 db = mysql.connector.connect(
-    host="127.0.0.1",
-    user="root",
-    password="dbdb1021&",
-    database="ion",
+    host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
+    user="oneday",
+    password="1234",
+    database="j6database",
 )
 
 # 커서 생성
@@ -76,6 +77,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # HTML 템플릿 설정
 templates = Jinja2Templates(directory="templates")
+
+###test----------------------------------------------------
+# 메인 페이지를 랜더링하는 엔드포인트
+@app.get("/test.html", response_class=HTMLResponse)
+async def render_main_page(request: Request):
+    return templates.TemplateResponse("test.html", {"request": request})
+###--------------------------------------------------------
 
 # 홈 페이지를 렌더링하는 엔드포인트
 @app.get("/", response_class=HTMLResponse)
@@ -212,10 +220,10 @@ async def render_test_page(request: Request):
 def create_connection():
     try:
         connection = mysql.connector.connect(
-            host="127.0.0.1",
-            user="root",
-            password="dbdb1021&",
-            database="ion",
+            host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
+            user="oneday",
+            password="1234",
+            database="j6database",
         )
         return connection
     except Error as e:
