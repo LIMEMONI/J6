@@ -87,7 +87,7 @@ def predict_with_xgb_model(data):
 
     """xgboost 모델을 사용해 예측하는 함수"""
     # 모델 불러오기
-    with open('./model_data_input/xgboost_model.pkl', 'rb') as f:
+    with open('./xgboost_model.pkl', 'rb') as f:
         model = pickle.load(f)
 
     # 예측 실행
@@ -102,7 +102,7 @@ def predict_with_xgb_multi_model(data):
 
     """xgboost 모델을 사용해 예측하는 함수"""
     # 모델 불러오기
-    with open('./model_data_input/xgboost_multi_model.pickle', 'rb') as f:
+    with open('./xgboost_multi_model.pickle', 'rb') as f:
         model = pickle.load(f)
 
     # 예측 실행
@@ -193,7 +193,7 @@ def main():
                                  cursorclass=pymysql.cursors.DictCursor)
     
     # CSV 파일 읽기
-    df = pd.read_csv("./model_data_input/test.csv")
+    df = pd.read_csv("./test.csv")
 
     # DataFrame에서 튜플 리스트로 데이터 변환
     data_tuples = list(df.itertuples(index=False, name=None))
