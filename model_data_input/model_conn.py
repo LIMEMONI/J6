@@ -19,10 +19,16 @@ avg_len = 500
 def fetch_recent_logs(length=avg_len):
     """mysql db에서 최근 로그를 가져오는 함수"""
     # mysql 데이터베이스에 연결
-    connection = pymysql.connect(host='127.0.0.1',  # DB 주소
-                                 user='root',  # DB 유저명
-                                 password='sejong131!#!',  # 비밀번호
-                                 db='ion',  # 사용할 DB 이름
+    # connection = pymysql.connect(host='127.0.0.1',  # DB 주소
+    #                              user='root',  # DB 유저명
+    #                              password='sejong131!#!',  # 비밀번호
+    #                              db='ion',  # 사용할 DB 이름
+    #                              charset='utf8mb4',
+    #                              cursorclass=pymysql.cursors.DictCursor)
+    connection = pymysql.connect(host='limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com',  # DB 주소
+                                 user='oneday',  # DB 유저명
+                                 password='1234',  # 비밀번호
+                                 db='j6database',  # 사용할 DB 이름
                                  charset='utf8mb4',
                                  cursorclass=pymysql.cursors.DictCursor)
     try:
@@ -43,10 +49,16 @@ def fetch_recent_logs(length=avg_len):
 def fetch_recent_logs_for_multi(length=avg_len):
     """mysql db에서 최근 로그를 가져오는 함수"""
     # mysql 데이터베이스에 연결
-    connection = pymysql.connect(host='127.0.0.1',  # DB 주소
-                                 user='root',  # DB 유저명
-                                 password='sejong131!#!',  # 비밀번호
-                                 db='ion',  # 사용할 DB 이름
+    # connection = pymysql.connect(host='127.0.0.1',  # DB 주소
+    #                              user='root',  # DB 유저명
+    #                              password='sejong131!#!',  # 비밀번호
+    #                              db='ion',  # 사용할 DB 이름
+    #                              charset='utf8mb4',
+    #                              cursorclass=pymysql.cursors.DictCursor)
+    connection = pymysql.connect(host='limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com',  # DB 주소
+                                 user='oneday',  # DB 유저명
+                                 password='1234',  # 비밀번호
+                                 db='j6database',  # 사용할 DB 이름
                                  charset='utf8mb4',
                                  cursorclass=pymysql.cursors.DictCursor)
     try:
@@ -75,7 +87,7 @@ def predict_with_xgb_model(data):
 
     """xgboost 모델을 사용해 예측하는 함수"""
     # 모델 불러오기
-    with open('./xgboost_model.pkl', 'rb') as f:
+    with open('./model_data_input/xgboost_model.pkl', 'rb') as f:
         model = pickle.load(f)
 
     # 예측 실행
@@ -90,7 +102,7 @@ def predict_with_xgb_multi_model(data):
 
     """xgboost 모델을 사용해 예측하는 함수"""
     # 모델 불러오기
-    with open('./xgboost_multi_model.pickle', 'rb') as f:
+    with open('./model_data_input/xgboost_multi_model.pickle', 'rb') as f:
         model = pickle.load(f)
 
     # 예측 실행
@@ -167,15 +179,21 @@ def insert_single_data(connection, single_data):
 
 def main():
     # 데이터베이스 연결 설정
-    connection = pymysql.connect(host='127.0.0.1',  # DB 주소
-                                 user='root',  # DB 유저명
-                                 password='sejong131!#!',  # 비밀번호
-                                 db='ion',  # 사용할 DB 이름
+    # connection = pymysql.connect(host='127.0.0.1',  # DB 주소
+    #                              user='root',  # DB 유저명
+    #                              password='sejong131!#!',  # 비밀번호
+    #                              db='ion',  # 사용할 DB 이름
+    #                              charset='utf8mb4',
+    #                              cursorclass=pymysql.cursors.DictCursor)
+    connection = pymysql.connect(host='limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com',  # DB 주소
+                                 user='oneday',  # DB 유저명
+                                 password='1234',  # 비밀번호
+                                 db='j6database',  # 사용할 DB 이름
                                  charset='utf8mb4',
                                  cursorclass=pymysql.cursors.DictCursor)
     
     # CSV 파일 읽기
-    df = pd.read_csv("./test.csv")
+    df = pd.read_csv("./model_data_input/test.csv")
 
     # DataFrame에서 튜플 리스트로 데이터 변환
     data_tuples = list(df.itertuples(index=False, name=None))
