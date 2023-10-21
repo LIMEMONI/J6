@@ -23,10 +23,6 @@ from typing import Optional
 from fastapi.responses import PlainTextResponse
 from pathlib import Path
 import shutil
-from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import HTMLResponse
-from pathlib import Path
-import shutil
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -76,7 +72,6 @@ db = mysql.connector.connect(
     database="j6database",
 )
 
-
 # 커서 생성
 cursor = db.cursor()
 
@@ -101,19 +96,21 @@ async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form
 
     try:
         # 데이터베이스에서 아이디, 해싱된 비밀번호, 그리고 mem_grade 가져오기
-        cursor.execute("SELECT mem_pass, mem_grade FROM member WHERE mem_id = %s", (mem_id,))
+        cursor.execute("SELECT mem_name, mem_pass, mem_grade FROM member WHERE mem_id = %s", (mem_id,))
         user_data = cursor.fetchone()
 
         if user_data:
             # mem_grade 확인
-            mem_pass_db, mem_grade = user_data
+            mem_name, mem_pass_db, mem_grade = user_data
             if mem_pass_db == mem_pass:
                 # 비밀번호 일치, mem_grade에 따라 페이지 리디렉션
                 if mem_grade == 0:
                     request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
+                    request.session["mem_name"] = mem_name  # 세션에 사용자 이름 저장
                     return RedirectResponse(url="/main.html")
                 elif mem_grade == 1:
                     request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
+                    request.session["mem_name"] = mem_name  # 세션에 사용자 이름 저장
                     return RedirectResponse(url="/main.html")
                 else:
                     return RedirectResponse(url="/")
@@ -132,8 +129,9 @@ async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form
 @app.post("/logout", response_class=HTMLResponse)
 async def logout(request: Request):
     request.session.clear()  # 세션 초기화
-    return RedirectResponse(url="/")
-
+    response = RedirectResponse(url="/")
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return response
 
 # MySQL 데이터베이스 연결 설정
 def create_connection():
@@ -157,7 +155,7 @@ class User(BaseModel):
     mem_id: int
     mem_pass: str
     mem_pass2: str
-    
+
 # 아이디 중복 확인
 @app.post("/check_username", response_class=HTMLResponse)
 async def check_username(request: Request):
@@ -200,10 +198,11 @@ async def process_registration(request: Request, user: User):
     except Error as e:
         return templates.TemplateResponse("regist.html", {"request": request, "message": f"데이터베이스 오류: {e}"})
 
-    # 회원가입이 완료되면 세션에 사용자 아이디 저장하고 리디렉트
+    # 회원가입이 완료되면 세션에 사용자 아이디 및 이름 저장하고 리디렉트
     request.session["mem_id"] = user.mem_id
+    request.session["mem_name"] = user.mem_name
     connection.close()
-    
+
     # / 페이지로 리디렉트
     return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
 
@@ -215,12 +214,11 @@ async def upload_file(file: UploadFile):
     # 예: 업로드된 파일을 서버에 저장하고 파일 이름을 반환합니다.
     with open(file.filename, "wb") as f:
         f.write(file.file.read())
-    
+
     return {"filename": file.filename}
 
 # -------------------------------------------------------------------------------------- 여기까지 기능 처리 코드 ---------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------- 여기부터 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
-
 
 # 홈 페이지를 렌더링하는 엔드포인트
 @app.get("/", response_class=HTMLResponse)
@@ -236,15 +234,12 @@ async def render_registration_page(request: Request):
 # 메인 페이지를 렌더링하는 엔드포인트
 @app.get("/main.html", response_class=HTMLResponse)
 async def render_main_page(request: Request):
-    return templates.TemplateResponse("main.html", {"request": request})
-
-@app.get("/dashboard.html", response_class=HTMLResponse)
-async def render_dashboard_page(request: Request):
-    # 세션에서 사용자 아이디 가져오기
+    # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
+    mem_name = request.session.get("mem_name", "Unknown")
 
     if mem_id:
-        # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
+        # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
         cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
@@ -254,10 +249,31 @@ async def render_dashboard_page(request: Request):
             user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
 
             # mem_name 필드 추출
-            mem_name = user_dict.get("mem_name", "Unknown")
-        else:
-            # 사용자를 찾을 수 없을 때 처리
-            return RedirectResponse(url="/")
+            mem_name = user_dict.get("mem_name", mem_name)
+    else:
+        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
+        return RedirectResponse(url="/")
+
+    return templates.TemplateResponse("main.html", {"request": request, "mem_name": mem_name})
+
+@app.get("/dashboard.html", response_class=HTMLResponse)
+async def render_dashboard_page(request: Request):
+    # 세션에서 사용자 아이디 및 이름 가져오기
+    mem_id = request.session.get("mem_id", None)
+    mem_name = request.session.get("mem_name", "Unknown")
+
+    if mem_id:
+        # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
+        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            # 결과를 딕셔너리로 변환
+            column_names = cursor.column_names
+            user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
+
+            # mem_name 필드 추출
+            mem_name = user_dict.get("mem_name", mem_name)
     else:
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
@@ -266,12 +282,13 @@ async def render_dashboard_page(request: Request):
 
 # 대쉬보드 1탭
 @app.get("/dashboard1.html", response_class=HTMLResponse)
-async def render_dashboard_page(request: Request):
-    # 세션에서 사용자 아이디 가져오기
+async def render_dashboard1_page(request: Request):
+    # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
+    mem_name = request.session.get("mem_name", "Unknown")
 
     if mem_id:
-        # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
+        # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
         cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
@@ -281,10 +298,7 @@ async def render_dashboard_page(request: Request):
             user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
 
             # mem_name 필드 추출
-            mem_name = user_dict.get("mem_name", "Unknown")
-        else:
-            # 사용자를 찾을 수 없을 때 처리
-            return RedirectResponse(url="/")
+            mem_name = user_dict.get("mem_name", mem_name)
     else:
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
@@ -293,12 +307,13 @@ async def render_dashboard_page(request: Request):
 
 # 대쉬보드 2탭
 @app.get("/dashboard2.html", response_class=HTMLResponse)
-async def render_dashboard_page(request: Request):
-    # 세션에서 사용자 아이디 가져오기
+async def render_dashboard2_page(request: Request):
+    # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
+    mem_name = request.session.get("mem_name", "Unknown")
 
     if mem_id:
-        # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
+        # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
         cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
@@ -308,24 +323,22 @@ async def render_dashboard_page(request: Request):
             user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
 
             # mem_name 필드 추출
-            mem_name = user_dict.get("mem_name", "Unknown")
-        else:
-            # 사용자를 찾을 수 없을 때 처리
-            return RedirectResponse(url="/")
+            mem_name = user_dict.get("mem_name", mem_name)
     else:
-        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
+        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리디렉트
         return RedirectResponse(url="/")
 
     return templates.TemplateResponse("dashboard2.html", {"request": request, "mem_name": mem_name})
 
 # 대쉬보드 3탭
 @app.get("/dashboard3.html", response_class=HTMLResponse)
-async def render_dashboard_page(request: Request):
-    # 세션에서 사용자 아이디 가져오기
+async def render_dashboard3_page(request: Request):
+    # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
+    mem_name = request.session.get("mem_name", "Unknown")
 
     if mem_id:
-        # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
+        # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
         cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
@@ -335,24 +348,22 @@ async def render_dashboard_page(request: Request):
             user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
 
             # mem_name 필드 추출
-            mem_name = user_dict.get("mem_name", "Unknown")
-        else:
-            # 사용자를 찾을 수 없을 때 처리
-            return RedirectResponse(url="/")
+            mem_name = user_dict.get("mem_name", mem_name)
     else:
-        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
+        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리디렉트
         return RedirectResponse(url="/")
 
     return templates.TemplateResponse("dashboard3.html", {"request": request, "mem_name": mem_name})
 
 # 대쉬보드 4탭
 @app.get("/dashboard4.html", response_class=HTMLResponse)
-async def render_dashboard_page(request: Request):
-    # 세션에서 사용자 아이디 가져오기
+async def render_dashboard4_page(request: Request):
+    # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
+    mem_name = request.session.get("mem_name", "Unknown")
 
     if mem_id:
-        # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
+        # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
         cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
@@ -362,24 +373,21 @@ async def render_dashboard_page(request: Request):
             user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
 
             # mem_name 필드 추출
-            mem_name = user_dict.get("mem_name", "Unknown")
-        else:
-            # 사용자를 찾을 수 없을 때 처리
-            return RedirectResponse(url="/")
+            mem_name = user_dict.get("mem_name", mem_name)
     else:
-        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
+        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리디렉트
         return RedirectResponse(url="/")
 
     return templates.TemplateResponse("dashboard4.html", {"request": request, "mem_name": mem_name})
 
-
 @app.get("/alram.html", response_class=HTMLResponse)
 async def render_alram_page(request: Request):
-        # 세션에서 사용자 아이디 가져오기
+    # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
+    mem_name = request.session.get("mem_name", "Unknown")
 
     if mem_id:
-        # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
+        # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
         cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
@@ -389,20 +397,14 @@ async def render_alram_page(request: Request):
             user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
 
             # mem_name 필드 추출
-            mem_name = user_dict.get("mem_name", "Unknown")
-        else:
-            # 사용자를 찾을 수 없을 때 처리
-            return RedirectResponse(url="/")
+            mem_name = user_dict.get("mem_name", mem_name)
     else:
-        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
+        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리디렉트
         return RedirectResponse(url="/")
-    
-    return templates.TemplateResponse("alram.html", {"request": request})
+
+    return templates.TemplateResponse("alram.html", {"request": request, "mem_name": mem_name})
 
 # -------------------------------------------------------------------------------------- 여기까지 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
-
-
-
 
 # FastAPI 애플리케이션 실행
 if __name__ == "__main__":
