@@ -16,7 +16,6 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.responses import HTMLResponse, RedirectResponse
 from starlette.status import HTTP_303_SEE_OTHER
@@ -34,12 +33,19 @@ import base64
 import logging
 import re
 
-
 # FastAPI 애플리케이션 초기화
 app = FastAPI()
 
-# SessionMiddleware 설정
-app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # 비밀 키를 지정해야 합니다.
+## SessionMiddleware 설정
+#app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # 비밀 키를 지정해야 합니다.
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="your_secret_key",  # 보안을 위해 비밀 키 설정
+    same_site="none",
+    max_age=3600,
+    https_only=True,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -230,6 +236,33 @@ async def render_dashboard_page(request: Request):
 
     return templates.TemplateResponse("dashboard4.html", {"request": request, "mem_name": mem_name})
 
+
+@app.get("/alram.html", response_class=HTMLResponse)
+async def render_alram_page(request: Request):
+        # 세션에서 사용자 아이디 가져오기
+    mem_id = request.session.get("mem_id", None)
+
+    if mem_id:
+        # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
+        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            # 결과를 딕셔너리로 변환
+            column_names = cursor.column_names
+            user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
+
+            # mem_name 필드 추출
+            mem_name = user_dict.get("mem_name", "Unknown")
+        else:
+            # 사용자를 찾을 수 없을 때 처리
+            return RedirectResponse(url="/")
+    else:
+        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
+        return RedirectResponse(url="/")
+    
+    return templates.TemplateResponse("alram.html", {"request": request})
+
 # 로그인 처리
 @app.post("/login", response_class=HTMLResponse)
 async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form(None)):
@@ -277,15 +310,6 @@ async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form
 async def logout(request: Request):
     request.session.clear()  # 세션 초기화
     return RedirectResponse(url="/")
-
-
-@app.get("/alram.html", response_class=HTMLResponse)
-async def render_alram_page(request: Request):
-    return templates.TemplateResponse("alram.html", {"request": request})
-
-@app.get("/test.html", response_class=HTMLResponse)
-async def render_test_page(request: Request):
-    return templates.TemplateResponse("test.html", {"request": request})
 
 
 # MySQL 데이터베이스 연결 설정

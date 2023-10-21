@@ -73,9 +73,10 @@
                         <ul class="dropdown-menu notifications">
                             <li><a class="notification-item">12:10:45 **컬럼의 이상발생</a></li>
                             <li><a class="notification-item">14:10:45 **컬럼의 이상발생</a></li>
-                            <li><a class a="notification-item">18:10:45 **컬럼의 이상발생</a></li>
+                            <li><a class="notification-item">18:10:45 **컬럼의 이상발생</a></li>
                             <li><a class="notification-item">20:10:45 **컬럼의 이상발생</a></li>
                             <li><a class="notification-item">22:10:45 **컬럼의 이상발생</a></li>
+                            <li><a  class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
                         </ul>
                         </li>
                         <!-- 파일 업로드 모달 대화 상자 -->
@@ -126,15 +127,16 @@
                 <nav>
                     <!-- 각 탭 버튼 -->
                     <ul class="nav" id="myTabs">
-                        <li><a data-toggle="tab" href="#dashboard1"><i class="fa fa-line-chart"></i>Dashboard 설비1</a></li>
-                        <li><a data-toggle="tab" href="#dashboard2"><i class="fa fa-line-chart"></i>Dashboard 설비2</a></li>
-                        <li><a data-toggle="tab" href="#dashboard3"><i class="fa fa-line-chart"></i>Dashboard 설비3</a></li>
-                        <li><a data-toggle="tab" href="#dashboard4"><i class="fa fa-line-chart"></i>Dashboard 설비4</a></li>
-                        <li><a data-toggle="tab" href="#alram"><i class="lnr lnr-alarm"></i>이상탐지 알람 목록</a></li>
+                        <li><a data-toggle="tab" href="#dashboard1"><i class="fa fa-line-chart"></i> Dashboard 설비1</a></li>
+                        <li><a data-toggle="tab" href="#dashboard2"><i class="fa fa-line-chart"></i> Dashboard 설비2</a></li>
+                        <li><a data-toggle="tab" href="#dashboard3"><i class="fa fa-line-chart"></i> Dashboard 설비3</a></li>
+                        <li><a data-toggle="tab" href="#dashboard4"><i class="fa fa-line-chart"></i> Dashboard 설비4</a></li>
+                        
                     </ul>
                     <!-- "메인으로 이동" 버튼 추가 -->
                     <div class="text-center" style="position: absolute; bottom: 20px; width: 100%;">
-                        <a href="main.html"><i class="lnr lnr-home"></i>Main</a>
+                        <li><a data-toggle="tab" href="#alram"><i class="lnr lnr-alarm"></i> 이상탐지 알람 목록</a></li>
+                        <a href="main.html"><i class="lnr lnr-home"></i> Main</a>
                     </div>
                 </nav>
             </div>
@@ -197,7 +199,7 @@
             });
         });        
     </script>
-
+    
     <script>
         $(document).ready(function() {
             // "설비 추가" 버튼 클릭 시 이벤트 처리
@@ -253,12 +255,18 @@
             });
         }
     </script>
-    
+
     <script>
         $(document).ready(function() {
-            // 알람 버튼을 클릭했을 때 드롭다운 메뉴 열도록 설정
+            // 알람 드롭다운 메뉴를 토글하기
             $("#alarmDropdownButton").click(function() {
-                $(".notifications").toggle(); // 드롭다운 메뉴를 보이거나 숨기도록 변경
+                $(".notifications").toggle();
+            });
+    
+            // "더 보기" 버튼을 클릭했을 때 이벤트 처리
+            $(".view-more").click(function() {
+                // "alram.html"로 이동
+                window.location.href = "alram.html";
             });
         });
     </script>
