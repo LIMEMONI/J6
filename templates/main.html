@@ -95,7 +95,7 @@
                                 <span>{{ mem_name }}</span>
                                 
                             </a>
-                            <li><a href="/"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
+                            <li><a href="javascript:void(0);" onclick="logout()"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
                         </li>
                     </ul>
                 </div>
@@ -251,13 +251,29 @@
             <button type="button" style="margin-top: 20px;" onclick="redirectToDashboard()">대시보드 이동하기</button>
         </div>
          <div class="container-fluid">
-            <p class="copyright">Shared by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">BootstrapThemes</a>
-</p>
+            <p class="copyright">Shared by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">BootstrapThemes</a></p>
          </div>
       </footer>
    </div>
    <!-- END WRAPPER -->
    <!-- Javascript -->
+   <script>
+      function logout() {
+          // 서버로 로그아웃 요청을 보내기 위해 fetch 사용
+          fetch('/logout', {
+              method: 'POST'
+          })
+          .then(response => {
+              if (response.redirected) {
+                  // 로그아웃 후, 홈 페이지로 리디렉션
+                  window.location.href = response.url;
+              }
+          })
+          .catch(error => {
+              console.error('로그아웃 오류:', error);
+          });
+      }
+  </script>
    <script>
     function redirectToDashboard() {
         // 대시보드 페이지로 이동

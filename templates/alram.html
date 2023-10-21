@@ -113,7 +113,7 @@
                                 <span>{{ mem_name }}</span>
                                 
                             </a>
-                            <li><a href="/"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
+                            <li><a href="javascript:void(0);" onclick="logout()"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
                         </li>
                     </ul>
                 </div>
@@ -163,6 +163,23 @@
     <script src="/static/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
     <script src="/static/vendor/chartist/js/chartist.min.js"></script>
     <script src="/static/scripts/klorofil-common.js"></script>
+    <script>
+        function logout() {
+            // 서버로 로그아웃 요청을 보내기 위해 fetch 사용
+            fetch('/logout', {
+                method: 'POST'
+            })
+            .then(response => {
+                if (response.redirected) {
+                    // 로그아웃 후, 홈 페이지로 리디렉션
+                    window.location.href = response.url;
+                }
+            })
+            .catch(error => {
+                console.error('로그아웃 오류:', error);
+            });
+        }
+    </script>
     <script>
         // 파일 업로드 버튼 클릭 시 호출되는 함수
         function uploadFile() {
