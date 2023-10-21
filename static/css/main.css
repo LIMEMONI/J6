@@ -114,7 +114,7 @@ footer {
 
 @media screen and (max-width: 1024px) {
   #wrapper .sidebar {
-    left: -260px; }
+    left: -60px; }
   #wrapper .main {
     width: 100%; }
   #wrapper .navbar {

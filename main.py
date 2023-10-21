@@ -34,6 +34,7 @@ import base64
 import logging
 import re
 
+
 # FastAPI 애플리케이션 초기화
 app = FastAPI()
 
@@ -59,7 +60,6 @@ class Member(Base):
     mem_name = Column(String(10))
     mem_regno = Column(String(8))
     mem_ph = Column(String(11))
-    mem_grade = Column(String(11))
 
 # MySQL 데이터베이스 연결 설정
 db = mysql.connector.connect(
@@ -77,13 +77,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # HTML 템플릿 설정
 templates = Jinja2Templates(directory="templates")
-
-###test----------------------------------------------------
-# 메인 페이지를 랜더링하는 엔드포인트
-@app.get("/test.html", response_class=HTMLResponse)
-async def render_main_page(request: Request):
-    return templates.TemplateResponse("test.html", {"request": request})
-###--------------------------------------------------------
 
 # 홈 페이지를 렌더링하는 엔드포인트
 @app.get("/", response_class=HTMLResponse)
@@ -103,7 +96,7 @@ async def render_dashboard_page(request: Request):
 
     if mem_id:
         # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * From ion.member WHERE mem_id = %s", (mem_id,))
+        cursor.execute("SELECT * FROM j6database.member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
         if existing_user:
@@ -129,7 +122,7 @@ async def render_dashboard_page(request: Request):
 
     if mem_id:
         # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * From ion.member WHERE mem_id = %s", (mem_id,))
+        cursor.execute("SELECT * FROM j6database.member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
         if existing_user:
@@ -155,7 +148,7 @@ async def render_dashboard_page(request: Request):
 
     if mem_id:
         # 세션에 사용자 아이디가 있는 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * From ion.member WHERE mem_id = %s", (mem_id,))
+        cursor.execute("SELECT * FROM j6database.member WHERE mem_id = %s", (mem_id,))
         existing_user = cursor.fetchone()
 
         if existing_user:
@@ -181,7 +174,7 @@ async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form
         return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호를 입력하세요."})
 
     # 데이터베이스에서 아이디, 비밀번호, 그리고 mem_grade 확인
-    cursor.execute("SELECT * FROM ion.member WHERE mem_id = %s AND mem_pass = %s", (mem_id,))
+    cursor.execute("SELECT mem_pass, mem_grade FROM j6database.member WHERE mem_id = %s", (mem_id,))
     user_data = cursor.fetchone()
 
     if user_data:
@@ -191,10 +184,10 @@ async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form
             # 비밀번호 일치, mem_grade에 따라 페이지 리디렉션
             if mem_grade == 0:
                 request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
-                return RedirectResponse(url="/dashboard1.html")
+                return RedirectResponse(url="/main.html")
             elif mem_grade == 1:
                 request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
-                return RedirectResponse(url="/dashboard1p.html")
+                return RedirectResponse(url="/dashboard1.html")
 
     # 아이디 또는 비밀번호가 일치하지 않을 때 오류 메시지를 표시하고 다시 index.html 페이지로 렌더링
     return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
@@ -206,10 +199,41 @@ async def logout(request: Request):
     request.session.clear()  # 세션 초기화
     return RedirectResponse(url="/")
 
+### MySQL값 받아오기
+templates = Jinja2Templates(directory="templates")
+
+# 메인 페이지를 랜더링하는 엔드포인트
+@app.get("/detail.html", response_class=HTMLResponse)
+async def render_main_page(request: Request):
+    # 로그인되지 않은 사람은 메인으로 돌아가게
+    cursor.execute("SELECT mem_pass, mem_grade FROM j6database.member WHERE mem_id = %s", (mem_id,))
+    user_data = cursor.fetchone()
+
+    if user_data:
+        # mem_grade 확인
+        mem_pass_db, mem_grade = user_data
+        if mem_pass_db == mem_pass:
+            # 비밀번호 일치, mem_grade에 따라 페이지 리디렉션
+            if mem_grade == 0:
+                request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
+                return RedirectResponse(url="/main.html")
+            elif mem_grade == 1:
+                request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
+                return RedirectResponse(url="/dashboard1.html")
+
+    # 결과 가져오기
+    cursor.execute("""select ACTUALROTATIONANGLE, ACTUALSTEPDURATION, ETCHBEAMCURRENT, ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK, ETCHSOURCEUSAGE, FIXTURETILTANGLE, FLOWCOOLFLOWRATE, FLOWCOOLPRESSURE, IONGAUGEPRESSURE, input_time
+                        from input_data
+                        where input_time >= '2023-10-20 14:18:41' AND input_time <= '2023-10-20 14:28:41';""")
+    items = cursor.fetchall()
+
+    return templates.TemplateResponse("detail.html", {"request": request, "items": items})
+
 
 @app.get("/alram.html", response_class=HTMLResponse)
 async def render_alram_page(request: Request):
     return templates.TemplateResponse("alram.html", {"request": request})
+
 
 @app.get("/test.html", response_class=HTMLResponse)
 async def render_test_page(request: Request):
@@ -252,7 +276,7 @@ async def check_username(request: Request):
     cursor = connection.cursor()
 
     # 아이디 중복 확인
-    cursor.execute("SELECT * From ion.member WHERE mem_id = %s", (username,))
+    cursor.execute("SELECT * FROM j6database.member WHERE mem_id = %s", (username,))
     existing_user = cursor.fetchone()
     connection.close()
 
@@ -274,7 +298,7 @@ async def process_registration(request: Request, user: User):
     # 데이터베이스에 사용자 정보 저장
     try:
         cursor.execute(
-            "INSERT INTO member (mem_name, mem_regno, mem_ph, mem_id, mem_pass, mem_pass2) VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO j6database.member (mem_name, mem_regno, mem_ph, mem_id, mem_pass, mem_pass2) VALUES (%s, %s, %s, %s, %s, %s)",
             (user.mem_name, user.mem_regno, user.mem_ph, user.mem_id, user.mem_pass, user.mem_pass2)
         )
         connection.commit()
