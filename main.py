@@ -36,9 +36,9 @@ import re
 # FastAPI 애플리케이션 초기화
 app = FastAPI()
 
-## SessionMiddleware 설정
-#app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # 비밀 키를 지정해야 합니다.
+# -------------------------------------------------------------------------------------- 여기부터 기능 처리 코드 ---------------------------------------------------------------------------------------------------
 
+## SessionMiddleware 설정
 app.add_middleware(
     SessionMiddleware,
     secret_key="your_secret_key",  # 보안을 위해 비밀 키 설정
@@ -85,6 +85,142 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # HTML 템플릿 설정
 templates = Jinja2Templates(directory="templates")
+
+# 로그인 처리
+@app.post("/login", response_class=HTMLResponse)
+async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form(None)):
+    if mem_id is None or mem_pass is None:
+        return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호를 입력하세요."})
+
+    # 데이터베이스 연결
+    connection = create_connection()
+    if connection is None:
+        return templates.TemplateResponse("index.html", {"request": request, "message": "데이터베이스 연결 오류."})
+
+    cursor = connection.cursor()
+
+    try:
+        # 데이터베이스에서 아이디, 해싱된 비밀번호, 그리고 mem_grade 가져오기
+        cursor.execute("SELECT mem_pass, mem_grade FROM member WHERE mem_id = %s", (mem_id,))
+        user_data = cursor.fetchone()
+
+        if user_data:
+            # mem_grade 확인
+            mem_pass_db, mem_grade = user_data
+            if mem_pass_db == mem_pass:
+                # 비밀번호 일치, mem_grade에 따라 페이지 리디렉션
+                if mem_grade == 0:
+                    request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
+                    return RedirectResponse(url="/main.html")
+                elif mem_grade == 1:
+                    request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
+                    return RedirectResponse(url="/main.html")
+                else:
+                    return RedirectResponse(url="/")
+        else:
+            # 아이디 또는 비밀번호가 일치하지 않을 때 오류 메시지를 표시하고 다시 index.html 페이지로 렌더링
+            return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
+
+    except Error as e:
+        return templates.TemplateResponse("index.html", {"request": request, "message": f"데이터베이스 오류: {e}"})
+
+    finally:
+        cursor.close()
+        connection.close()
+
+# 로그아웃 처리
+@app.post("/logout", response_class=HTMLResponse)
+async def logout(request: Request):
+    request.session.clear()  # 세션 초기화
+    return RedirectResponse(url="/")
+
+
+# MySQL 데이터베이스 연결 설정
+def create_connection():
+    try:
+        connection = mysql.connector.connect(
+        host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
+        user="oneday",
+        password="1234",
+        database="j6database",
+        )
+        return connection
+    except Error as e:
+        print(f"Error: {e}")
+        return None
+
+# 사용자 정보를 저장할 데이터 모델
+class User(BaseModel):
+    mem_name: str
+    mem_regno: int
+    mem_ph: int
+    mem_id: int
+    mem_pass: str
+    mem_pass2: str
+    
+# 아이디 중복 확인
+@app.post("/check_username", response_class=HTMLResponse)
+async def check_username(request: Request):
+    form_data = await request.form()
+    username = form_data.get('username')
+
+    connection = create_connection()
+    if connection is None:
+        return HTMLResponse(content="데이터베이스 연결 오류.")
+
+    cursor = connection.cursor()
+
+    # 아이디 중복 확인
+    cursor.execute("SELECT * FROM member WHERE mem_id = %s", (username,))
+    existing_user = cursor.fetchone()
+    connection.close()
+
+    if existing_user:
+        return HTMLResponse(content="이미 존재하는 아이디입니다.")
+    else:
+        return HTMLResponse(content="사용 가능한 아이디입니다.")
+
+# 가입하기 버튼을 눌렀을 때 회원가입을 처리하는 엔드포인트
+@app.post("/process_registration", response_class=HTMLResponse)
+async def process_registration(request: Request, user: User):
+    # 데이터베이스 연결
+    connection = create_connection()
+    if connection is None:
+        return templates.TemplateResponse("regist.html", {"request": request, "message": "데이터베이스 연결 오류."})
+
+    cursor = connection.cursor()
+
+    # 데이터베이스에 사용자 정보 저장
+    try:
+        cursor.execute(
+            "INSERT INTO member (mem_name, mem_regno, mem_ph, mem_id, mem_pass, mem_pass2) VALUES (%s, %s, %s, %s, %s, %s)",
+            (user.mem_name, user.mem_regno, user.mem_ph, user.mem_id, user.mem_pass, user.mem_pass2)
+        )
+        connection.commit()
+    except Error as e:
+        return templates.TemplateResponse("regist.html", {"request": request, "message": f"데이터베이스 오류: {e}"})
+
+    # 회원가입이 완료되면 세션에 사용자 아이디 저장하고 리디렉트
+    request.session["mem_id"] = user.mem_id
+    connection.close()
+    
+    # / 페이지로 리디렉트
+    return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
+
+@app.post("/uploadfile/")
+async def upload_file(file: UploadFile):
+    # 여기에 파일을 저장하거나 처리하는 코드를 추가하세요.
+    # 업로드된 파일은 'file' 매개변수로 전달됩니다.
+
+    # 예: 업로드된 파일을 서버에 저장하고 파일 이름을 반환합니다.
+    with open(file.filename, "wb") as f:
+        f.write(file.file.read())
+    
+    return {"filename": file.filename}
+
+# -------------------------------------------------------------------------------------- 여기까지 기능 처리 코드 ---------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------- 여기부터 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
+
 
 # 홈 페이지를 렌더링하는 엔드포인트
 @app.get("/", response_class=HTMLResponse)
@@ -263,137 +399,7 @@ async def render_alram_page(request: Request):
     
     return templates.TemplateResponse("alram.html", {"request": request})
 
-# 로그인 처리
-@app.post("/login", response_class=HTMLResponse)
-async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form(None)):
-    if mem_id is None or mem_pass is None:
-        return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호를 입력하세요."})
-
-    # 데이터베이스 연결
-    connection = create_connection()
-    if connection is None:
-        return templates.TemplateResponse("index.html", {"request": request, "message": "데이터베이스 연결 오류."})
-
-    cursor = connection.cursor()
-
-    try:
-        # 데이터베이스에서 아이디, 해싱된 비밀번호, 그리고 mem_grade 가져오기
-        cursor.execute("SELECT mem_pass, mem_grade FROM member WHERE mem_id = %s", (mem_id,))
-        user_data = cursor.fetchone()
-
-        if user_data:
-            # mem_grade 확인
-            mem_pass_db, mem_grade = user_data
-            if mem_pass_db == mem_pass:
-                # 비밀번호 일치, mem_grade에 따라 페이지 리디렉션
-                if mem_grade == 0:
-                    request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
-                    return RedirectResponse(url="/main.html")
-                elif mem_grade == 1:
-                    request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
-                    return RedirectResponse(url="/main.html")
-                else:
-                    return RedirectResponse(url="/")
-        else:
-            # 아이디 또는 비밀번호가 일치하지 않을 때 오류 메시지를 표시하고 다시 index.html 페이지로 렌더링
-            return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
-
-    except Error as e:
-        return templates.TemplateResponse("index.html", {"request": request, "message": f"데이터베이스 오류: {e}"})
-
-    finally:
-        cursor.close()
-        connection.close()
-
-# 로그아웃 처리
-@app.post("/logout", response_class=HTMLResponse)
-async def logout(request: Request):
-    request.session.clear()  # 세션 초기화
-    return RedirectResponse(url="/")
-
-
-# MySQL 데이터베이스 연결 설정
-def create_connection():
-    try:
-        connection = mysql.connector.connect(
-        host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
-        user="oneday",
-        password="1234",
-        database="j6database",
-        )
-        return connection
-    except Error as e:
-        print(f"Error: {e}")
-        return None
-
-# 사용자 정보를 저장할 데이터 모델
-class User(BaseModel):
-    mem_name: str
-    mem_regno: int
-    mem_ph: int
-    mem_id: int
-    mem_pass: str
-    mem_pass2: str
-    
-# 아이디 중복 확인
-@app.post("/check_username", response_class=HTMLResponse)
-async def check_username(request: Request):
-    form_data = await request.form()
-    username = form_data.get('username')
-
-    connection = create_connection()
-    if connection is None:
-        return HTMLResponse(content="데이터베이스 연결 오류.")
-
-    cursor = connection.cursor()
-
-    # 아이디 중복 확인
-    cursor.execute("SELECT * FROM member WHERE mem_id = %s", (username,))
-    existing_user = cursor.fetchone()
-    connection.close()
-
-    if existing_user:
-        return HTMLResponse(content="이미 존재하는 아이디입니다.")
-    else:
-        return HTMLResponse(content="사용 가능한 아이디입니다.")
-
-# 가입하기 버튼을 눌렀을 때 회원가입을 처리하는 엔드포인트
-@app.post("/process_registration", response_class=HTMLResponse)
-async def process_registration(request: Request, user: User):
-    # 데이터베이스 연결
-    connection = create_connection()
-    if connection is None:
-        return templates.TemplateResponse("regist.html", {"request": request, "message": "데이터베이스 연결 오류."})
-
-    cursor = connection.cursor()
-
-    # 데이터베이스에 사용자 정보 저장
-    try:
-        cursor.execute(
-            "INSERT INTO member (mem_name, mem_regno, mem_ph, mem_id, mem_pass, mem_pass2) VALUES (%s, %s, %s, %s, %s, %s)",
-            (user.mem_name, user.mem_regno, user.mem_ph, user.mem_id, user.mem_pass, user.mem_pass2)
-        )
-        connection.commit()
-    except Error as e:
-        return templates.TemplateResponse("regist.html", {"request": request, "message": f"데이터베이스 오류: {e}"})
-
-    # 회원가입이 완료되면 세션에 사용자 아이디 저장하고 리디렉트
-    request.session["mem_id"] = user.mem_id
-    connection.close()
-    
-    # / 페이지로 리디렉트
-    return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
-
-@app.post("/uploadfile/")
-async def upload_file(file: UploadFile):
-    # 여기에 파일을 저장하거나 처리하는 코드를 추가하세요.
-    # 업로드된 파일은 'file' 매개변수로 전달됩니다.
-
-    # 예: 업로드된 파일을 서버에 저장하고 파일 이름을 반환합니다.
-    with open(file.filename, "wb") as f:
-        f.write(file.file.read())
-    
-    return {"filename": file.filename}
+# -------------------------------------------------------------------------------------- 여기까지 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
 
 
 
