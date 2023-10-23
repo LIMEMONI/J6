@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>J6 Dashboard</title>
+    <title>J6 메인페이지</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/static/vendor/chartist/css/chartist-custom.css">
     <!-- MAIN CSS -->
     <link rel="stylesheet" href="/static/css/main.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <!-- FOR DEMO PURPOSES ONLY. You should remove this in your project -->
     <link rel="stylesheet" href="/static/css/demo.css">
     <!-- GOOGLE FONTS -->
@@ -25,6 +26,30 @@
     <script src="/static/js/slimscroll.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    
+    <style>
+        /* Google Fonts에서 가져온 Roboto 폰트를 적용 */
+        #sidebar-nav {
+            font-family: 'Roboto', sans-serif;
+            font-size: 20px;
+        }
+    
+        /* Nav 내의 리스트 아이템에 적용된 스타일 변경 */
+        #sidebar-nav li {
+            list-style: none;
+            margin: 10px 0;
+        }
+    
+        #sidebar-nav a {
+            text-decoration: none;
+            color: #fff; /* 글자 색상 설정 */
+            transition: color 0.3s; /* 색상 변경 시 부드러운 전환 효과 */
+        }
+    
+        #sidebar-nav a:hover {
+            color: #007bff; /* 마우스 호버 시 글자 색상 변경 */
+        }
+    </style>
 
     <script type="text/Javascript">
         function goDetail_1(){
@@ -134,9 +159,10 @@
                         <ul class="dropdown-menu notifications">
                             <li><a class="notification-item">12:10:45 **컬럼의 이상발생</a></li>
                             <li><a class="notification-item">14:10:45 **컬럼의 이상발생</a></li>
-                            <li><a class a="notification-item">18:10:45 **컬럼의 이상발생</a></li>
+                            <li><a class="notification-item">18:10:45 **컬럼의 이상발생</a></li>
                             <li><a class="notification-item">20:10:45 **컬럼의 이상발생</a></li>
                             <li><a class="notification-item">22:10:45 **컬럼의 이상발생</a></li>
+                            <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
                         </ul>
                         </li>
                         <!-- 파일 업로드 모달 대화 상자 -->
@@ -145,7 +171,6 @@
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title" id="uploadModalLabel">CSV 파일 불러오기</h5>
-                                        
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
@@ -158,19 +183,21 @@
                                             </div>
                                         </form>
                                     </div>
+                                    <!-- 모달 내용 -->
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
                                         <!-- 파일 업로드 버튼을 눌렀을 때 데이터를 업로드하는 함수 호출 -->
-                                        <button type="button" class="btn btn-primary" id="uploadButton" onclick="uploadFile()">불러오기</button>                    
+                                        <button type="button" class="btn btn-primary" id="uploadButton" onclick="uploadFile()">불러오기</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                         <!-- 나머지 메뉴 아이콘들 -->
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                 <img src="static/img/user1.png" class="img-square" alt="Picture">
-                                <span>{{ mem_name }}</span>
+                                <span>관리자</span>
                                 
                             </a>
                             <li><a href="javascript:void(0);" onclick="logout()"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
@@ -179,14 +206,11 @@
                 </div>
             </div>
         </nav>
-    </div>
         <!-- END NAVBAR -->
-      <!-- MAIN -->
-      <div class="main">
         <!-- MAIN CONTENT -->
         <div class="main-content">
            <div class="container-fluid">  
-              <h3 class="page-title">Tables</h3>
+              <h3 class="page-title"></h3>
                    <br>
                    <ul>
                    <h3><b>J6_Fab Abnormal Detecting & life expectancy prediction System</b></h3>
@@ -415,6 +439,21 @@
    <script src="/static/vendor/bootstrap/js/bootstrap.min.js"></script>
    <script src="/static/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
    <script src="/static/scripts/klorofil-common.js"></script>
-</body>
+    
+    <script>
+        $(document).ready(function() {
+            // 알람 드롭다운 메뉴를 토글하기
+            $("#alarmDropdownButton").click(function() {
+                $(".notifications").toggle();
+            });
 
+            // "더 보기" 버튼을 클릭했을 때 이벤트 처리
+            $(".view-more").click(function() {
+                // "alram.html"로 이동
+                window.location.href = "alram.html";
+            });
+        });
+    </script>
+
+</body>
 </html>

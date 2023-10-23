@@ -206,17 +206,6 @@ async def process_registration(request: Request, user: User):
     # / 페이지로 리디렉트
     return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
 
-@app.post("/uploadfile/")
-async def upload_file(file: UploadFile):
-    # 여기에 파일을 저장하거나 처리하는 코드를 추가하세요.
-    # 업로드된 파일은 'file' 매개변수로 전달됩니다.
-
-    # 예: 업로드된 파일을 서버에 저장하고 파일 이름을 반환합니다.
-    with open(file.filename, "wb") as f:
-        f.write(file.file.read())
-
-    return {"filename": file.filename}
-
 # -------------------------------------------------------------------------------------- 여기까지 기능 처리 코드 ---------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------- 여기부터 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
 
@@ -414,29 +403,84 @@ async def render_dashboard4_page(request: Request):
 
     return templates.TemplateResponse("dashboard4.html", {"request": request, "mem_name": mem_name})
 
-@app.get("/alram.html", response_class=HTMLResponse)
-async def render_alram_page(request: Request):
-    # 세션에서 사용자 아이디 및 이름 가져오기
-    mem_id = request.session.get("mem_id", None)
-    mem_name = request.session.get("mem_name", "Unknown")
+# @app.get("/alram.html", response_class=HTMLResponse)
+# async def render_alram_page(request: Request):
+#     # 세션에서 사용자 아이디 및 이름 가져오기
+#     mem_id = request.session.get("mem_id", None)
+#     mem_name = request.session.get("mem_name", "Unknown")
 
-    if mem_id:
-        # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
-        existing_user = cursor.fetchone()
+#     if mem_id:
+#         # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
+#         cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+#         existing_user = cursor.fetchone()
 
-        if existing_user:
-            # 결과를 딕셔너리로 변환
-            column_names = cursor.column_names
-            user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
+#         if existing_user:
+#             # 결과를 딕셔너리로 변환
+#             column_names = cursor.column_names
+#             user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
 
-            # mem_name 필드 추출
-            mem_name = user_dict.get("mem_name", mem_name)
-    else:
-        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리디렉트
-        return RedirectResponse(url="/")
+#             # mem_name 필드 추출
+#             mem_name = user_dict.get("mem_name", mem_name)
+#     else:
+#         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리디렉트
+#         return RedirectResponse(url="/")
 
-    return templates.TemplateResponse("alram.html", {"request": request, "mem_name": mem_name})
+#     return templates.TemplateResponse("alram.html", {"request": request, "mem_name": mem_name})
+
+@app.get("/alram.html")
+async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim_e: int = 964):
+    ### alram_draw
+    cursor.execute("""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
+                                                    ETCHBEAMCURRENT,IONGAUGEPRESSURE,
+                                                    ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
+                                                    ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
+                                                    FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
+                    FROM j6database.input_data;""")
+    existing_user = cursor.fetchall()
+    
+    colnames = cursor.description # 변수정보
+    cols = [[i, colnames[i][0], colnames[i+1][0]] for i in range(1, len(colnames), 2)] # 변수명
+    
+    alram_dic = {}
+    for i in range(1, len(existing_user[0])):
+        alram_dic.update({'alram{}'.format(i) : [{'time': val[0], 'col':val[i]} for val in existing_user]}) # line_alram
+        
+    try:
+        ### rul_line_draw
+        cursor.execute("""SELECT row_index
+                            FROM (SELECT rul_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                                FROM j6database.rul_1) AS temp
+                            WHERE rul_time = 0;""")
+        existing_user = cursor.fetchall()
+        
+        line_lis = [val[0] for val in existing_user]
+        
+        
+        ### side_bar_list
+        cursor.execute("""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
+                            FROM (SELECT multi_pred, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                                FROM j6database.multi_1) AS temp
+                            WHERE multi_pred = 1;""")
+        existing_user = cursor.fetchall()
+        
+        bar_lis = [[existing_user[0][1], existing_user[0][2]]]
+        cnt = 0
+        for i in range(1, len(existing_user)):
+            if existing_user[i][-1] != 1 :
+                bar_lis[len(bar_lis)-1].append(existing_user[i-1][2])
+                bar_lis.append([existing_user[i][1], existing_user[i][2]])
+        bar_lis[-1].append(existing_user[-1][2])
+        
+    except:
+        line_lis = None
+        bar_lis = [[None, 0, 0]]
+    
+    return templates.TemplateResponse("alram.html", {"request":request,
+                                                      'cols':cols,
+                                                      'dic':alram_dic,
+                                                      'bar_lis':bar_lis,
+                                                      'line_lis':line_lis,
+                                                      "time": time, "xlim_s": xlim_s, "xlim_e": xlim_e})
 
 # -------------------------------------------------------------------------------------- 여기까지 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
 
