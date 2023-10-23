@@ -231,9 +231,12 @@ async def home(request: Request):
 async def render_registration_page(request: Request):
     return templates.TemplateResponse("regist.html", {"request": request})
 
-# 메인 페이지를 렌더링하는 엔드포인트
+
+
+# 메인 페이지를 랜더링하는 엔드포인트
 @app.get("/main.html", response_class=HTMLResponse)
 async def render_main_page(request: Request):
+    
     # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
     mem_name = request.session.get("mem_name", "Unknown")
@@ -250,11 +253,42 @@ async def render_main_page(request: Request):
 
             # mem_name 필드 추출
             mem_name = user_dict.get("mem_name", mem_name)
+            
+            # 설비 수명 상태(0: 만료 / 1: 정상 / 2: 주의)
+            tool1_status = 1
+            tool2_status = 1
+            tool3_status = 2
+            tool4_status = 0
+            # 설비 타이머 시작시간(처음으로 받는 데이터의 시간부터 측정)
+            start_times = {
+                "설비 1": "2022-10-23T23:11:11", # 임의 설정값으로부터 타이머 시작 
+                "설비 2": datetime(datetime.today().year, datetime.today().month, datetime.today().day, 0, 0, 0).isoformat(), # 현재 시각으로부터 타이머 시작
+                "설비 3": datetime(datetime.today().year, datetime.today().month, datetime.today().day, 0, 0, 0).isoformat(), # 설비 3의 시작시간
+                "설비 4": datetime(datetime.today().year, datetime.today().month, datetime.today().day, 0, 0, 0).isoformat(), # 설비 4의 시작시간
+            }
+            # 설비별 처리중인 Lot 번호
+            lot_query = "SELECT Lot FROM input_data LIMIT 4" # 일단 임의의 4개 Lot 번호를 가져옵니다.
+
+            # SQL 쿼리 실행
+            cursor.execute(lot_query)
+
+            # 결과 가져오기
+            Lots = []
+            result = cursor.fetchall()
+            for i in range(len(result)):
+                Lots.append(result[i][0])
+            return templates.TemplateResponse("main.html", {"request": request,
+                                                            "tool1_status": tool1_status,
+                                                            "tool2_status": tool2_status,
+                                                            "tool3_status": tool3_status,
+                                                            "tool4_status": tool4_status,
+                                                            "start_times": start_times,
+                                                            "Lots": Lots})
     else:
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
+    
 
-    return templates.TemplateResponse("main.html", {"request": request, "mem_name": mem_name})
 
 @app.get("/dashboard.html", response_class=HTMLResponse)
 async def render_dashboard_page(request: Request):
