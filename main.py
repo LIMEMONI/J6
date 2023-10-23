@@ -65,12 +65,20 @@ class Member(Base):
     mem_ph = Column(String(11))
 
 # MySQL 데이터베이스 연결 설정
+# db = mysql.connector.connect(
+#     host="127.0.0.1",
+#     user="root",
+#     password="sejong131!#!",
+#     database="ion",
+# )
+
 db = mysql.connector.connect(
     host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
     user="oneday",
     password="1234",
     database="j6database",
 )
+
 
 # 커서 생성
 cursor = db.cursor()
@@ -136,11 +144,17 @@ async def logout(request: Request):
 # MySQL 데이터베이스 연결 설정
 def create_connection():
     try:
+        # connection = mysql.connector.connect(
+        #     host="127.0.0.1",
+        #     user="root",
+        #     password="sejong131!#!",
+        #     database="ion",
+        # )
         connection = mysql.connector.connect(
-        host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
-        user="oneday",
-        password="1234",
-        database="j6database",
+            host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
+            user="oneday",
+            password="1234",
+            database="j6database",
         )
         return connection
     except Error as e:
