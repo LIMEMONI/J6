@@ -6,6 +6,7 @@ import pandas as pd
 import time
 import warnings
 from datetime import datetime
+import joblib
 
 # XGBoost 관련 경고 숨기기
 warnings.filterwarnings(action='ignore', category=UserWarning, module='xgboost')
@@ -14,17 +15,12 @@ warnings.filterwarnings(action='ignore', category=UserWarning, module='xgboost')
 current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 ## 길이 기준 설정
-avg_len = 500
+avg_len = 500 이동평균 길이 설정 tkdlajs
 
 def fetch_recent_logs(length=avg_len):
     """mysql db에서 최근 로그를 가져오는 함수"""
     # mysql 데이터베이스에 연결
-    # connection = pymysql.connect(host='127.0.0.1',  # DB 주소
-    #                              user='root',  # DB 유저명
-    #                              password='sejong131!#!',  # 비밀번호
-    #                              db='ion',  # 사용할 DB 이름
-    #                              charset='utf8mb4',
-    #                              cursorclass=pymysql.cursors.DictCursor)
+
     connection = pymysql.connect(host='limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com',  # DB 주소
                                  user='oneday',  # DB 유저명
                                  password='1234',  # 비밀번호
@@ -49,12 +45,7 @@ def fetch_recent_logs(length=avg_len):
 def fetch_recent_logs_for_multi(length=avg_len):
     """mysql db에서 최근 로그를 가져오는 함수"""
     # mysql 데이터베이스에 연결
-    # connection = pymysql.connect(host='127.0.0.1',  # DB 주소
-    #                              user='root',  # DB 유저명
-    #                              password='sejong131!#!',  # 비밀번호
-    #                              db='ion',  # 사용할 DB 이름
-    #                              charset='utf8mb4',
-    #                              cursorclass=pymysql.cursors.DictCursor)
+
     connection = pymysql.connect(host='limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com',  # DB 주소
                                  user='oneday',  # DB 유저명
                                  password='1234',  # 비밀번호
@@ -84,30 +75,53 @@ def predict_with_xgb_model(data):
     # 데이터 형태 변환
     transformed_data = dict_to_array(data)
 
+    """모델 예측 전 전처리 함수"""
+    # 모델 불러오기
+    scaler = joblib.load('./model/abnormal_detect/스케일러 적용.pkl')========================================tkdlajs
+    
+    # scaler 적용
+    scaled_data = scaler.transform(transformed_data)
+
     """xgboost 모델을 사용해 예측하는 함수"""
     # 모델 불러오기
-    with open('./model_data_input/xgboost_model.pkl', 'rb') as f:
-        model = pickle.load(f)
+    model_fl =  joblib.load('./model/abnormal_detect/모델 적용.pickle') ========================================tkdlajs
+    model_pb =  joblib.load('./model/abnormal_detect/모델 적용.pickle') ========================================tkdlajs
+    model_ph =  joblib.load('./model/abnormal_detect/모델 적용.pickle') ========================================tkdlajs
 
     # 예측 실행
-    predictions = model.predict(transformed_data)
+    predictions_fl = model_fl.predict(scaled_data)
+    predictions_pb = model_pb.predict(scaled_data)
+    predictions_ph = model_ph.predict(scaled_data)
 
-    return predictions
+    #### rul inverse transfomr 적용 필요!!!!
+    tkdlajs===========================================================
+
+    return [predictions_fl, predictions_pb, predictions_ph]
 
 def predict_with_xgb_multi_model(data):
     """xgboost 다중분류 모델을 사용해 예측하는 함수"""
     # 데이터 형태 변환
     transformed_data = dict_to_array(data)
 
+    """모델 예측 전 전처리 함수"""
+    # 모델 불러오기
+    scaler = joblib.load('./model/abnormal_detect/스케일러 적용.pkl')========================================tkdlajs
+    
+    # scaler 적용
+    scaled_data = scaler.transform(transformed_data)
+
     """xgboost 모델을 사용해 예측하는 함수"""
     # 모델 불러오기
-    with open('./model_data_input/xgboost_multi_model.pkl', 'rb') as f:
-        model = pickle.load(f)
+    model_fl =  joblib.load('./model/abnormal_detect/모델 적용.pickle') ========================================tkdlajs
+    model_pb =  joblib.load('./model/abnormal_detect/모델 적용.pickle') ========================================tkdlajs
+    model_ph =  joblib.load('./model/abnormal_detect/모델 적용.pickle') ========================================tkdlajs
 
     # 예측 실행
-    predictions = model.predict(transformed_data)
+    predictions_fl = model_fl.predict(scaled_data)
+    predictions_pb = model_pb.predict(scaled_data)
+    predictions_ph = model_ph.predict(scaled_data)
 
-    return predictions
+    return [predictions_fl, predictions_pb, predictions_ph]
 
 def compute_moving_average(data, window_size=avg_len):
     """이동평균 계산하는 함수"""
@@ -152,29 +166,25 @@ def insert_single_data(connection, single_data):
         connection.rollback()
     return current_time
 
-def insert_single_rul_data(connection, single_data, current_time):
+def insert_single_multi_data(connection, data, current_time):
     try:
         with connection.cursor() as cursor:
-            # 현재 시간 가져오기
-            current_time = current_time
-            
             # 데이터 삽입 SQL.
-            sql = f'''INSERT INTO rul_1(rul_time,input_time) VALUES (%s,"{current_time}")'''
-            cursor.execute(sql, single_data)
+            sql = f'''INSERT INTO multi_1(rul_fl, rul_pb, rul_ph, input_time) 
+                      VALUES (%s, %s, %s, "{current_time}")'''
+            cursor.execute(sql, (data[0], data[1], data[2]))
         connection.commit()
     except Exception as e:
         print(f"Error while inserting data: {e}")
         connection.rollback()
 
-def insert_single_multi_data(connection, single_data, current_time):
+def insert_single_multi_data(connection, data, current_time):
     try:
         with connection.cursor() as cursor:
-            # 현재 시간 가져오기
-            current_time = current_time
-            
             # 데이터 삽입 SQL.
-            sql = f'''INSERT INTO multi_1(multi_pred,input_time) VALUES (%s,"{current_time}")'''
-            cursor.execute(sql, single_data)
+            sql = f'''INSERT INTO multi_1(multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time) 
+                      VALUES (%s, %s, %s, "{current_time}")'''
+            cursor.execute(sql, (data[0], data[1], data[2]))
         connection.commit()
     except Exception as e:
         print(f"Error while inserting data: {e}")
@@ -185,12 +195,7 @@ def insert_single_multi_data(connection, single_data, current_time):
 
 def main():
     # 데이터베이스 연결 설정
-    # connection = pymysql.connect(host='127.0.0.1',  # DB 주소
-    #                              user='root',  # DB 유저명
-    #                              password='sejong131!#!',  # 비밀번호
-    #                              db='ion',  # 사용할 DB 이름
-    #                              charset='utf8mb4',
-    #                              cursorclass=pymysql.cursors.DictCursor)
+
     connection = pymysql.connect(host='limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com',  # DB 주소
                                  user='oneday',  # DB 유저명
                                  password='1234',  # 비밀번호
