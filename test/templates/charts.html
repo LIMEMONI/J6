@@ -20,6 +20,8 @@
 	<!-- ICONS -->
 	<link rel="apple-touch-icon" sizes="76x76" href="/static/img/apple-icon.png">
 	<link rel="icon" type="image/png" sizes="96x96" href="/static/img/favicon.png">
+	<!-- plotly-->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 
 <body>
@@ -56,7 +58,7 @@
 								<li><a href="#" class="notification-item"><span class="dot bg-success"></span>Monthly report is available</a></li>
 								<li><a href="#" class="notification-item"><span class="dot bg-warning"></span>Weekly meeting in 1 hour</a></li>
 								<li><a href="#" class="notification-item"><span class="dot bg-success"></span>Your request has been approved</a></li>
-								<li><a href="#" class="more">See all notifications</a></li>
+								<li><a href="/charts" class="more">See all notifications</a></li>
 							</ul>
 						</li>
 						<li class="dropdown">
@@ -92,16 +94,19 @@
 					<ul class="nav">
 						<li><a href="index.html" class=""><i class="lnr lnr-home"></i> <span>Dashboard</span></a></li>
 						<li><a href="elements.html" class=""><i class="lnr lnr-code"></i> <span>Elements</span></a></li>
-						<li><a href="charts.html" class="active"><i class="lnr lnr-chart-bars"></i> <span>Charts</span></a></li>
+						<li><a href="charts" class="active"><i class="lnr lnr-chart-bars"></i> <span>Detail_page</span></a></li>
 						<li><a href="panels.html" class=""><i class="lnr lnr-cog"></i> <span>Panels</span></a></li>
 						<li><a href="notifications.html" class=""><i class="lnr lnr-alarm"></i> <span>Notifications</span></a></li>
 						<li>
-							<a href="#subPages" data-toggle="collapse" class="collapsed"><i class="lnr lnr-file-empty"></i> <span>Pages</span> <i class="icon-submenu lnr lnr-chevron-left"></i></a>
+							<a href="#subPages" data-toggle="collapse" class="collapsed"><i class="lnr lnr-file-empty"></i> <span>이상알림</span> <i class="icon-submenu lnr lnr-chevron-left"></i></a>
 							<div id="subPages" class="collapse ">
 								<ul class="nav">
-									<li><a href="page-profile.html" class="">Profile</a></li>
-									<li><a href="page-login.html" class="">Login</a></li>
-									<li><a href="page-lockscreen.html" class="">Lockscreen</a></li>
+									{% for item in bar_lis %}
+										{% set val = item[0] %}
+										{% set i_s = item[1] %}
+										{% set i_e = item[2] %}
+										<li><a href="/charts?time={{val}}&xlim_s={{i_s}}&xlim_e={{i_e}}" class="">이상근접구간 : {{val}}</a></li>
+									{% endfor %}
 								</ul>
 							</div>
 						</li>
@@ -118,51 +123,32 @@
 			<!-- MAIN CONTENT -->
 			<div class="main-content">
 				<div class="container-fluid">
-					<h3 class="page-title">Charts</h3>
-					<div class="row">
-						<div class="col-md-6">
-							<div class="panel">
-								<div class="panel-heading">
-									<h3 class="panel-title">Line Chart</h3>
-								</div>
-								<div class="panel-body">
-									<div id="demo-line-chart" class="ct-chart"></div>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="panel">
-								<div class="panel-heading">
-									<h3 class="panel-title">Bar Chart</h3>
-								</div>
-								<div class="panel-body">
-									<div id="demo-bar-chart" class="ct-chart"></div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-md-6">
-							<div class="panel">
-								<div class="panel-heading">
-									<h3 class="panel-title">Area Chart</h3>
-								</div>
-								<div class="panel-body">
-									<div id="demo-area-chart" class="ct-chart"></div>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="panel">
-								<div class="panel-heading">
-									<h3 class="panel-title">Multiple Chart</h3>
-								</div>
-								<div class="panel-body">
-									<div id="multiple-chart" class="ct-chart"></div>
-								</div>
-							</div>
-						</div>
-					</div>
+					<h3 class="page-title">Detail_page</h3>
+
+                    {% for val in cols %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="panel">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title">{{val[1]}}</h3>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="demo-chart{{val[0]}}" class="ct-chart"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="panel">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title">{{val[2]}}</h3>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="demo-chart{{val[0] + 1}}" class="ct-chart"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+					{% endfor %}
 				</div>
 			</div>
 			<!-- END MAIN CONTENT -->
@@ -183,96 +169,107 @@
 	<script src="/static/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
 	<script src="/static/vendor/chartist/js/chartist.min.js"></script>
 	<script src="/static/scripts/klorofil-common.js"></script>
+
+	<!-- ChartJavascript -->
+	<div id="line-chart"></div>
 	<script>
 	$(function() {
-		var options;
+		// 이상구간 rect
+		{% set rect_shape_lis = [] %}
 
-		var data = {
-			labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-			series: [
-				[200, 380, 350, 320, 410, 450, 570, 400, 555, 620, 750, 900],
-			]
-		};
+		{% for rect_lis in bar_lis %}
+			{% set i_s = rect_lis[1] %}
+			{% set i_e = rect_lis[2] %}
+			
+			{% set rect_shape = {
+				'type': "rect",
+				'x0': i_s,
+				'x1': i_e,
+				'y0': -5,
+				'y1': 5,
+				'line': {'color': "transparent"},
+				'fillcolor': "rgba(245, 227, 86, 0.4"}
+			%}
+			
+			{% set _ = rect_shape_lis.append(rect_shape) %}
+		{% endfor %}
 
-		// line chart
-		options = {
-			height: "300px",
-			showPoint: true,
-			axisX: {
-				showGrid: false
-			},
-			lineSmooth: false,
-		};
+		// 이상발생
+		{% set line_shape_lis = [] %}
 
-		new Chartist.Line('#demo-line-chart', data, options);
-
-		// bar chart
-		options = {
-			height: "300px",
-			axisX: {
-				showGrid: false
-			},
-		};
-
-		new Chartist.Bar('#demo-bar-chart', data, options);
-
-
-		// area chart
-		options = {
-			height: "270px",
-			showArea: true,
-			showLine: false,
-			showPoint: false,
-			axisX: {
-				showGrid: false
-			},
-			lineSmooth: false,
-		};
-
-		new Chartist.Line('#demo-area-chart', data, options);
-
-
-		// multiple chart
-		var data = {
-			labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-			series: [{
-				name: 'series-real',
-				data: [200, 380, 350, 320, 410, 450, 570, 400, 555, 620, 750, 900],
-			}, {
-				name: 'series-projection',
-				data: [240, 350, 360, 380, 400, 450, 480, 523, 555, 600, 700, 800],
-			}]
-		};
-
-		var options = {
-			fullWidth: true,
-			lineSmooth: false,
-			height: "270px",
-			low: 0,
-			high: 'auto',
-			series: {
-				'series-projection': {
-					showArea: true,
-					showPoint: false,
-					showLine: false
+		{% for rul in line_lis %}
+			
+			{% set line_shape = {
+				'type': 'line',
+				'x0': rul,
+				'x1': rul,
+				'y0': -5,
+				'y1': 5,
+				'line': {
+					'color': 'red',
+					'width': 2,
+					'dash': 'dash'}
+				}
+			%}
+			
+			{% set _ = line_shape_lis.append(line_shape) %}
+		{% endfor %}
+		
+		// Plotly
+		{% for i in range(1, 11) %}
+			{% set chart_data = dic['chart' ~ i] %}
+			
+			var items = {{ chart_data | tojson | safe }};
+			
+			// 데이터 가공
+			var labels = items.map(function(item) {
+				return item.time; // 날짜 데이터를 x축 레이블로 사용
+			});
+		
+			var values = items.map(function(item) {
+				return item.col; // 데이터 값
+			});
+		
+			var trace = {
+				x: labels,
+				y: values,
+				mode: 'lines+markers',
+				type: 'scatter',
+				name: 'Data Series',
+				line: {color: 'rgb(75, 192, 192)'}
+			};
+			
+			var data = [trace];
+		
+			var layout = {
+				xaxis: {
+					range: [{{xlim_s}}, {{xlim_e}}] // row_num
 				},
-			},
-			axisX: {
-				showGrid: false,
-
-			},
-			axisY: {
-				showGrid: false,
-				onlyInteger: true,
-				offset: 0,
-			},
-			chartPadding: {
-				left: 20,
-				right: 20
-			}
-		};
-
-		new Chartist.Line('#multiple-chart', data, options);
+				yaxis: {
+				},
+				height: 300,
+				weight: 400,
+				margin: {
+					l: 20, // 왼쪽 여백
+					r: 20, // 오른쪽 여백
+					t: 20, // 상단 여백
+					b: 40  // 하단 여백
+				},
+				shapes: [
+					{% for shape2 in line_shape_lis %}
+					  {{ shape2 | tojson | safe }},
+					{% endfor %}
+					,
+					{% for shape in rect_shape_lis %}
+					  {{ shape | tojson | safe }},
+					{% endfor %}
+				]
+			};
+			
+			// 각 그래프를 고유한 ID로 생성
+			var chartId = 'demo-chart' + {{ i }};
+			Plotly.newPlot(chartId, data, layout);
+		{% endfor %}
 
 	});
 	</script>
