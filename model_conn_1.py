@@ -15,7 +15,7 @@ warnings.filterwarnings(action='ignore', category=UserWarning, module='xgboost')
 current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 ## 길이 기준 설정
-avg_len = 500 이동평균 길이 설정 tkdlajs
+avg_len = 500
 
 def fetch_recent_logs(length=avg_len):
     """mysql db에서 최근 로그를 가져오는 함수"""
@@ -105,16 +105,16 @@ def predict_with_xgb_multi_model(data):
 
     """모델 예측 전 전처리 함수"""
     # 모델 불러오기
-    scaler = joblib.load('./model/abnormal_detect/스케일러 적용.pkl')========================================tkdlajs
+    scaler = joblib.load('./model/abnormal_detect/StandardScaler.pkl')
     
     # scaler 적용
     scaled_data = scaler.transform(transformed_data)
 
     """xgboost 모델을 사용해 예측하는 함수"""
     # 모델 불러오기
-    model_fl =  joblib.load('./model/abnormal_detect/모델 적용.pickle') ========================================tkdlajs
-    model_pb =  joblib.load('./model/abnormal_detect/모델 적용.pickle') ========================================tkdlajs
-    model_ph =  joblib.load('./model/abnormal_detect/모델 적용.pickle') ========================================tkdlajs
+    model_fl =  joblib.load('./model/abnormal_detect/RF_model(FL).pkl') 
+    model_pb =  joblib.load('./model/abnormal_detect/RF_model(PB).pkl') 
+    model_ph =  joblib.load('./model/abnormal_detect/RF_model(PH).pkl') 
 
     # 예측 실행
     predictions_fl = model_fl.predict(scaled_data)
@@ -166,11 +166,11 @@ def insert_single_data(connection, single_data):
         connection.rollback()
     return current_time
 
-def insert_single_multi_data(connection, data, current_time):
+def insert_single_rul_data(connection, data, current_time):
     try:
         with connection.cursor() as cursor:
             # 데이터 삽입 SQL.
-            sql = f'''INSERT INTO multi_1(rul_fl, rul_pb, rul_ph, input_time) 
+            sql = f'''INSERT INTO rul_1(rul_fl, rul_pb, rul_ph, input_time) 
                       VALUES (%s, %s, %s, "{current_time}")'''
             cursor.execute(sql, (data[0], data[1], data[2]))
         connection.commit()
