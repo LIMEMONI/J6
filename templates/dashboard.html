@@ -49,7 +49,22 @@
             color: #007bff; /* 마우스 호버 시 글자 색상 변경 */
         }
     </style>
-    
+    <style>
+        /* 알람 갯수를 표시하는 숫자 스타일 */
+        .alarm-count-badge {
+            position: absolute;
+            top: 18px;
+            right: 5px;
+            background-color: red;
+            color: white;
+            width: 20px; /* 숫자 너비 조정 */
+            height: 15px; /* 숫자 높이 조정 */
+            border-radius: 50%;
+            font-size: 10px; /* 숫자 크기 조정 */
+            text-align: center; /* 가운데 정렬을 위한 설정 */
+            line-height: 15px; /* 숫자 높이와 같도록 설정 */
+        }
+    </style>    
 </head>
 <body>
     <!-- WRAPPER -->
@@ -71,13 +86,15 @@
                             </a>
                         <!-- 알람 드롭다운 메뉴 -->
                         <ul class="dropdown-menu notifications">
-                            <li><a class="notification-item">12:10:45 **컬럼의 이상발생</a></li>
-                            <li><a class="notification-item">14:10:45 **컬럼의 이상발생</a></li>
-                            <li><a class="notification-item">18:10:45 **컬럼의 이상발생</a></li>
-                            <li><a class="notification-item">20:10:45 **컬럼의 이상발생</a></li>
-                            <li><a class="notification-item">22:10:45 **컬럼의 이상발생</a></li>
-                            <li><a  class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
+                            {% for item in bar_lis[:5] %}
+                                {% set val = item[0] %}
+                                {% set i_s = item[1] %}
+                                {% set i_e = item[2] %}
+                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">이상근접구간 : {{ val }}</a></li>
+                            {% endfor %}
+                            <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
                         </ul>
+                        <span class="alarm-count-badge">{{ bar_lis|length }}</span>
                         </li>
                         <!-- 파일 업로드 모달 대화 상자 -->
                         <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
@@ -166,38 +183,19 @@
     <!-- END WRAPPER -->
     <script>
         $(document).ready(function() {
-            // 페이지 로드 시 첫 번째 탭을 자동으로 활성화
-            $('#myTabs a[href="#dashboard1"]').tab('show');
+            // URL에서 'tab' 파라미터 값을 읽어옵니다.
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get("tab");
         
-            // 첫 번째 탭이 활성화되면 해당 탭에 대한 iframe을 나타내도록 설정
-            $('#iframe').attr('src', 'dashboard1.html');
+            if (tab) {
+                // 'tab' 파라미터에 해당하는 탭을 자동으로 활성화합니다.
+                $(`#myTabs a[href="#${tab}"]`).tab('show');
+        
+                // 해당 탭에 대한 iframe을 설정합니다.
+                $('#iframe').attr('src', `${tab}.html`);
+            }
         });
         
-    </script>
-        
-    <script>
-        //  탭 페이지 iframe 로드
-        $(document).ready(function() {
-            $('#myTabs a').click(function(e) {
-                e.preventDefault();
-                var tabId = $(this).attr('href').substring(1);
-                var iframeSrc = '';
-        
-                if (tabId === "dashboard1") {
-                    iframeSrc = 'dashboard1.html';
-                } else if (tabId === "dashboard2") {
-                    iframeSrc = 'dashboard2.html';
-                } else if (tabId === "dashboard3") {
-                    iframeSrc = 'dashboard3.html';
-                } else if (tabId === "dashboard4") {
-                    iframeSrc = 'dashboard4.html';
-                } else if (tabId === "alram") {
-                    iframeSrc = 'alram.html';
-                }
-                
-                $('#iframe').attr('src', iframeSrc);
-            });
-        });        
     </script>
     <script>
         function logout() {
@@ -215,29 +213,7 @@
                 console.error('로그아웃 오류:', error);
             });
         }
-    </script>    
-    <script>
-        $(document).ready(function() {
-            // "설비 추가" 버튼 클릭 시 이벤트 처리
-            $('#addFacilityTab').click(function() {
-                // 새로운 설비 추가 탭을 생성하고 iframe을 추가하는 로직
-                createNewFacilityTab();
-            });
-        
-            function createNewFacilityTab() {
-                // 새로운 설비 추가 탭을 생성
-                var newFacilityTab = $('<li class="facility-tab"><a data-toggle="tab" href="#new_facility_tab">새로운 설비 대시보드</a></li>');
-                $('#myTabs').append(newFacilityTab);
-        
-                // 새로운 설비 대시보드 iframe을 생성
-                var newFacilityIframe = $('<iframe id="new_facility_tab" width="100%" height="690" frameborder="0"></iframe>');
-                newFacilityIframe.attr('src', 'new_facility_dashboard.html'); // 대시보드 URL 설정
-                $('.main').append(newFacilityIframe);
-            }
-        });
-    </script>
-    
-    
+    </script> 
         
     <!-- 추가 JavaScript 및 스크립트 로드 -->
     <script src="/static/vendor/jquery/jquery.min.js"></script>
