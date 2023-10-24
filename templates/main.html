@@ -254,14 +254,12 @@
            
                                                - 예측 수리 시간: --
                                                <br>
-                                               고장상태 : {{too1_status}}
+                                               고장상태 : {{tool1_status}},{{tool1_status_index}},
                                                <br>
-                                               잔여시간 : {{too1_rul}}
+                                               잔여시간 : {{tool1_rul}},{{tool1_rul_index}}
                                                <br>
-                                               장비이름 : {{too1_name}}
+                                               장비이름 : {{tool1_name}}, lot : {{tool1_lot}}
                                                <br>
-                                               lot : {{too1_lot}}
-                                               
                                                - 가동시간: 
                                                {% if  tool1_status != 0 %}
                                                <span id="tool1_runtime"></span>

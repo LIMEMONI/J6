@@ -237,135 +237,113 @@ async def render_registration_page(request: Request):
 
 
 # 메인 페이지를 랜더링하는 엔드포인트
+
+
+# 데이터베이스에서 사용자 정보 가져오기
+def get_user_info(cursor, mem_id):
+    cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+    return cursor.fetchone()
+
+# 데이터베이스에서 Tool 데이터 가져오기
+def get_tool_data(cursor, tool_number):
+    cursor.execute(f"""
+        SELECT multi_{tool_number}.*, rul_{tool_number}.*, input_data_{tool_number}.*
+        FROM multi_{tool_number}
+        LEFT JOIN rul_{tool_number} ON multi_{tool_number}.input_time = rul_{tool_number}.input_time
+        LEFT JOIN input_data_{tool_number} ON multi_{tool_number}.input_time = input_data_{tool_number}.input_time
+        ORDER BY multi_{tool_number}.input_time DESC
+        LIMIT 1;
+    """)
+    return cursor.fetchone()
+
+# Tool 상태와 RUL 계산
+def compute_tool_status_and_rul(tool_data):
+    status = tool_data[1:4]
+    status_value, status_index = (1, status.index('1')) if '1' in status else (0, None)
+
+    rul_index = min(enumerate(tool_data[5:8]), key=lambda x: float(x[1]))[0]
+    rul_value = max(float(tool_data[5:8][rul_index]), 0)
+
+    return status_value, status_index, rul_value, rul_index
+
+
+def convert_to_year_month_day_hour(rul_value):
+    """RUL 값을 년.월.일.시 형식으로 변환"""
+    year = int(rul_value // (365 * 24))
+    month = int((rul_value % (365 * 24)) // (30 * 24)) 
+    day = int((rul_value % (30 * 24)) // 24)
+    hour = int(rul_value % 24)
+    return f"{year:02}년.{month:02}개월.{day:02}일.{hour:02}시"
+
+
+# 메인 페이지를 랜더링하는 엔드포인트
 @app.get("/main.html", response_class=HTMLResponse)
 async def render_main_page(request: Request):
-
     conn = create_connection()
     cursor = conn.cursor()
-    
+
     # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
     mem_name = request.session.get("mem_name", "Unknown")
 
     if mem_id:
-        # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
-        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
-        existing_user = cursor.fetchone()
-
+        existing_user = get_user_info(cursor, mem_id)
         if existing_user:
-            # 결과를 딕셔너리로 변환
             column_names = cursor.column_names
             user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
-
-            # mem_name 필드 추출
             mem_name = user_dict.get("mem_name", mem_name)
-            
-            # Tool 1 데이터 가져오기
-            cursor.execute("""
-                SELECT multi_1.*, rul_1.*, input_data_1.*
-                FROM multi_1
-                LEFT JOIN rul_1 ON multi_1.input_time = rul_1.input_time
-                LEFT JOIN input_data_1 ON multi_1.input_time = input_data_1.input_time
-                ORDER BY multi_1.input_time DESC
-                LIMIT 1;
-            """)
-            tool1_data_combined = cursor.fetchone()
 
-            # Tool 2 데이터 가져오기
-            cursor.execute("""
-                SELECT multi_2.*, rul_2.*, input_data_2.*
-                FROM multi_2
-                LEFT JOIN rul_2 ON multi_2.input_time = rul_2.input_time
-                LEFT JOIN input_data_2 ON multi_2.input_time = input_data_2.input_time
-                ORDER BY multi_2.input_time DESC
-                LIMIT 1;
-            """)
-            tool2_data_combined = cursor.fetchone()
+        # 각 Tool의 데이터를 가져온다.
+        tool_data_list = [get_tool_data(cursor, i) for i in range(1, 5)]
+        status_rul_list = [compute_tool_status_and_rul(tool_data) for tool_data in tool_data_list]
+        rul_converted_list = [convert_to_year_month_day_hour(rul[2]) for rul in status_rul_list]
+    
+        # 설비 타이머 시작시간 설정
+        start_times = {
+            "설비 1": "2022-10-23T23:11:11",
+            "설비 2": datetime(datetime.today().year, datetime.today().month, datetime.today().day, 0, 0, 0).isoformat(),
+            "설비 3": datetime(datetime.today().year, datetime.today().month, datetime.today().day, 0, 0, 0).isoformat(),
+            "설비 4": datetime(datetime.today().year, datetime.today().month, datetime.today().day, 0, 0, 0).isoformat(),
+        }
+        
+        # 설비별 처리중인 Lot 번호
+        cursor.execute("SELECT Lot FROM input_data LIMIT 4")
+        lots = [result[0] for result in cursor.fetchall()]
 
-            # Tool 3 데이터 가져오기
-            cursor.execute("""
-                SELECT multi_3.*, rul_3.*, input_data_3.*
-                FROM multi_3
-                LEFT JOIN rul_3 ON multi_3.input_time = rul_3.input_time
-                LEFT JOIN input_data_3 ON multi_3.input_time = input_data_3.input_time
-                ORDER BY multi_3.input_time DESC
-                LIMIT 1;
-            """)
-            tool3_data_combined = cursor.fetchone()
+        return templates.TemplateResponse("main.html", {
+            "request": request,
+            "tool1_data_combined": tool_data_list[0],
+            "tool2_data_combined": tool_data_list[1],
+            "tool3_data_combined": tool_data_list[2],
+            "tool4_data_combined": tool_data_list[3],
+            "tool1_status": status_rul_list[0][0],
+            "tool2_status": status_rul_list[1][0],
+            "tool3_status": status_rul_list[2][0],
+            "tool4_status": status_rul_list[3][0],
+            "tool1_status_index": status_rul_list[0][1],
+            "tool2_status_index": status_rul_list[1][1],
+            "tool3_status_index": status_rul_list[2][1],
+            "tool4_status_index": status_rul_list[3][1],
+            "tool1_rul": rul_converted_list[0],
+            "tool2_rul": rul_converted_list[1],
+            "tool3_rul": rul_converted_list[2],
+            "tool4_rul": rul_converted_list[3],
+            "tool1_rul_index": status_rul_list[0][3],
+            "tool2_rul_index": status_rul_list[1][3],
+            "tool3_rul_index": status_rul_list[2][3],
+            "tool4_rul_index": status_rul_list[3][3],
+            "tool1_name": tool_data_list[0][9],
+            "tool2_name": tool_data_list[1][9],
+            "tool3_name": tool_data_list[2][9],
+            "tool4_name": tool_data_list[3][9],
+            "tool1_lot": tool_data_list[0][11],
+            "tool2_lot": tool_data_list[1][11],
+            "tool3_lot": tool_data_list[2][11],
+            "tool4_lot": tool_data_list[3][11],
+            "start_times": start_times,
+            "Lots": lots
+        })
 
-            # Tool 4 데이터 가져오기
-            cursor.execute("""
-                SELECT multi_4.*, rul_4.*, input_data_4.*
-                FROM multi_4
-                LEFT JOIN rul_4 ON multi_4.input_time = rul_4.input_time
-                LEFT JOIN input_data_4 ON multi_4.input_time = input_data_4.input_time
-                ORDER BY multi_4.input_time DESC
-                LIMIT 1;
-            """)
-            tool4_data_combined = cursor.fetchone()
-
-            too1_status = tool1_data_combined[1:4]
-            too2_status = tool2_data_combined[1:4]
-            too3_status = tool3_data_combined[1:4]
-            too4_status = tool4_data_combined[1:4]
-
-            too1_rul = tool1_data_combined[5:8]
-            too2_rul = tool2_data_combined[5:8]
-            too3_rul = tool3_data_combined[5:8]
-            too4_rul = tool4_data_combined[5:8]
-
-            too1_name = tool4_data_combined[9]
-            too2_name = tool4_data_combined[9]
-            too3_name = tool4_data_combined[9]
-            too4_name = tool4_data_combined[9]
-
-            too1_lot = tool4_data_combined[11]
-            too2_lot = tool4_data_combined[11]
-            too3_lot = tool4_data_combined[11]
-            too4_lot = tool4_data_combined[11]
-
-   
-            # 설비 타이머 시작시간(처음으로 받는 데이터의 시간부터 측정)
-            start_times = {
-                "설비 1": "2022-10-23T23:11:11", # 임의 설정값으로부터 타이머 시작 
-                "설비 2": datetime(datetime.today().year, datetime.today().month, datetime.today().day, 0, 0, 0).isoformat(), # 현재 시각으로부터 타이머 시작
-                "설비 3": datetime(datetime.today().year, datetime.today().month, datetime.today().day, 0, 0, 0).isoformat(), # 설비 3의 시작시간
-                "설비 4": datetime(datetime.today().year, datetime.today().month, datetime.today().day, 0, 0, 0).isoformat(), # 설비 4의 시작시간
-            }
-            # 설비별 처리중인 Lot 번호
-            lot_query = "SELECT Lot FROM input_data LIMIT 4" # 일단 임의의 4개 Lot 번호를 가져옵니다.
-
-            # SQL 쿼리 실행
-            cursor.execute(lot_query)
-
-            # 결과 가져오기
-            Lots = []
-            result = cursor.fetchall()
-            for i in range(len(result)):
-                Lots.append(result[i][0])
-            return templates.TemplateResponse("main.html", {"request": request,
-                                                            "tool1_data_combined": tool1_data_combined,
-                                                            "tool2_data_combined": tool2_data_combined,
-                                                            "tool3_data_combined": tool3_data_combined,
-                                                            "tool4_data_combined": tool4_data_combined,
-                                                            "too1_status": too1_status,
-                                                            "too2_status": too2_status,
-                                                            "too3_status": too3_status,
-                                                            "too4_status": too4_status,
-                                                            "too1_rul": too1_rul,
-                                                            "too2_rul": too2_rul,
-                                                            "too3_rul": too3_rul,
-                                                            "too4_rul": too4_rul,
-                                                            "too1_name": too1_name,
-                                                            "too2_name": too2_name,
-                                                            "too3_name": too3_name,
-                                                            "too4_name": too4_name,
-                                                            "too1_lot": too1_lot,
-                                                            "too2_lot": too2_lot,
-                                                            "too3_lot": too3_lot,
-                                                            "too4_lot": too4_lot,
-                                                            "start_times": start_times,
-                                                            "Lots": Lots})
     else:
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
@@ -574,30 +552,6 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
                                                       'bar_lis':bar_lis,
                                                       'line_lis':line_lis,
                                                       "time": time, "xlim_s": xlim_s, "xlim_e": xlim_e})
-
-# -------------------------------------------------------------------------------------- rul test 추가 코드 ---------------------------------------------------------------------------------------------------
-
-# 생명주기 HTML 생성
-@app.get("/rul-times/", response_class=HTMLResponse)
-async def get_rul_times(request: Request):
-    try:
-        conn = create_connection()
-        cursor = conn.cursor(dictionary=True)
-
-        cursor.execute("SELECT * FROM rul_1 ORDER BY input_time DESC LIMIT 10;")
-        result_rul = cursor.fetchall()
-        # rul_times = [int(item['rul_fl']) for item in result_rul]
-        rul_times = result_rul
-
-        cursor.execute("SELECT * FROM multi_1 ORDER BY input_time DESC LIMIT 10;")
-        result_multi = cursor.fetchall()
-        # multi_preds = [int(item['multi_pred_fl']) for item in result_multi]
-        multi_preds = result_multi
-
-
-        return templates.TemplateResponse("rul-times.html", {"request": request, "rul_times": rul_times, "multi_preds":multi_preds})
-    except Exception as e:
-        return str(e)                                             
 
 # -------------------------------------------------------------------------------------- 여기까지 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
 
