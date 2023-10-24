@@ -71,12 +71,13 @@
                             </a>
                         <!-- 알람 드롭다운 메뉴 -->
                         <ul class="dropdown-menu notifications">
-                            <li><a class="notification-item">12:10:45 **컬럼의 이상발생</a></li>
-                            <li><a class="notification-item">14:10:45 **컬럼의 이상발생</a></li>
-                            <li><a class="notification-item">18:10:45 **컬럼의 이상발생</a></li>
-                            <li><a class="notification-item">20:10:45 **컬럼의 이상발생</a></li>
-                            <li><a class="notification-item">22:10:45 **컬럼의 이상발생</a></li>
-                            <li><a  class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
+                            {% for item in bar_lis[:5] %}
+                                {% set val = item[0] %}
+                                {% set i_s = item[1] %}
+                                {% set i_e = item[2] %}
+                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">이상근접구간 : {{ val }}</a></li>
+                            {% endfor %}
+                            <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
                         </ul>
                         </li>
                         <!-- 파일 업로드 모달 대화 상자 -->

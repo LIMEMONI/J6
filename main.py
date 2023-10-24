@@ -220,6 +220,52 @@ async def process_registration(request: Request, user: User):
     # / 페이지로 리디렉트
     return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
 
+# 데이터베이스에서 필요한 데이터를 쿼리하여 bar_lis를 생성
+def fetch_bar_lis_from_database():
+    cursor.execute("""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
+                        ETCHBEAMCURRENT,IONGAUGEPRESSURE,
+                        ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
+                        ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
+                        FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
+                    FROM j6database.input_data;""")
+    existing_user = cursor.fetchall()
+    
+    colnames = cursor.description  # 변수정보
+    cols = [[i, colnames[i][0], colnames[i+1][0]] for i in range(1, len(colnames), 2)]  # 변수명
+    
+    alram_dic = {}
+    for i in range(1, len(existing_user[0])):
+        alram_dic.update({'alram{}'.format(i): [{'time': val[0], 'col': val[i]} for val in existing_user]})  # line_alram
+    
+    try:
+        cursor.execute("""SELECT row_index
+                        FROM (SELECT rul_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                            FROM j6database.rul_1) AS temp
+                        WHERE rul_time = 0;""")
+        existing_user = cursor.fetchall()
+    
+        line_lis = [val[0] for val in existing_user]
+    
+        cursor.execute("""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
+                        FROM (SELECT multi_pred, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                            FROM j6database.multi_1) AS temp
+                        WHERE multi_pred = 1;""")
+        existing_user = cursor.fetchall()
+    
+        bar_lis = [[existing_user[0][1], existing_user[0][2]]]
+        cnt = 0
+        for i in range(1, len(existing_user)):
+            if existing_user[i][-1] != 1:
+                bar_lis[len(bar_lis) - 1].append(existing_user[i - 1][2])
+                bar_lis.append([existing_user[i][1], existing_user[i][2]])
+        bar_lis[-1].append(existing_user[-1][2])
+    
+    except:
+        line_lis = None
+        bar_lis = [[None, 0, 0]]
+    
+    return bar_lis
+
 # -------------------------------------------------------------------------------------- 여기까지 기능 처리 코드 ---------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------- 여기부터 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
 
@@ -239,6 +285,9 @@ async def render_registration_page(request: Request):
 # 메인 페이지를 랜더링하는 엔드포인트
 @app.get("/main.html", response_class=HTMLResponse)
 async def render_main_page(request: Request):
+    
+    # 데이터베이스에서 bar_lis 데이터를 가져옴
+    bar_lis = fetch_bar_lis_from_database()
     
     # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
@@ -286,7 +335,8 @@ async def render_main_page(request: Request):
                                                             "tool3_status": tool3_status,
                                                             "tool4_status": tool4_status,
                                                             "start_times": start_times,
-                                                            "Lots": Lots})
+                                                            "Lots": Lots,
+                                                            "bar_lis": bar_lis})
     else:
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
@@ -295,6 +345,10 @@ async def render_main_page(request: Request):
 
 @app.get("/dashboard.html", response_class=HTMLResponse)
 async def render_dashboard_page(request: Request):
+   
+    # 데이터베이스에서 bar_lis 데이터를 가져옴
+    bar_lis = fetch_bar_lis_from_database()
+    
     # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
     mem_name = request.session.get("mem_name", "Unknown")
@@ -315,7 +369,7 @@ async def render_dashboard_page(request: Request):
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
 
-    return templates.TemplateResponse("dashboard.html", {"request": request, "mem_name": mem_name})
+    return templates.TemplateResponse("dashboard.html", {"request": request, "mem_name": mem_name, "bar_lis": bar_lis})
 
 # 대쉬보드 1탭
 @app.get("/dashboard1.html", response_class=HTMLResponse)
@@ -495,6 +549,8 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
                                                       'bar_lis':bar_lis,
                                                       'line_lis':line_lis,
                                                       "time": time, "xlim_s": xlim_s, "xlim_e": xlim_e})
+    
+
 
 # -------------------------------------------------------------------------------------- 여기까지 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
 
