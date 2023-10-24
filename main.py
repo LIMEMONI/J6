@@ -44,7 +44,7 @@ app.add_middleware(SessionMiddleware, secret_key="your_secret_key")  # 비밀 �
 logger = logging.getLogger(__name__)
 
 # SQLAlchemy 데이터베이스 연결 설정
-DATABASE_URL = "mysql+mysqlconnector://root:tmdghks7627@127.0.0.1/ion"
+DATABASE_URL = "mysql+mysqlconnector://oneday:1234@limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com/j6database"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -63,10 +63,10 @@ class Member(Base):
 
 # MySQL 데이터베이스 연결 설정
 db = mysql.connector.connect(
-    host="127.0.0.1",
-    user="root",
-    password="tmdghks7627",
-    database="ion",
+    host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
+    user="oneday",
+    password="1234",
+    database="j6database",
 )
 
 # 커서 생성
@@ -213,10 +213,10 @@ async def render_test_page(request: Request):
 def create_connection():
     try:
         connection = mysql.connector.connect(
-            host="127.0.0.1",
-            user="root",
-            password="tmdghks7627",
-            database="ion",
+            host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
+            user="oneday",
+            password="1234",
+            database="j6database",
         )
         return connection
     except Error as e:
