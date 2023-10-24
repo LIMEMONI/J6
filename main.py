@@ -471,30 +471,6 @@ async def render_dashboard4_page(request: Request):
 
     return templates.TemplateResponse("dashboard4.html", {"request": request, "mem_name": mem_name})
 
-# @app.get("/alram.html", response_class=HTMLResponse)
-# async def render_alram_page(request: Request):
-#     # 세션에서 사용자 아이디 및 이름 가져오기
-#     mem_id = request.session.get("mem_id", None)
-#     mem_name = request.session.get("mem_name", "Unknown")
-
-#     if mem_id:
-#         # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
-#         cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
-#         existing_user = cursor.fetchone()
-
-#         if existing_user:
-#             # 결과를 딕셔너리로 변환
-#             column_names = cursor.column_names
-#             user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
-
-#             # mem_name 필드 추출
-#             mem_name = user_dict.get("mem_name", mem_name)
-#     else:
-#         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리디렉트
-#         return RedirectResponse(url="/")
-
-#     return templates.TemplateResponse("alram.html", {"request": request, "mem_name": mem_name})
-
 @app.get("/alram.html")
 async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim_e: int = 964):
     ### alram_draw

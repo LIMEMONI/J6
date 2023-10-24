@@ -49,7 +49,22 @@
             color: #007bff; /* 마우스 호버 시 글자 색상 변경 */
         }
     </style>
-    
+    <style>
+        /* 알람 갯수를 표시하는 숫자 스타일 */
+        .alarm-count-badge {
+            position: absolute;
+            top: 18px;
+            right: 5px;
+            background-color: red;
+            color: white;
+            width: 20px; /* 숫자 너비 조정 */
+            height: 15px; /* 숫자 높이 조정 */
+            border-radius: 50%;
+            font-size: 10px; /* 숫자 크기 조정 */
+            text-align: center; /* 가운데 정렬을 위한 설정 */
+            line-height: 15px; /* 숫자 높이와 같도록 설정 */
+        }
+    </style>    
 </head>
 <body>
     <!-- WRAPPER -->
@@ -79,6 +94,7 @@
                             {% endfor %}
                             <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
                         </ul>
+                        <span class="alarm-count-badge">{{ bar_lis|length }}</span>
                         </li>
                         <!-- 파일 업로드 모달 대화 상자 -->
                         <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
