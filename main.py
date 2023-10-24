@@ -304,6 +304,26 @@ async def render_main_page(request: Request):
             """)
             tool4_data_combined = cursor.fetchone()
 
+            too1_status = tool1_data_combined[1:4]
+            too2_status = tool2_data_combined[1:4]
+            too3_status = tool3_data_combined[1:4]
+            too4_status = tool4_data_combined[1:4]
+
+            too1_rul = tool1_data_combined[5:8]
+            too2_rul = tool2_data_combined[5:8]
+            too3_rul = tool3_data_combined[5:8]
+            too4_rul = tool4_data_combined[5:8]
+
+            too1_name = tool4_data_combined[9]
+            too2_name = tool4_data_combined[9]
+            too3_name = tool4_data_combined[9]
+            too4_name = tool4_data_combined[9]
+
+            too1_lot = tool4_data_combined[11]
+            too2_lot = tool4_data_combined[11]
+            too3_lot = tool4_data_combined[11]
+            too4_lot = tool4_data_combined[11]
+
    
             # 설비 타이머 시작시간(처음으로 받는 데이터의 시간부터 측정)
             start_times = {
@@ -328,6 +348,22 @@ async def render_main_page(request: Request):
                                                             "tool2_data_combined": tool2_data_combined,
                                                             "tool3_data_combined": tool3_data_combined,
                                                             "tool4_data_combined": tool4_data_combined,
+                                                            "too1_status": too1_status,
+                                                            "too2_status": too2_status,
+                                                            "too3_status": too3_status,
+                                                            "too4_status": too4_status,
+                                                            "too1_rul": too1_rul,
+                                                            "too2_rul": too2_rul,
+                                                            "too3_rul": too3_rul,
+                                                            "too4_rul": too4_rul,
+                                                            "too1_name": too1_name,
+                                                            "too2_name": too2_name,
+                                                            "too3_name": too3_name,
+                                                            "too4_name": too4_name,
+                                                            "too1_lot": too1_lot,
+                                                            "too2_lot": too2_lot,
+                                                            "too3_lot": too3_lot,
+                                                            "too4_lot": too4_lot,
                                                             "start_times": start_times,
                                                             "Lots": Lots})
     else:
