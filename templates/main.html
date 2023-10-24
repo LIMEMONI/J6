@@ -220,13 +220,13 @@
               <div class="row">
                  <div class="col-md-6">
                     <!-- BASIC TABLE -->
-               
+               <!-- 예시 코드: main.html에서 설비 클릭 시 해당 설비 정보를 dashboard.html로 전달 -->
                                <div class="panel" id="Ion_Miller_M01" 
                                style = "{% if tool1_status == 1 %} background-color: #93db93; 
                                {% elif tool1_status == 2 %}background-color: #fcee67;
                                {% elif tool1_status == 0 %}background-color: #f26464
                                {% endif %}">
-                                   <a href="/" style="color: #392f31;"> <!-- M01설비의 Dashboard 페이지로 이동 -->
+                                   <a href="dashboard.html?tab=dashboard1" style="color: #392f31;"> <!-- M01설비의 Dashboard 페이지로 이동 -->
                                        <div class="panel-heading">
                                            <span class="normal-status-topRight">&nbsp</span> <!--상태표시 원-->
                                            <h3 class="panel-title"><b>Ion_Miller_M01</b></h3>
@@ -267,7 +267,7 @@
                            {% elif tool2_status == 2 %}background-color: #fcee67;
                            {% elif tool2_status == 0 %}background-color: #f26464
                            {% endif %}">
-                               <a href="/" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
+                               <a href="dashboard.html?tab=dashboard2" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
                        <div class="panel-heading">
                                    <span class="normal-status-topRight">&nbsp</span> <!--상태표시 원-->
                           <h3 class="panel-title"><b>Ion_Miller_M02</b></h3> <!--설비 이름-->
@@ -319,7 +319,7 @@
                            {% elif tool3_status == 2 %}background-color: #fcee67;
                            {% elif tool3_status == 0 %}background-color: #f26464
                            {% endif %}">
-                           <a href="/" style="color: #392f31;"> <!-- M03설비의 Dashboard 페이지로 이동 -->
+                           <a href="dashboard.html?tab=dashboard3" style="color: #392f31;"> <!-- M03설비의 Dashboard 페이지로 이동 -->
                        <div class="panel-heading">
                                    <span class="normal-status-topRight">&nbsp</span> <!--상태표시 원-->
                           <h3 class="panel-title"><b>Ion_Miller_M03</b></h3>
@@ -360,7 +360,7 @@
                            {% elif tool4_status == 2 %}background-color: #fcee67;
                            {% elif tool4_status == 0 %}background-color: #f26464
                            {% endif %}">
-                           <a href="/"> <!-- M04설비의 Dashboard 페이지로 이동 -->
+                           <a href="dashboard.html?tab=dashboard4"> <!-- M04설비의 Dashboard 페이지로 이동 -->
                        <div class="panel-heading">
                                    <span class="abnormal-status-topRight">&nbsp</span> <!--상태표시 원-->
                           <h3 class="panel-title"><b>Ion_Miller_M04</b></h3>
