@@ -239,6 +239,9 @@ async def render_registration_page(request: Request):
 # 메인 페이지를 랜더링하는 엔드포인트
 @app.get("/main.html", response_class=HTMLResponse)
 async def render_main_page(request: Request):
+
+    conn = create_connection()
+    cursor = conn.cursor()
     
     # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
@@ -257,11 +260,51 @@ async def render_main_page(request: Request):
             # mem_name 필드 추출
             mem_name = user_dict.get("mem_name", mem_name)
             
-            # 설비 수명 상태(0: 만료 / 1: 정상 / 2: 주의)
-            tool1_status = 1
-            tool2_status = 1
-            tool3_status = 2
-            tool4_status = 0
+            # Tool 1 데이터 가져오기
+            cursor.execute("""
+                SELECT multi_1.*, rul_1.*, input_data_1.*
+                FROM multi_1
+                LEFT JOIN rul_1 ON multi_1.input_time = rul_1.input_time
+                LEFT JOIN input_data_1 ON multi_1.input_time = input_data_1.input_time
+                ORDER BY multi_1.input_time DESC
+                LIMIT 1;
+            """)
+            tool1_data_combined = cursor.fetchone()
+
+            # Tool 2 데이터 가져오기
+            cursor.execute("""
+                SELECT multi_2.*, rul_2.*, input_data_2.*
+                FROM multi_2
+                LEFT JOIN rul_2 ON multi_2.input_time = rul_2.input_time
+                LEFT JOIN input_data_2 ON multi_2.input_time = input_data_2.input_time
+                ORDER BY multi_2.input_time DESC
+                LIMIT 1;
+            """)
+            tool2_data_combined = cursor.fetchone()
+
+            # Tool 3 데이터 가져오기
+            cursor.execute("""
+                SELECT multi_3.*, rul_3.*, input_data_3.*
+                FROM multi_3
+                LEFT JOIN rul_3 ON multi_3.input_time = rul_3.input_time
+                LEFT JOIN input_data_3 ON multi_3.input_time = input_data_3.input_time
+                ORDER BY multi_3.input_time DESC
+                LIMIT 1;
+            """)
+            tool3_data_combined = cursor.fetchone()
+
+            # Tool 4 데이터 가져오기
+            cursor.execute("""
+                SELECT multi_4.*, rul_4.*, input_data_4.*
+                FROM multi_4
+                LEFT JOIN rul_4 ON multi_4.input_time = rul_4.input_time
+                LEFT JOIN input_data_4 ON multi_4.input_time = input_data_4.input_time
+                ORDER BY multi_4.input_time DESC
+                LIMIT 1;
+            """)
+            tool4_data_combined = cursor.fetchone()
+
+   
             # 설비 타이머 시작시간(처음으로 받는 데이터의 시간부터 측정)
             start_times = {
                 "설비 1": "2022-10-23T23:11:11", # 임의 설정값으로부터 타이머 시작 
@@ -281,10 +324,10 @@ async def render_main_page(request: Request):
             for i in range(len(result)):
                 Lots.append(result[i][0])
             return templates.TemplateResponse("main.html", {"request": request,
-                                                            "tool1_status": tool1_status,
-                                                            "tool2_status": tool2_status,
-                                                            "tool3_status": tool3_status,
-                                                            "tool4_status": tool4_status,
+                                                            "tool1_data_combined": tool1_data_combined,
+                                                            "tool2_data_combined": tool2_data_combined,
+                                                            "tool3_data_combined": tool3_data_combined,
+                                                            "tool4_data_combined": tool4_data_combined,
                                                             "start_times": start_times,
                                                             "Lots": Lots})
     else:
