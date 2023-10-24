@@ -496,6 +496,30 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
                                                       'line_lis':line_lis,
                                                       "time": time, "xlim_s": xlim_s, "xlim_e": xlim_e})
 
+# -------------------------------------------------------------------------------------- rul test 추가 코드 ---------------------------------------------------------------------------------------------------
+
+# 생명주기 HTML 생성
+@app.get("/rul-times/", response_class=HTMLResponse)
+async def get_rul_times(request: Request):
+    try:
+        conn = create_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT * FROM rul_1 ORDER BY input_time DESC LIMIT 10;")
+        result_rul = cursor.fetchall()
+        # rul_times = [int(item['rul_fl']) for item in result_rul]
+        rul_times = result_rul
+
+        cursor.execute("SELECT * FROM multi_1 ORDER BY input_time DESC LIMIT 10;")
+        result_multi = cursor.fetchall()
+        # multi_preds = [int(item['multi_pred_fl']) for item in result_multi]
+        multi_preds = result_multi
+
+
+        return templates.TemplateResponse("rul-times.html", {"request": request, "rul_times": rul_times, "multi_preds":multi_preds})
+    except Exception as e:
+        return str(e)                                             
+
 # -------------------------------------------------------------------------------------- 여기까지 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
 
 # FastAPI 애플리케이션 실행
