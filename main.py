@@ -38,9 +38,9 @@ app = FastAPI()
 app.add_middleware(
     SessionMiddleware,
     secret_key="your_secret_key",  # 보안을 위해 비밀 키 설정
-    same_site="none",
-    max_age=3600,
-    https_only=True,
+    # same_site="none",
+    # max_age=3600,
+    # https_only=True,
 )
 
 logger = logging.getLogger(__name__)
