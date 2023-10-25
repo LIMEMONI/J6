@@ -21,25 +21,96 @@
     <link rel="stylesheet" href="static/css/demo.css">
     <!-- GOOGLE FONTS -->
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
-    <!-- ICONS -->
-    <link rel="apple-touch-icon" sizes="76x76" href="static/img/apple-icon.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="static/img/favicon.png">
-    
+   <!-- ICONS -->
+   <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
+   <link rel="icon" type="image/png" sizes="96x96" href="assets/img/favicon.png">
+    <link rel="stylesheet" type="text/css" href="popup.css">
+    <script>
+        function openSlideUpPopup() {
+            var width = window.innerWidth;
+            var height = window.innerHeight;
+            var popupWindow = window.open("/assets/login-detail/", "LoginDetailPopup", "width=" + width + ", height=" + height);
+            if (popupWindow) {
+                popupWindow.moveTo(0, height); // Start the popup window below the screen
+                popupWindow.resizeTo(width, height);
+                animateSlideUp(popupWindow);
+            }
+        }
+
+        function animateSlideUp(popupWindow) {
+            var duration = 500; // Animation duration in milliseconds
+            var start = popupWindow.screenY;
+            var end = 0; // Ending position at the top of the screen
+            var startTime = performance.now();
+
+            function step(currentTime) {
+                var elapsedTime = currentTime - startTime;
+                if (elapsedTime < duration) {
+                    var newPosition = start + (end - start) * (elapsedTime / duration);
+                    popupWindow.moveTo(0, newPosition);
+                    requestAnimationFrame(step);
+                } else {
+                    popupWindow.moveTo(0, end); // Ensure it reaches the final position
+                }
+            }
+
+            requestAnimationFrame(step);
+        }
+    </script>
+   <style>
+      body {
+         overflow: hidden;
+      }
+      
+      .animated-popup {
+         display: none;
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         background-color: rgba(0, 0, 0, 0.7);
+         transition: opacity 0.5s;
+      }
+      
+      .popup-content {
+         position: absolute;
+         top: 50%;
+         left: 50%;
+         transform: translate(-50%, -50%);
+         background-color: white;
+         padding: 20px;
+         border-radius: 5px;
+         box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+         opacity: 0;
+         transition: opacity 0.5s, transform 0.5s;
+      }
+      
+      .animated-popup.show {
+         display: block;
+      }
+      
+      .animated-popup.show .popup-content {
+         opacity: 1;
+         transform: translate(-50%, -50%);
+      }
+   </style>
 </head>
+
 <body>
     <!-- WRAPPER -->
-    <div id="wrapper">
+    <div id="wrapper" style="background-image: url(static/img/로그인페이지_확장.png)" >
         <div class="vertical-align-wrap">
             <div class="vertical-align-middle">
-                <div class="content">
-                    <div style="text-align: center;">
+               <div class="auth-box" style="width: 350px;">
+                  <div class="left" style="text-align: center;">
+                     <div class="content">
                         <div class="header">
-                            <div class="logo text-center">
-                                <img src="static/img/j6.png" alt="J6 Logo" style="border: none; width: 200px; height: auto;">
-                            </div>
-                            <p class="lead" style="font-family: 'Arial', sans-serif; font-size: 24px; font-weight: bold; color: #333;">J6 이상탐지 대시보드</p>
+                           <div class="logo text-center">
+                              <img src="static/img/logo2.png" alt="Klorofil Logo" style="width:80%; height:80%; margin-right: 5%;">
+                              <!-- <p class="lead">FALP</p> -->
+                           </div>
                         </div>
-                    </div>
                     <div style="text-align: center;">
                         <!-- form 요소에 id 속성 추가 -->
                         <form class="form-auth-small" id="login-form" action="/login" method="post">
@@ -77,42 +148,40 @@
             </div>
         </div>
     </div>
-    <!-- END WRAPPER -->
+   <!-- END WRAPPER -->
+   <script>
+    // 로그인 버튼 클릭 시 로그인 요청 (POST 요청으로)
+    document.getElementById("login-button").addEventListener("click", function() {
+        const mem_id = document.getElementById("signin-email").value;
+        const mem_pass = document.getElementById("signin-password").value;
 
-    <script>
-        // 로그인 버튼 클릭 시 로그인 요청 (POST 요청으로)
-        document.getElementById("login-button").addEventListener("click", function() {
-            const mem_id = document.getElementById("signin-email").value;
-            const mem_pass = document.getElementById("signin-password").value;
-
-            // 서버로 로그인 요청을 보냅니다. (POST 요청)
-            fetch("/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({ mem_id: mem_id, mem_pass: mem_pass }),
-            })
-            .then(response => {
-                // 서버에서 리디렉션한 경우, 새로운 페이지로 이동
-                if (response.redirected) {
-                    window.location.href = response.url; // 로그인 성공 후 대시보드 페이지로 이동
-                } else {
-                    // 리디렉션하지 않은 경우, 오류 메시지를 표시
-                    return response.text();
-                }
-            })
-            //.then(data => {
-            //    if (data) {
-            //        alert(data);
-            //    }
-            //})
-            .catch(error => {
-                console.error("Error:", error);
-            });
+        // 서버로 로그인 요청을 보냅니다. (POST 요청)
+        fetch("/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({ mem_id: mem_id, mem_pass: mem_pass }),
+        })
+        .then(response => {
+            // 서버에서 리디렉션한 경우, 새로운 페이지로 이동
+            if (response.redirected) {
+                window.location.href = response.url; // 로그인 성공 후 대시보드 페이지로 이동
+            } else {
+                // 리디렉션하지 않은 경우, 오류 메시지를 표시
+                return response.text();
+            }
+        })
+        //.then(data => {
+        //    if (data) {
+        //        alert(data);
+        //    }
+        //})
+        .catch(error => {
+            console.error("Error:", error);
         });
+    });
     </script>
-    
-
 </body>
+
 </html>
