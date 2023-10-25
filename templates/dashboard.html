@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>J6 Dashboard</title>
+    <title>DashboardㅣFALP Service </title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -19,13 +19,20 @@
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
     <!-- ICONS -->
     <link rel="apple-touch-icon" sizes="76x76" href="/static/img/j6.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/static/img/j6.png">
+    <link rel="icon" type="image/png" sizes="76x76" href="static/img/top-icon.png">
     <!-- D3.js 라이브러리 추가 -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/static/js/slimscroll.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/02c33e7f68.js" crossorigin="anonymous"></script>
+    <script>
+        function changeTab(tabName) {
+            const url = `dashboard.html?tab=${tabName}`;
+            window.location.href = url;
+        }
+    </script>
     <style>
         /* Google Fonts에서 가져온 Roboto 폰트를 적용 */
         #sidebar-nav {
@@ -71,15 +78,18 @@
     <div id="wrapper">
         <!-- NAVBAR -->
         <nav class="navbar navbar-default navbar-fixed-top">
-            <div class="container-fluid">
-                <!-- 로고와 데이터 불러오기 버튼 -->
-                <div class="navbar-header">
-                    <a class="navbar-brand"><img src="static/img/j6-v2.png" alt="J6 Logo" class="img-responsive logo"></a>
-                </div>
+			<div class="brand">
+				<a href="main.html">
+                    <img src="static/img/logo2.png" alt="Logo" class="img-responsive-logo" style="width: 120px;">
+                </a>
+			</div>
+			<div class="container-fluid">
+				<div class="navbar-btn">
+					<button type="button" class="btn-toggle-fullwidth"><i class="lnr lnr-arrow-left-circle"></i></button>
+				</div>
                 <!-- 오른쪽 메뉴 아이콘들 -->                
                 <div id="navbar-menu">
                     <ul class="nav navbar-nav navbar-right">
-                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#uploadModal" style="margin-top: 20px;">데이터 불러오기</button>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
                                 <i class="lnr lnr-alarm"></i>
@@ -126,7 +136,7 @@
                         <!-- 나머지 메뉴 아이콘들 -->
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <img src="static/img/user1.png" class="img-square" alt="Picture">
+                                <img src="static/img/user.png" class="img-square" alt="Picture">
                                 <span>{{ mem_name }}</span>
                                 
                             </a>
@@ -139,21 +149,21 @@
         <!-- END NAVBAR -->
 
         <!-- LEFT SIDEBAR -->
-        <div id="sidebar-nav" class="sidebar" style="text-align: center;">
-            <div class="sidebar-scroll" style="overflow: hidden; width: auto; height: 95%;">
+        <div id="sidebar-nav" class="sidebar">
+            <div class="sidebar-scroll">
                 <nav>
                     <!-- 각 탭 버튼 -->
                     <ul class="nav" id="myTabs">
-                        <li><a data-toggle="tab" href="#dashboard1"><i class="fa fa-line-chart"></i> Dashboard 설비1</a></li>
-                        <li><a data-toggle="tab" href="#dashboard2"><i class="fa fa-line-chart"></i> Dashboard 설비2</a></li>
-                        <li><a data-toggle="tab" href="#dashboard3"><i class="fa fa-line-chart"></i> Dashboard 설비3</a></li>
-                        <li><a data-toggle="tab" href="#dashboard4"><i class="fa fa-line-chart"></i> Dashboard 설비4</a></li>
+                        <li><a data-toggle="tab" href="#dashboard1" onclick="changeTab('dashboard1')"><i class="fa-solid fa-desktop fa-fade"></i><span>M01</span></a></li>
+                        <li><a data-toggle="tab" href="#dashboard2" onclick="changeTab('dashboard2')"><i class="fa-solid fa-desktop fa-fade"></i><span>M02</span></a></li>
+                        <li><a data-toggle="tab" href="#dashboard3" onclick="changeTab('dashboard3')"><i class="fa-solid fa-desktop fa-fade"></i><span>M03</span></a></li>
+                        <li><a data-toggle="tab" href="#dashboard4" onclick="changeTab('dashboard4')"><i class="fa-solid fa-desktop fa-fade"></i><span>M04</span></a></li>
                         
                     </ul>
                     <!-- "메인으로 이동" 버튼 추가 -->
                     <div class="text-center" style="position: absolute; bottom: 20px; width: 100%;">
                         <li><a href="alram.html"><i class="lnr lnr-alarm"></i> 이상탐지 알람 목록</a></li>
-                        <a href="main.html"><i class="lnr lnr-home"></i> Main</a>
+                        <a href="main.html"><i class="lnr lnr-home"></i> Main </a>
                     </div>
                 </nav>
             </div>

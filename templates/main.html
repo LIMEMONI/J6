@@ -26,6 +26,7 @@
     <script src="/static/js/slimscroll.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/02c33e7f68.js" crossorigin="anonymous"></script>
     
     <style>
         /* Google Fonts에서 가져온 Roboto 폰트를 적용 */
@@ -165,7 +166,6 @@
                 <!-- 오른쪽 메뉴 아이콘들 -->                
                 <div id="navbar-menu">
                     <ul class="nav navbar-nav navbar-right">
-                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#uploadModal" style="margin-top: 20px;">데이터 불러오기</button>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
                                 <i class="lnr lnr-alarm"></i>
@@ -212,11 +212,12 @@
 
                         <!-- 나머지 메뉴 아이콘들 -->
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <img src="static/img/user1.png" class="img-square" alt="Picture">
-                                <span>관리자</span>
-                                
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <img src="static/img/user.png" class="img-circle" alt="Avatar">
+                                <!--여기서 계정의 이름이 연결되어야 함-->
+                                <span>User</span> <i class="icon-submenu lnr lnr-chevron-down"></i>
                             </a>
+
                             <li><a href="javascript:void(0);" onclick="logout()"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
                         </li>
                     </ul>
@@ -224,6 +225,7 @@
             </div>
         </nav>
         <!-- END NAVBAR -->
+        
         <!-- MAIN CONTENT -->
         <div class="main-content">
            <div class="container-fluid">  
