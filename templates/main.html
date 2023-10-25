@@ -85,6 +85,16 @@
             document.getElementById(elementId).textContent = `${hours}시간 ${minutes}분 ${seconds}초`;
         }, 1000);
     }
+    // 페이지가 로드된 후 함수 실행 
+    // 4초마다 새로운 데이터를 db에서 가져오는 함수
+    window.onload = function() {
+        // 4초마다 함수 실행
+        setInterval(async function(){
+            let response = await fetch("/main.html");
+            let text = await response.text();
+            document.body.innerHTML = text; // 화면 갱신
+        }, 4000); // 4초 간격
+    };
 
     // 시작 시간과 element ID를 전달하여 가동시간 증가 카운트 시작
     startCountingRuntime("{{ start_times['설비 1'] }}", "tool1_runtime");
@@ -261,7 +271,12 @@
            
                                                - 예측 수리 시간: --
                                                <br>
-           
+                                               고장상태 : {{tool1_status}},{{tool1_status_index}},
+                                               <br>
+                                               잔여시간 : {{tool1_rul}},{{tool1_rul_index}}
+                                               <br>
+                                               장비이름 : {{tool1_name}}, lot : {{tool1_lot}}
+                                               <br>
                                                - 가동시간: 
                                                {% if  tool1_status != 0 %}
                                                <span id="tool1_runtime"></span>
@@ -302,6 +317,7 @@
    
                                        - 예측 수리 시간: --
                                        <br>
+                                       {{tool1_data_combined}}
    
                                        - 가동시간: 
                                        {% if  tool2_status != 0 %}
