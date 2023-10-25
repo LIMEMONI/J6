@@ -28,7 +28,7 @@
         function openSlideUpPopup() {
             var width = window.innerWidth;
             var height = window.innerHeight;
-            var popupWindow = window.open("/assets/login-detail/", "LoginDetailPopup", "width=" + width + ", height=" + height);
+            var popupWindow = window.open("/static/login-detail/", "LoginDetailPopup", "width=" + width + ", height=" + height);
             if (popupWindow) {
                 popupWindow.moveTo(0, height); // Start the popup window below the screen
                 popupWindow.resizeTo(width, height);
@@ -161,7 +161,7 @@
 
         // 서버로 로그인 요청을 보냅니다. (POST 요청)
         fetch("/login", {
-            method: "POST",
+            method: "POSY",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
             },

@@ -89,7 +89,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # HTML 템플릿 설정
 templates = Jinja2Templates(directory="templates")
 
-# 로그인 처리
+# 로그인 처리 (POST 요청)
 @app.post("/login", response_class=HTMLResponse)
 async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form(None)):
     if mem_id is None or mem_pass is None:
@@ -103,27 +103,25 @@ async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form
     cursor = connection.cursor()
 
     try:
-        # 데이터베이스에서 아이디, 해싱된 비밀번호, 그리고 mem_grade 가져오기
-        cursor.execute("SELECT mem_name, mem_pass, mem_grade FROM member WHERE mem_id = %s", (mem_id,))
+        # 데이터베이스에서 아이디와 해싱된 비밀번호 가져오기
+        cursor.execute("SELECT mem_name, mem_pass FROM member WHERE mem_id = %s", (mem_id,))
         user_data = cursor.fetchone()
 
         if user_data:
-            # mem_grade 확인
-            mem_name, mem_pass_db, mem_grade = user_data
+            # 데이터베이스에서 가져온 해시된 비밀번호
+            mem_name, mem_pass_db = user_data
+
+            # 비밀번호 검증을 여기서 수행하고, 해싱된 비밀번호와 비교합니다.
+            # 해싱된 비밀번호와 비교하는 대신, 일반적으로 비밀번호는 해시화하고 저장해야 합니다.
+            # 이 예시에서는 비밀번호가 해시화되지 않았다고 가정하겠습니다.
             if mem_pass_db == mem_pass:
-                # 비밀번호 일치, mem_grade에 따라 페이지 리디렉션
-                if mem_grade == 0:
-                    request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
-                    request.session["mem_name"] = mem_name  # 세션에 사용자 이름 저장
-                    return RedirectResponse(url="/main.html")
-                elif mem_grade == 1:
-                    request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
-                    request.session["mem_name"] = mem_name  # 세션에 사용자 이름 저장
-                    return RedirectResponse(url="/main.html")
-                else:
-                    return RedirectResponse(url="/")
+                # 비밀번호 일치, 세션에 사용자 아이디와 이름 저장
+                request.session["mem_id"] = mem_id
+                request.session["mem_name"] = mem_name
+                return RedirectResponse(url="/main.html")
+            else:
+                return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
         else:
-            # 아이디 또는 비밀번호가 일치하지 않을 때 오류 메시지를 표시하고 다시 index.html 페이지로 렌더링
             return templates.TemplateResponse("index.html", {"request": request, "message": "아이디 또는 비밀번호가 일치하지 않습니다."})
 
     except Error as e:
@@ -132,6 +130,7 @@ async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form
     finally:
         cursor.close()
         connection.close()
+
 
 # 로그아웃 처리
 @app.post("/logout", response_class=HTMLResponse)
@@ -144,12 +143,6 @@ async def logout(request: Request):
 # MySQL 데이터베이스 연결 설정
 def create_connection():
     try:
-        # connection = mysql.connector.connect(
-        #     host="127.0.0.1",
-        #     user="root",
-        #     password="sejong131!#!",
-        #     database="ion",
-        # )
         connection = mysql.connector.connect(
             host="limemoni-2.cfcq69qzg7mu.ap-northeast-1.rds.amazonaws.com",
             user="oneday",
@@ -275,16 +268,21 @@ async def home(request: Request):
     logger.info("Reached the home endpoint")
     return templates.TemplateResponse("index.html", {"request": request})
 
+# "/" 주소에 대한 POST 요청을 처리
+@app.post("/", response_class=HTMLResponse)
+async def process_post_home(request: Request):
+    # POST 요청 처리 코드
+    return templates.TemplateResponse("index.html", {"request": request})
+
 # 회원가입 페이지를 렌더링하는 엔드포인트
 @app.get("/regist.html", response_class=HTMLResponse)
 async def render_registration_page(request: Request):
     return templates.TemplateResponse("regist.html", {"request": request})
 
 
-
-# 메인 페이지를 랜더링하는 엔드포인트
-@app.get("/main.html", response_class=HTMLResponse)
-async def render_main_page(request: Request):
+# 메인 페이지로의 POST 요청을 처리
+@app.post("/main.html", response_class=HTMLResponse)
+async def process_main_page_post(request: Request):
     
     # 데이터베이스에서 bar_lis 데이터를 가져옴
     bar_lis = fetch_bar_lis_from_database()
@@ -533,4 +531,4 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
 # FastAPI 애플리케이션 실행
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
