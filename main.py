@@ -38,9 +38,9 @@ app = FastAPI()
 app.add_middleware(
     SessionMiddleware,
     secret_key="your_secret_key",  # 보안을 위해 비밀 키 설정
-    same_site="none",
-    max_age=3600,
-    https_only=True,
+    # same_site="none",
+    # max_age=3600,
+    # https_only=True,
 )
 
 logger = logging.getLogger(__name__)
@@ -325,6 +325,8 @@ def convert_to_year_month_day_hour(rul_value):
 # 메인 페이지를 랜더링하는 엔드포인트
 @app.get("/main.html", response_class=HTMLResponse)
 async def render_main_page(request: Request):
+    
+    bar_lis = fetch_bar_lis_from_database()
     conn = create_connection()
     cursor = conn.cursor()
 
@@ -387,7 +389,8 @@ async def render_main_page(request: Request):
             "tool3_lot": tool_data_list[2][11],
             "tool4_lot": tool_data_list[3][11],
             "start_times": start_times,
-            "Lots": lots
+            "Lots": lots,
+            'bar_lis':bar_lis,
         })
 
     else:
