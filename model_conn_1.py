@@ -32,11 +32,11 @@ def fetch_recent_logs(length=avg_len):
     try:
         with connection.cursor() as cursor:
             # 가장 최근의 데이터부터 지정한 길이만큼 가져오는 SQL 쿼리
-            sql = f'''SELECT IONGAUGEPRESSURE, ETCHBEAMVOLTAGE, ETCHBEAMCURRENT, ETCHSUPPRESSORVOLTAGE, ETCHSUPPRESSORCURRENT,
-            FLOWCOOLFLOWRATE, FLOWCOOLPRESSURE, ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
-            FIXTURETILTANGLE, ROTATIONSPEED, ACTUALROTATIONANGLE,
-            ETCHSOURCEUSAGE, ETCHAUXSOURCETIMER, ETCHAUX2SOURCETIMER,
-            ACTUALSTEPDURATION FROM input_data_1 ORDER BY input_time DESC LIMIT {length}'''
+            sql = f'''SELECT ACTUALROTATIONANGLE, FIXTURETILTANGLE,
+                        ETCHBEAMCURRENT,IONGAUGEPRESSURE,
+                        ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
+                        ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
+                        FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE FROM input_data_1 ORDER BY input_time DESC LIMIT {length}'''
             cursor.execute(sql)
             results = cursor.fetchall()
     finally:
@@ -72,14 +72,14 @@ def dict_to_array(data):
     return np.array([list(item.values()) for item in data])
 
 
-def predict_with_xgb_model(data,model_path,inverse_scaler_path):
+def predict_with_xgb_model(data,model_path,scaler_path,inverse_scaler_path):
     """xgboost 모델을 사용해 예측하는 함수"""
     # 데이터 형태 변환
     transformed_data = dict_to_array(data)
 
     """모델 예측 전 전처리 함수"""
     # 모델 불러오기
-    scaler = joblib.load('./model/rul/X_scaler.pkl')
+    scaler = joblib.load(scaler_path)
     
     # scaler 적용
     scaled_data = scaler.transform(transformed_data)
@@ -208,8 +208,9 @@ def main():
     data_tuples = list(df.itertuples(index=False, name=None))
 
     abnormal_models_path = ['./model/abnormal_detect/RF_model(FL).pkl','./model/abnormal_detect/RF_model(PB).pkl','./model/abnormal_detect/RF_model(PH).pkl']
-    rul_models_path = ['./model/rul/xgb_model_for_fl.pkl','./model/rul/xgb_model_for_pb.pkl','./model/rul/xgb_model_for_ph.pkl']
-    inverse_scalers_path = ['./model/rul/y_scaler_for_fl.pkl','./model/rul/y_scaler_for_pb.pkl','./model/rul/y_scaler_for_ph.pkl']
+    rul_models_path = ['./model/RULmodel/231023_xgb_ss_df_fl.pickle','./model/RULmodel/231023_xgb_ss_df_pb.pickle','./model/RULmodel/231023_xgb_ss_df_fl.pickle']
+    inverse_scalers_path = ['./model/RULmodel/231023_ss_y_df_fl.pickle','./model/RULmodel/231023_ss_y_df_pb.pickle','./model/RULmodel/231023_ss_y_df_ph.pickle']
+    scalers_path = ['./model/RULmodel/231023_ss_x_df_fl.pickle','./model/RULmodel/231023_ss_x_df_pb.pickle','./model/RULmodel/231023_ss_x_df_ph.pickle']
 
     ## 데이터를 한줄 씩 밀어넣으면서 진행하는 방식
 
@@ -230,7 +231,7 @@ def main():
             for i in range(len(abnormal_models_path)):
             
                 # 가져온 데이터를 기반으로 예측하기
-                predictions = predict_with_xgb_model(data,rul_models_path[i],inverse_scalers_path[i])
+                predictions = predict_with_xgb_model(data,rul_models_path[i],scalers_path[i],inverse_scalers_path[i])
                 predictions_for_multi = predict_with_xgb_multi_model(data_for_multi,abnormal_models_path[i])
                 
                 # 이동평균 계산하기
