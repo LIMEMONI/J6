@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>알림 페이지</title>
+    <title>Abnormal detectionㅣFALP Service  </title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -71,11 +71,15 @@
     <div id="wrapper">
         <!-- NAVBAR -->
         <nav class="navbar navbar-default navbar-fixed-top">
-            <div class="container-fluid">
-                <!-- 로고와 데이터 불러오기 버튼 -->
-                <div class="navbar-header">
-                    <a class="navbar-brand"><img src="static/img/j6-v2.png" alt="J6 Logo" class="img-responsive logo"></a>
-                </div>
+			<div class="brand">
+				<a href="main.html">
+                    <img src="static/img/logo2.png" alt="Logo" class="img-responsive-logo" style="width: 120px;">
+                </a>
+			</div>
+			<div class="container-fluid">
+				<div class="navbar-btn">
+					<button type="button" class="btn-toggle-fullwidth"><i class="lnr lnr-arrow-left-circle"></i></button>
+				</div>
                 <!-- 오른쪽 메뉴 아이콘들 -->                
                 <div id="navbar-menu">
                     <ul class="nav navbar-nav navbar-right">
@@ -126,8 +130,8 @@
                         <!-- 나머지 메뉴 아이콘들 -->
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <img src="static/img/user1.png" class="img-square" alt="Picture">
-                                <span>관리자</span>
+                                <img src="static/img/user.png" class="img-square" alt="Picture">
+                                <span>{{ mem_name }}</span>
                                 
                             </a>
                             <li><a href="javascript:void(0);" onclick="logout()"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
@@ -157,7 +161,7 @@
                     </li>
                     </ul>
                     <!-- "메인으로 이동" 버튼 추가 -->
-                    <div class="text-center" style="position: absolute; bottom: 20px; width: 100%;">
+                    <div class="text-center" style="position: absolute; bottom: 50px; width: 100%;">
                         <li><a href="dashboard.html"><i class="fa fa-line-chart"></i> 대시보드 이동</a></li>
                         <a href="main.html"><i class="lnr lnr-home"></i> Main</a>
                     </div>
