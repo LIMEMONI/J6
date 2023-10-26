@@ -400,6 +400,7 @@ ul.notifications > li {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
   z-index: 1;
+  overflow: auto; /* 스크롤 활성화 */
 }
 
 .modal-content {
@@ -409,11 +410,11 @@ ul.notifications > li {
   margin: 20px auto; /* 중앙 정렬 */
   padding: 20px;
   position: relative; /* 내부 요소의 위치 설정 */
-  overflow-x: hidden; /* 스크롤바를 표시할 수 있도록 설정 */
-  overflow-y: auto; 
   max-height: 90%; /* 모달 창의 최대 높이를 설정 */
   border-radius: 5px;
   text-align: center;
+  overflow-x: hidden;
+  overflow-y: scroll; /* 스크롤이 모달 내부에서만 활성화되도록 변경 */
 }
 
 /* 모달 창 닫기 아이콘 스타일 */
@@ -434,7 +435,7 @@ ul.notifications > li {
 
 .modal-content .hero {
   width: 100%;
-  height: 100vh;
+  height: 90%;
   background-color: #464964;
   background-size: cover;
   background-position: center;
@@ -455,7 +456,7 @@ ul.notifications > li {
   width : 100%;
 }
 
-.modal-content input, textarea {
+.modal-content .input-group input, textarea {
   width: 100%;
   padding: 10px;
   outline: 0;
@@ -466,7 +467,7 @@ ul.notifications > li {
   border-radius: 5px;
 }
 
-.modal-content label {
+.modal-content .input-group label {
   height: 100px;
   position: absolute;
   left: 0;
@@ -516,10 +517,10 @@ ul.notifications > li {
   background-color: #003458;
 }
 
-input:focus~label,
-input:valid~label,
-textarea:focus~label,
-textarea:valid~label {
+.input-group input:focus~label,
+.input-group input:valid~label,
+.input-group textarea:focus~label,
+.input-group textarea:valid~label {
   top: -35px;
   font-size: 14px;
 }
@@ -534,6 +535,10 @@ dialog button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+.modal-content .footer_checkbox {
+  position: relative; /* 라벨의 위치 조정을 위해 상대 위치 설정 */
+  z-index: 1; /* 다른 요소 위에 나타나도록 설정 */
 }
 
 /********************
