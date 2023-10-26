@@ -319,7 +319,7 @@ def convert_to_year_month_day_hour(rul_value):
     month = int((rul_value % (365 * 24)) // (30 * 24)) 
     day = int((rul_value % (30 * 24)) // 24)
     hour = int(rul_value % 24)
-    return f"{year:02}년.{month:02}개월.{day:02}일.{hour:02}시"
+    return f"{year:02}Y {month:02}M {day:02}D {hour:02}H"
 
 
 # 메인 페이지를 랜더링하는 엔드포인트
@@ -360,6 +360,7 @@ async def render_main_page(request: Request):
 
         return templates.TemplateResponse("main.html", {
             "request": request,
+            'mem_name':mem_name,
             "tool1_data_combined": tool_data_list[0],
             "tool2_data_combined": tool_data_list[1],
             "tool3_data_combined": tool_data_list[2],

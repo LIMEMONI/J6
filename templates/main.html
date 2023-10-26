@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Mainㅣ FALP Service</title>
+    <title>J6 Dashboard</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -12,185 +12,165 @@
     <link rel="stylesheet" href="/static/vendor/chartist/css/chartist-custom.css">
     <!-- MAIN CSS -->
     <link rel="stylesheet" href="/static/css/main.css">
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <!-- FOR DEMO PURPOSES ONLY. You should remove this in your project -->
     <link rel="stylesheet" href="/static/css/demo.css">
     <!-- GOOGLE FONTS -->
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
     <!-- ICONS -->
     <link rel="apple-touch-icon" sizes="76x76" href="/static/img/j6.png">
-    <link rel="icon" type="image/png" sizes="76x76" href="static/img/top-icon.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/img/j6.png">
     <!-- D3.js 라이브러리 추가 -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/static/js/slimscroll.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <script src="https://kit.fontawesome.com/02c33e7f68.js" crossorigin="anonymous"></script>
-    
-    <style>
-        /* Google Fonts에서 가져온 Roboto 폰트를 적용 */
-        #sidebar-nav {
-            font-family: 'Roboto', sans-serif;
-            font-size: 20px;
+    <script>
+        // JavaScript로 설정한 시작 시간으로부터 1초씩 시간을 증가시키는 함수
+        function startCountingRuntime(startTime, elementId) {
+            const startTimeObj = new Date(startTime);
+            setInterval(function() {
+                startTimeObj.setSeconds(startTimeObj.getSeconds() + 1); // 1초를 더합니다.
+                const hours = startTimeObj.getUTCHours();
+                const minutes = startTimeObj.getUTCMinutes();
+                const seconds = startTimeObj.getUTCSeconds();
+                document.getElementById(elementId).textContent = `${hours}시간 ${minutes}분 ${seconds}초`;
+            }, 1000);
         }
-    
-        /* Nav 내의 리스트 아이템에 적용된 스타일 변경 */
-        #sidebar-nav li {
-            list-style: none;
-            margin: 10px 0;
-        }
-    
-        #sidebar-nav a {
-            text-decoration: none;
-            color: #fff; /* 글자 색상 설정 */
-            transition: color 0.3s; /* 색상 변경 시 부드러운 전환 효과 */
-        }
-    
-        #sidebar-nav a:hover {
-            color: #007bff; /* 마우스 호버 시 글자 색상 변경 */
-        }
-    </style>
-    <style>
-        /* 알람 갯수를 표시하는 숫자 스타일 */
-        .alarm-count-badge {
-            position: absolute;
-            top: 18px;
-            right: 5px;
-            background-color: red;
-            color: white;
-            width: 20px; /* 숫자 너비 조정 */
-            height: 15px; /* 숫자 높이 조정 */
-            border-radius: 50%;
-            font-size: 10px; /* 숫자 크기 조정 */
-            text-align: center; /* 가운데 정렬을 위한 설정 */
-            line-height: 15px; /* 숫자 높이와 같도록 설정 */
-        }
-    </style>
-    <script type="text/Javascript">
-        function goDetail_1(){
-            fm = document.getElementById('fm')
-            
-        }
+        // 페이지가 로드된 후 함수 실행 
+        // 4초마다 새로운 데이터를 db에서 가져오는 함수
+        window.onload = function() {
+            // 4초마다 함수 실행
+            setInterval(async function(){
+                let response = await fetch("/main.html");
+                let text = await response.text();
+                document.body.innerHTML = text; // 화면 갱신
+            }, 10000); // 10초 간격
+        };
+        // 시작 시간과 element ID를 전달하여 가동시간 증가 카운트 시작
+        startCountingRuntime("{{ start_times['설비 1'] }}", "tool1_runtime");
+        startCountingRuntime("{{ start_times['설비 2'] }}", "tool2_runtime");
+        startCountingRuntime("{{ start_times['설비 2'] }}", "tool3_runtime");
+        startCountingRuntime("{{ start_times['설비 2'] }}", "tool4_runtime");
     </script>
-<!-- Main 추가 된 내용 -->
-<script>
-    // JavaScript로 설정한 시작 시간으로부터 1초씩 시간을 증가시키는 함수
-    function startCountingRuntime(startTime, elementId) {
-        const startTimeObj = new Date(startTime);
-        setInterval(function() {
-            startTimeObj.setSeconds(startTimeObj.getSeconds() + 1); // 1초를 더합니다.
-            const hours = startTimeObj.getUTCHours();
-            const minutes = startTimeObj.getUTCMinutes();
-            const seconds = startTimeObj.getUTCSeconds();
-            document.getElementById(elementId).textContent = `${hours}시간 ${minutes}분 ${seconds}초`;
-        }, 1000);
-    }
-    // 페이지가 로드된 후 함수 실행 
-    // 4초마다 새로운 데이터를 db에서 가져오는 함수
-    window.onload = function() {
-        // 4초마다 함수 실행
-        setInterval(async function(){
-            let response = await fetch("/main.html");
-            let text = await response.text();
-            document.body.innerHTML = text; // 화면 갱신
-        }, 4000); // 4초 간격
-    };
-
-    // 시작 시간과 element ID를 전달하여 가동시간 증가 카운트 시작
-    startCountingRuntime("{{ start_times['설비 1'] }}", "tool1_runtime");
-    startCountingRuntime("{{ start_times['설비 2'] }}", "tool2_runtime");
-    startCountingRuntime("{{ start_times['설비 2'] }}", "tool3_runtime");
-    startCountingRuntime("{{ start_times['설비 2'] }}", "tool4_runtime");
-</script>
-
     
+        
 
-<style>
-    .panel{
-        color: gray;
-        width: 500px;
-        height: 200px;
-        margin-left: 100px;
-    }
-
-    .panel-heading{
-        color:black;
-    }
-    .wall{
-        background-color: #392f31;
-        width: 500px;
-        height: 40px;
-        margin-left: 100px;
-        margin-bottom: 28px;
-    }
-
-    .head-line{
-        margin-top: 0%; 
-        margin-bottom: 0%; 
-        height: 10px; 
-        border: none; 
-        border-top: 2px solid #565454;
-    }
-
-    .normal-status-topRight {
-        width: 16px;
-        height: 16px;
-        border-top-left-radius: 50%;
-        border-top-right-radius: 50%;
-        border-bottom-right-radius: 50%;
-        border-bottom-left-radius: 50%;
-        border: 2px solid #CCC;
-        margin-bottom: 2px;
-        background-color: green;
-        position: absolute;
-        right: 4%; /* 원 모양의 상태 표시를 오른쪽 끝으로 이동 */
-    }
-
-    .abnormal-status-topRight{
-        width: 16px;
-        height: 16px;
-        border-top-left-radius: 50%;
-        border-top-right-radius: 50%;
-        border-bottom-right-radius: 50%;
-        border-bottom-left-radius: 50%;
-        border: 2px solid #CCC;
-        margin-bottom: 2px;
-        background-color: red;
-        position: absolute;
-        right: 4%; /* 원 모양의 상태 표시를 오른쪽 끝으로 이동 */
-    }
-</style>
+    <style>
+        /*안내용 범례*/
+        .legend{
+            border: 3px solid turquoise;
+            border-radius: 6px;
+            margin-left: 0%; 
+            width: 450px;
+            height: 95px;
+            margin-bottom: 1px;
+            margin-left: 5%;
+        }
+        /*설비 박스 영역*/
+        .panel-board{
+            background-color: white;
+            border: 6px solid green;
+            border-radius: 10px; /* 원하는 모서리 둥근 정도를 조절할 수 있습니다. */
+            color: gray;
+            width: 500px;
+            height: 200px;
+            margin-bottom: 28px;
+        }
+        /*설비 이름 영역*/
+        .panel-heading{
+            color:black;
+        }
+        /*설비 박스 내 아이콘 영역*/
+        .tool-icon{
+            width: 100px; 
+            height: 100px;
+            display: inline;
+        }
+        /*설비 박스 내 텍스트 영역*/
+        .panel-body-text{
+            margin-left: 25%;
+            display: inline;
+            color: #392f31;
+        }
+        /*설비 박스 사이 벽*/
+        .wall{
+            background-color: #392f31;
+            width: 500px;
+            height: 25px;
+            margin-bottom: 28px;
+        }
+        /*설비 이름 - 표시값 구분선*/
+        .head-line{
+            margin-top: 0%; 
+            margin-bottom: 0%; 
+            height: 10px; 
+            border: none; 
+            border-top: 2px solid #565454;
+        }
+        /*설비 작동중 표시원*/
+        .normal-status-topRight {
+            width: 16px;
+            height: 16px;
+            border-top-left-radius: 50%;
+            border-top-right-radius: 50%;
+            border-bottom-right-radius: 50%;
+            border-bottom-left-radius: 50%;
+            border: 2px solid #CCC;
+            margin-top: 2px;
+            background-color: green;
+            position: absolute;
+            left: 30%; /* 원 모양의 상태 표시를 오른쪽 끝으로 이동 */
+        }
+        /*설비 작동 정지 표시원*/
+        .abnormal-status-topRight{
+            width: 16px;
+            height: 16px;
+            border-top-left-radius: 50%;
+            border-top-right-radius: 50%;
+            border-bottom-right-radius: 50%;
+            border-bottom-left-radius: 50%;
+            border: 2px solid #CCC;
+            margin-top: 2px;
+            background-color: red;
+            position: absolute;
+            left: 30%; /* 원 모양의 상태 표시를 오른쪽 끝으로 이동 */
+        }
+    </style>
 </head>
 
 <body>
     <!-- WRAPPER -->
     <div id="wrapper">
+        <div class="row">
+            <div class="col-md-12">
         <!-- NAVBAR -->
         <nav class="navbar navbar-default navbar-fixed-top">
             <div class="container-fluid">
                 <!-- 로고와 데이터 불러오기 버튼 -->
                 <div class="navbar-header">
-                    <a class="navbar-brand"><img src="static/img/logo2.png" alt="J6 Logo" class="img-responsive logo" style="width: 250px;"></a>
+                    <a class="navbar-brand" style="width: 20%; height: 20%; display: flex; align-items: center;">
+                        <img src="static/img/falp_logo.png" alt="J6 Logo" class="img-responsive logo">   
+                        </span>
+                    </a>
                 </div>
+              
                 <!-- 오른쪽 메뉴 아이콘들 -->                
                 <div id="navbar-menu">
                     <ul class="nav navbar-nav navbar-right">
+                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#uploadModal" style="margin-top: 20px;">데이터 불러오기</button>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
                                 <i class="lnr lnr-alarm"></i>
                             </a>
                         <!-- 알람 드롭다운 메뉴 -->
                         <ul class="dropdown-menu notifications">
-                            {% for item in bar_lis[:5] %}
-                                {% set val = item[0] %}
-                                {% set i_s = item[1] %}
-                                {% set i_e = item[2] %}
-                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">이상근접구간 : {{ val }}</a></li>
-                            {% endfor %}
-                            <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
+                            <li><a class="notification-item">12:10:45 **컬럼의 이상발생</a></li>
+                            <li><a class="notification-item">14:10:45 **컬럼의 이상발생</a></li>
+                            <li><a class a="notification-item">18:10:45 **컬럼의 이상발생</a></li>
+                            <li><a class="notification-item">20:10:45 **컬럼의 이상발생</a></li>
+                            <li><a class="notification-item">22:10:45 **컬럼의 이상발생</a></li>
                         </ul>
-                        <span class="alarm-count-badge">{{ bar_lis|length }}</span>
                         </li>
                         <!-- 파일 업로드 모달 대화 상자 -->
                         <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
@@ -198,6 +178,7 @@
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title" id="uploadModalLabel">CSV 파일 불러오기</h5>
+                                        
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
@@ -210,276 +191,282 @@
                                             </div>
                                         </form>
                                     </div>
-                                    <!-- 모달 내용 -->
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
                                         <!-- 파일 업로드 버튼을 눌렀을 때 데이터를 업로드하는 함수 호출 -->
-                                        <button type="button" class="btn btn-primary" id="uploadButton" onclick="uploadFile()">불러오기</button>
+                                        <button type="button" class="btn btn-primary" id="uploadButton" onclick="uploadFile()">불러오기</button>                    
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <!-- 나머지 메뉴 아이콘들 -->
                         <li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <img src="static/img/user.png" class="img-circle" alt="Avatar">
-                                <!--여기서 계정의 이름이 연결되어야 함-->
-                                <span>User</span> <i class="icon-submenu lnr lnr-chevron-down"></i>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <img src="static/img/user1.png" class="img-square" alt="Picture">
+                                <span>{{ mem_name }}</span>
+                                
                             </a>
-
-                            <li><a href="javascript:void(0);" onclick="logout()"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
+                            <li><a href="/"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
-        <!-- END NAVBAR -->
-        
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-           <div class="container-fluid">  
-              <h3 class="page-title"></h3>
-                   <br>
-                   <ul>
-                   <h3><b>J6_Fab Abnormal Detecting & life expectancy prediction System</b></h3>
-                   
-                   </ul>
-                   <br>
-              <div class="row">
-                 <div class="col-md-6">
-                    <!-- BASIC TABLE -->
-               <!-- 예시 코드: main.html에서 설비 클릭 시 해당 설비 정보를 dashboard.html로 전달 -->
-                               <div class="panel" id="Ion_Miller_M01" 
-                               style = "{% if tool1_status == 1 %} background-color: #93db93; 
-                               {% elif tool1_status == 2 %}background-color: #fcee67;
-                               {% elif tool1_status == 0 %}background-color: #f26464
-                               {% endif %}">
-                                   <a href="dashboard.html?tab=dashboard1" style="color: #392f31;"> <!-- M01설비의 Dashboard 페이지로 이동 -->
-                                       <div class="panel-heading">
-                                           <span class="normal-status-topRight">&nbsp</span> <!--상태표시 원-->
-                                           <h3 class="panel-title"><b>Ion_Miller_M01</b></h3>
-                                       </div>
-                                       <hr class= "head-line"> <!--설비 이름-내용 구분선-->
-                                       <div class="panel-body">
-                                           <b>
-                                               - 고장 여부:
-                                               {% if tool1_status != 0 %}
-                                               정상
-                                               {% else %}
-                                               <a style="color: rgb(37, 208, 227);">고장!</a>
-                                               {% endif %}
-                                               <br>
-           
-                                               - 예측 수리 시간: --
-                                               <br>
-                                               고장상태 : {{tool1_status}},{{tool1_status_index}},
-                                               <br>
-                                               잔여시간 : {{tool1_rul}},{{tool1_rul_index}}
-                                               <br>
-                                               장비이름 : {{tool1_name}}, lot : {{tool1_lot}}
-                                               <br>
-                                               - 가동시간: 
-                                               {% if  tool1_status != 0 %}
-                                               <span id="tool1_runtime"></span>
-                                               {% else %}
-                                               --
-                                               {% endif %}
-                                           <br>
-
-                                           - Lot: {{Lots[0]}}
-                                           </b>
-                                       </div>
-                                   </a>
-                               </div>
-                    <!-- END BASIC TABLE -->
-                 </div>
-                 <div class="col-md-6">
-                    <!-- BASIC TABLE -->
-                    <div class="panel" 
-                           style = "{% if tool2_status == 1 %} background-color: #93db93;
-                           {% elif tool2_status == 2 %}background-color: #fcee67;
-                           {% elif tool2_status == 0 %}background-color: #f26464
-                           {% endif %}">
-                               <a href="dashboard.html?tab=dashboard2" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
-                       <div class="panel-heading">
-                                   <span class="normal-status-topRight">&nbsp</span> <!--상태표시 원-->
-                          <h3 class="panel-title"><b>Ion_Miller_M02</b></h3> <!--설비 이름-->
-                       </div>
-                               <hr class= "head-line"> <!--설비 이름-내용 구분선-->
-                       <div class="panel-body">
-                                   <b>
-                                       - 고장 여부:
-                                       {% if tool2_status != 0 %}
-                                       정상
-                                       {% else %}
-                                       <a style="color: rgb(37, 208, 227);">고장!</a>
-                                       {% endif %}
-                                       <br>
-   
-                                       - 예측 수리 시간: --
-                                       <br>
-                                       {{tool1_data_combined}}
-   
-                                       - 가동시간: 
-                                       {% if  tool2_status != 0 %}
-                                       <span id="tool2_runtime"></span>
-                                       {% else %}
-                                       --
-                                       {% endif %}
-                                   <br>
-                                   - Lot: {{Lots[1]}}
-                                   </b>
-
-                       </div>
-                    </div>
-                    <!-- END BASIC TABLE -->
-                 </div>
-              </div>
-                   <div class="row">
-                       <div class="col-md-6">
-                           <div class="wall"> <a onclick="return false;"></a></div>
-                       </div>
-                       <div class="col-md-6">
-                           <div class="wall"><a onclick="return false;"></a></div>
-                       </div>
-                   </div>
-                   
-              <div class="row">
-                 <div class="col-md-6">
-                    <!-- TABLE STRIPED -->
-                    <div class="panel"
-                           style = 
-                           "{% if tool3_status == 1 %} background-color: #93db93; 
-                           {% elif tool3_status == 2 %}background-color: #fcee67;
-                           {% elif tool3_status == 0 %}background-color: #f26464
-                           {% endif %}">
-                           <a href="dashboard.html?tab=dashboard3" style="color: #392f31;"> <!-- M03설비의 Dashboard 페이지로 이동 -->
-                       <div class="panel-heading">
-                                   <span class="normal-status-topRight">&nbsp</span> <!--상태표시 원-->
-                          <h3 class="panel-title"><b>Ion_Miller_M03</b></h3>
-                       </div>
-                               <hr class= "head-line"> <!--설비 이름-내용 구분선-->
-                       <div class="panel-body">
-                                   <b>
-                                       - 고장 여부:
-                                       {% if tool3_status != 0 %}
-                                       정상
-                                       {% else %}
-                                       <a style="color: rgb(37, 208, 227);">고장!</a>
-                                       {% endif %}
-                                       <br>
-   
-                                       - 예측 수리 시간: --
-                                       <br>
-   
-                                       - 가동시간: 
-                                       {% if  tool3_status != 0 %}
-                                       <span id="tool3_runtime"></span>
-                                       {% else %}
-                                       --
-                                       {% endif %}
-                                   <br>
-
-                                   - Lot: {{Lots[2]}}
-                                   </b>
-                       </div>
-                    </div>
-                    <!-- END TABLE STRIPED -->
-                 </div>
-                 <div class="col-md-6">
-                    <!-- TABLE HOVER -->
-                    <div class="panel"
-                           style = 
-                           "{% if tool4_status == 1 %} background-color: #93db93; 
-                           {% elif tool4_status == 2 %}background-color: #fcee67;
-                           {% elif tool4_status == 0 %}background-color: #f26464
-                           {% endif %}">
-                           <a href="dashboard.html?tab=dashboard4"> <!-- M04설비의 Dashboard 페이지로 이동 -->
-                       <div class="panel-heading">
-                                   <span class="abnormal-status-topRight">&nbsp</span> <!--상태표시 원-->
-                          <h3 class="panel-title"><b>Ion_Miller_M04</b></h3>
-                       </div>
-                               <hr class= "head-line"> <!--설비 이름-내용 구분선-->
-                       <div class="panel-body">
-                                   <b style="color: black;">
-                          - 고장 여부:
-                                   {% if tool4_status != 0 %}
-                                   정상
-                                   {% else %}
-                                   <a style="color: rgb(37, 208, 227);">고장!</a>
-                                   {% endif %}
-                                   <br>
-
-                                   - 예측 수리 시간: --
-                                   <br>
-
-                                   - 가동시간: 
-                                   {% if  tool4_status != 0 %}
-                                   <span id="tool4_runtime"></span>
-                                   {% else %}
-                                   --
-                                   {% endif %}
-       
-                                   <br>
-
-                                   - Lot: {{Lots[3]}}
-                                   </b>
-                       </div>
-                    </div>
-                    <!-- END TABLE HOVER -->
-                 </div>
-              </div>
-           </div>
-        </div>
-        <!-- END MAIN CONTENT -->
-      </div>
-      <!-- END MAIN -->
-      <div class="clearfix"></div>
-      <footer>
-         <div class="container-fluid">
-            <p class="copyright">Made by <i class="fa fa-love"></i><a>J6</a></p>
-         </div>
-      </footer>
-   </div>
-   <!-- END WRAPPER -->
-   <!-- Javascript -->
-   <script>
-      function logout() {
-          // 서버로 로그아웃 요청을 보내기 위해 fetch 사용
-          fetch('/logout', {
-              method: 'POST'
-          })
-          .then(response => {
-              if (response.redirected) {
-                  // 로그아웃 후, 홈 페이지로 리디렉션
-                  window.location.href = response.url;
-              }
-          })
-          .catch(error => {
-              console.error('로그아웃 오류:', error);
-          });
-      }
-  </script>
-   <script src="/static/vendor/jquery/jquery.min.js"></script>
-   <script src="/static/vendor/bootstrap/js/bootstrap.min.js"></script>
-   <script src="/static/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
-   <script src="/static/scripts/klorofil-common.js"></script>
     
-    <script>
-        $(document).ready(function() {
-            // 알람 드롭다운 메뉴를 토글하기
-            $("#alarmDropdownButton").click(function() {
-                $(".notifications").toggle();
-            });
-
-            // "더 보기" 버튼을 클릭했을 때 이벤트 처리
-            $(".view-more").click(function() {
-                // "alram.html"로 이동
-                window.location.href = "alram.html";
-            });
-        });
-    </script>
-
+        <!-- END NAVBAR -->
+    </div>
+</div>
+		<!-- MAIN -->
+		<div class="main">
+			<!-- MAIN CONTENT -->
+			<div class="main-content" style="margin-right: 12%;">
+				<div class="container-fluid">  
+                    <ul>
+                        <!--LEGEND-->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div style="width: 500px; height: 95px; margin-bottom: 1px;">
+                                    <h2> <b> J6 Electronics_Fab_C4 </b></h2>
+                                    <b> 제육전자 부산 4공장 3F Fab 설비 내역입니다. </b>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="legend">
+                                    <span style="background-color: yellow;"> 
+                                        <b style="margin: 5px;"> [notice!] </b> 
+                                    </span>
+                                    <span>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <br>
+                                                <span class="normal-status-topRight" style="margin-top: 3px; position: absolute; left: 15%;">&nbsp;</span>
+                                                <b style="margin-left: 40px;"> 설비 가동중</b>
+                                                <br>
+                                                <span class="abnormal-status-topRight" style="margin-top: 3px; position: absolute; left: 15%;">&nbsp;</span>
+                                                <b style="margin-bottom: 0px; margin-left: 40px;"> 설비 정지중</b>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div style="display: inline-block; height: 10px; width: 10px; background-color: #93db93; border: solid 1px #392f31;"></div>
+                                                <b style="display: inline-block;">설비상태: 정상</b>
+                                                <br>
+                                                <div style="display: inline-block; height: 10px; width: 10px; background-color: #fcee67; border: solid 1px #392f31;"></div>
+                                                <b style="display: inline-block;">설비상태: 고장 감지</b>
+                                                <br>  
+                                                <div style="display: inline-block; height: 10px; width: 10px; background-color: #f26464; border: solid 1px #392f31;"></div>
+                                                <b style="display: inline-block;">설비상태: 고장</b>
+                                            </div>
+                                        </div>
+                                        </p>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!--END LEGEND-->
+                    </ul>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- BASIC TABLE -->
+                            <div class="panel-board" id="Ion_Miller_M01" 
+                                style="{% if tool1_status == 0 %} border: 6px solid #93db93; 
+                                    {% elif tool1_status == 1 %} border: 6px solid #fcee67;
+                                    {% elif tool1_status == 2 %} border: 6px solid #f26464;
+                                    {% endif %}">
+                            
+                                <a href="dashboard.html?tab=dashboard1" style="color: #392f31;"> <!-- M01설비의 Dashboard 페이지로 이동 -->
+                                    <div class="panel-heading">
+                                        <span class="normal-status-topRight">&nbsp</span> <!--상태표시 원-->
+                                        <h3 class="panel-title"><b>Ion_Miller_M01</b></h3>
+                                    </div>
+                                    <hr class="head-line"> <!--설비 이름-내용 구분선-->
+                                    <div class="panel-body" style="display: flex; align-items: center;">
+                                        <!-- 설비 아이콘 -->
+                                        <img class="tool-icon" src="static/img/tool.png"> 
+                                        <!-- 설비 상태 텍스트 -->
+                                        <div style="display: flex; flex-direction: column; width: 250%;">
+                                            <b class="panel-body-text">
+                                                - 고장 여부:
+                                                {% if tool1_status == 0 %}
+                                                정상
+                                                {% else %}
+                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">{{tool1_status_index}}!</span>
+                                                {% endif %}
+                                            </b>
+                                            <b class="panel-body-text">
+                                                - 예측 수리 시간: {{tool1_rul}}
+                                            </b>
+                                            <b class="panel-body-text">
+                                                - 가동시간: 
+                                                {% if  tool1_status == 0 %}
+                                                <span id="tool1_runtime"></span>
+                                                {% else %}
+                                                --
+                                                {% endif %}
+                                            </b>
+                                            <b class="panel-body-text">
+                                                - Lot: {{tool1_name}}
+                                            </b>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <!-- END BASIC TABLE -->
+                        </div>
+                        <div class="col-md-6">
+                            <!-- BASIC TABLE -->
+                            <div class="panel-board" 
+                                style="{% if tool2_status == 0 %} border: 6px solid #93db93;
+                                    {% elif tool2_status == 1 %} border: 6px solid #fcee67;
+                                    {% elif tool2_status == 2 %} border: 6px solid #f26464
+                                    {% endif %}">
+                                <a href="dashboard.html?tab=dashboard2" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
+                                    <div class="panel-heading">
+                                        <span class="normal-status-topRight">&nbsp</span> <!--상태표시 원-->
+                                        <h3 class="panel-title"><b>Ion_Miller_M02</b></h3> <!--설비 이름-->
+                                    </div>
+                                    <hr class="head-line"> <!--설비 이름-내용 구분선-->
+                                    <div class="panel-body" style="display: flex; align-items: center;">
+                                        <img class="tool-icon" src="static/img/tool.png">
+                                        <div style="display: flex; flex-direction: column; width: 250%;">
+                                            <b class="panel-body-text">
+                                                - 고장 여부:
+                                                {% if tool2_status == 0 %}
+                                                정상
+                                                {% else %}
+                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">고장!</span>
+                                                {% endif %}
+                                            </b>
+                                            <b class="panel-body-text">
+                                                - 예측 수리 시간: {{tool2_rul}}
+                                            </b>
+                                            <b class="panel-body-text">
+                                                - 가동시간: 
+                                                {% if  tool2_status == 0 %}
+                                                <span id="tool2_runtime"></span>
+                                                {% else %}
+                                                --
+                                                {% endif %}
+                                            </b>
+                                            <b class="panel-body-text">
+                                                - Lot: {{tool2_name}}
+                                            </b>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <!-- END BASIC TABLE -->
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- TABLE STRIPED -->
+                            <div class="panel-board" 
+                                style="{% if tool3_status == 0 %} border: 6px solid #93db93; 
+                                    {% elif tool3_status == 1 %} border: 6px solid #fcee67;
+                                    {% elif tool3_status == 2 %} border: 6px solid #f26464
+                                    {% endif %}">
+                                <a href="dashboard.html?tab=dashboard3" style="color: #392f31;"> <!-- M03설비의 Dashboard 페이지로 이동 -->
+                                    <div class="panel-heading">
+                                        <span class="normal-status-topRight">&nbsp</span> <!--상태표시 원-->
+                                        <h3 class="panel-title"><b>Ion_Miller_M03</b></h3>
+                                    </div>
+                                    <hr class="head-line"> <!--설비 이름-내용 구분선-->
+                                    <div class="panel-body" style="display: flex; align-items: center;">
+                                        <img class="tool-icon" src="static/img/tool.png">
+                                        <div style="display: flex; flex-direction: column; width: 250%;">
+                                            <b class="panel-body-text">
+                                                - 고장 여부:
+                                                {% if tool3_status == 0 %}
+                                                정상
+                                                {% else %}
+                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">고장!</span>
+                                                {% endif %}
+                                            </b>
+                                            <b class="panel-body-text">
+                                                - 예측 수리 시간: {{tool3_rul}}
+                                            </b>
+                                            <b class="panel-body-text">
+                                                - 가동시간: 
+                                                {% if  tool3_status == 0 %}
+                                                <span id="tool3_runtime"></span>
+                                                {% else %}
+                                                --
+                                                {% endif %}
+                                            </b>
+                                            <b class="panel-body-text">
+                                                - Lot: {{tool3_name}}
+                                            </b>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <!-- END TABLE STRIPED -->
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <!-- TABLE HOVER -->
+                            <div class="panel-board" 
+                                style="{% if tool4_status == 0 %} border: 6px solid #93db93; 
+                                    {% elif tool4_status == 1 %} border: 6px solid #fcee67;
+                                    {% elif tool4_status == 2 %} border: 6px solid #f26464
+                                    {% endif %}">
+                                <a href="dashboard.html?tab=dashboard4"> <!-- M04설비의 Dashboard 페이지로 이동 -->
+                                    <div class="panel-heading">
+                                        <span class="abnormal-status-topRight">&nbsp</span> <!--상태표시 원-->
+                                        <h3 class="panel-title"><b>Ion_Miller_M04</b></h3>
+                                    </div>
+                                    <hr class="head-line"> <!--설비 이름-내용 구분선-->
+                                    <div class="panel-body" style="display: flex; align-items: center;">
+                                        <img class="tool-icon" src="static/img/tool.png">
+                                        <div style= "display: flex; flex-direction: column; width: 250%;">
+                                            <b class="panel-body-text" style="display: flex; align-items: center;">
+                                                - 고장 여부:
+                                                {% if tool4_status == 0 %}
+                                                정상
+                                                {% else %}
+                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">고장!</span>
+                                                {% endif %}
+                                            </b>
+                                            <b class="panel-body-text">
+                                                - 예측 수리 시간: {{tool4_rul}}
+                                            </b>                                            
+                                            <b class="panel-body-text">
+                                                - 가동시간: 
+                                                {% if  tool4_status == 0 %}
+                                                <span id="tool4_runtime"></span>
+                                                {% else %}
+                                                --
+                                                {% endif %}
+                                            </b>
+                                            <b class="panel-body-text">
+                                                - Lot: {{tool4_name}}
+                                            </b>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        <!-- END TABLE HOVER -->
+                    </div>                 
+			</div>
+			<!-- END MAIN CONTENT -->
+		</div>
+		<!-- END MAIN -->
+		<div class="clearfix"></div>
+		<footer>
+			<div class="container-fluid">
+				<p class="copyright">Made by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">J6</a>
+</p>
+			</div>
+		</footer>
+	</div>
+	<!-- END WRAPPER -->
+	<!-- Javascript -->
+	<script src="/static/vendor/jquery/jquery.min.js"></script>
+	<script src="/static/vendor/bootstrap/js/bootstrap.min.js"></script>
+	<script src="/static/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+	<script src="/static/scripts/klorofil-common.js"></script>
 </body>
+
 </html>
