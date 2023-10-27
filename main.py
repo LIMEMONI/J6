@@ -221,7 +221,7 @@ async def process_registration(request: Request, user: User):
     return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
 
 # 데이터베이스에서 필요한 데이터를 쿼리하여 bar_lis를 생성
-def fetch_bar_lis_from_database(n):
+def fetch_bar_lis_from_database(n=1):
     cursor.execute(f"""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
                         ETCHBEAMCURRENT,IONGAUGEPRESSURE,
                         ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
@@ -235,35 +235,36 @@ def fetch_bar_lis_from_database(n):
     
     alram_dic = {}
     for i in range(1, len(existing_user[0])):
-        alram_dic.update({'alram{}'.format(i): [{'time': val[0], 'col': val[i]} for val in existing_user]})  # line_alram
+        key = 'alram{}'.format(i)
+        alram_dic[key] = [{'time': val[0], 'col': val[i]} for val in existing_user]
+
+        try:
+            cursor.execute(f"""SELECT row_index
+                            FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                            FROM rul_1) AS temp
+                            WHERE (rul_fl < 10) or (rul_pb < 10) or (rul_ph < 10);""")
+            existing_user = cursor.fetchall()
+            line_lis = [val[0] for val in existing_user]
+        
+            cursor.execute(f"""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
+                            FROM (SELECT multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                                FROM multi_{n}) AS temp
+                            WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
+            existing_user = cursor.fetchall()
+        
+            bar_lis = [[existing_user[0][3], existing_user[0][4]]]
+            cnt = 0
+            for i in range(1, len(existing_user)):
+                if existing_user[i][-1] != 1:
+                    bar_lis[len(bar_lis) - 1].append(existing_user[i - 1][4])
+                    bar_lis.append([existing_user[i][3], existing_user[i][4]])
+            bar_lis[-1].append(existing_user[-1][4])
+
+        except:
+            line_lis = None
+            bar_lis = [[None, 0, 0],[None, 0, 0],[None, 0, 0],[None, 0, 0]]
     
-    try:
-        cursor.execute("""SELECT row_index
-                        FROM (SELECT rul_fl, rul_pb, rul_ph, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                        FROM rul_1) AS temp
-                        WHERE (rul_fl = 0) or (rul_pb = 0) (rul_ph = 0);""")
-        existing_user = cursor.fetchall()
-    
-        line_lis = [val[0] for val in existing_user]
-    
-        cursor.execute("""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
-                        FROM (SELECT multi_pred, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                            FROM j6database.multi_1) AS temp
-                        WHERE multi_pred = 1;""")
-        existing_user = cursor.fetchall()
-    
-        bar_lis = [[existing_user[0][1], existing_user[0][2]]]
-        cnt = 0
-        for i in range(1, len(existing_user)):
-            if existing_user[i][-1] != 1:
-                bar_lis[len(bar_lis) - 1].append(existing_user[i - 1][2])
-                bar_lis.append([existing_user[i][1], existing_user[i][2]])
-        bar_lis[-1].append(existing_user[-1][2])
-    except:
-        line_lis = None
-        bar_lis = [[None, 0, 0]]
-    
-    return bar_lis
+        return bar_lis
 
 # -------------------------------------------------------------------------------------- 여기까지 기능 처리 코드 ---------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------- 여기부터 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
@@ -548,7 +549,7 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
     try:
         ### rul_line_draw
         cursor.execute("""SELECT row_index
-                            FROM (SELECT rul_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                            FROM (SELECT rul_, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
                                 FROM rul_1) AS temp
                             WHERE rul_time = 0;""")
         existing_user = cursor.fetchall()
@@ -563,13 +564,13 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
                             WHERE multi_pred = 1;""")
         existing_user = cursor.fetchall()
         
-        bar_lis = [[existing_user[0][1], existing_user[0][2]]]
+        bar_lis = [[existing_user[0][3], existing_user[0][4]]]
         cnt = 0
         for i in range(1, len(existing_user)):
             if existing_user[i][-1] != 1 :
-                bar_lis[len(bar_lis)-1].append(existing_user[i-1][2])
-                bar_lis.append([existing_user[i][1], existing_user[i][2]])
-        bar_lis[-1].append(existing_user[-1][2])
+                bar_lis[len(bar_lis)-1].append(existing_user[i-1][4])
+                bar_lis.append([existing_user[i][3], existing_user[i][4]])
+        bar_lis[-1].append(existing_user[-1][4])
         
     except:
         line_lis = None
