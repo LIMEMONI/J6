@@ -236,35 +236,41 @@ def fetch_bar_lis_from_database(n=1):
     alram_dic = {}
     for i in range(1, len(existing_user[0])):
         key = 'alram{}'.format(i)
+        ''' 이런 형태로 알람 딕셔너리 데이터를 생성
+            {'alram1': [{'time': '11:05:11', 'col': -0.1224370708389037},
+            {'time': '11:05:16', 'col': -0.1224370708389037}]'''
         alram_dic[key] = [{'time': val[0], 'col': val[i]} for val in existing_user]
 
-        try:
-            cursor.execute(f"""SELECT row_index
-                            FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                            FROM rul_1) AS temp
-                            WHERE (rul_fl < 10) or (rul_pb < 10) or (rul_ph < 10);""")
-            existing_user = cursor.fetchall()
-            line_lis = [val[0] for val in existing_user]
-        
-            cursor.execute(f"""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
-                            FROM (SELECT multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                                FROM multi_{n}) AS temp
-                            WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
-            existing_user = cursor.fetchall()
-        
-            bar_lis = [[existing_user[0][3], existing_user[0][4]]]
-            cnt = 0
-            for i in range(1, len(existing_user)):
-                if existing_user[i][-1] != 1:
-                    bar_lis[len(bar_lis) - 1].append(existing_user[i - 1][4])
-                    bar_lis.append([existing_user[i][3], existing_user[i][4]])
-            bar_lis[-1].append(existing_user[-1][4])
-
-        except:
-            line_lis = None
-            bar_lis = [[None, 0, 0],[None, 0, 0],[None, 0, 0],[None, 0, 0]]
+    try:
+        ## rul이 일정 수치 아래로 가면 해당 row의 index를 list형태로 반환한다.
+        cursor.execute(f"""SELECT row_index
+                        FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                        FROM rul_{n}) AS temp
+                        WHERE (rul_fl < 10) or (rul_pb < 10) or (rul_ph < 10);""")
+        existing_user = cursor.fetchall()
+        line_lis = [val[0] for val in existing_user]
     
-        return bar_lis
+        cursor.execute(f"""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
+                        FROM (SELECT multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                            FROM multi_{n}) AS temp
+                        WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
+        existing_user = cursor.fetchall()
+    
+        bar_lis = [[existing_user[-1][3], existing_user[-1][4]]]
+
+        for i in range(len(existing_user) - 2, -1, -1):
+            if existing_user[i][-1] != 1:
+                bar_lis[len(bar_lis) - 1].append(existing_user[i + 1][4])
+                bar_lis.append([existing_user[i][3], existing_user[i][4]])
+
+        bar_lis[-1].append(existing_user[0][4])
+
+
+    except:
+        line_lis = None
+        bar_lis = [[None, 0, 0]]
+
+    return bar_lis, line_lis
 
 # -------------------------------------------------------------------------------------- 여기까지 기능 처리 코드 ---------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------- 여기부터 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
@@ -326,7 +332,7 @@ def convert_to_year_month_day_hour(rul_value):
 @app.get("/main.html", response_class=HTMLResponse)
 async def render_main_page(request: Request):
     
-    bar_lis = fetch_bar_lis_from_database()
+    bar_lis , line_lis = fetch_bar_lis_from_database()
     conn = create_connection()
     cursor = conn.cursor()
 
@@ -392,6 +398,7 @@ async def render_main_page(request: Request):
             "start_times": start_times,
             "Lots": lots,
             'bar_lis':bar_lis,
+            'line_lis':line_lis,
         })
 
     else:
@@ -404,7 +411,7 @@ async def render_main_page(request: Request):
 async def render_dashboard_page(request: Request):
    
     # 데이터베이스에서 bar_lis 데이터를 가져옴
-    bar_lis = fetch_bar_lis_from_database()
+    bar_lis,line_lis = fetch_bar_lis_from_database()
     
     # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
@@ -426,7 +433,7 @@ async def render_dashboard_page(request: Request):
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
 
-    return templates.TemplateResponse("dashboard.html", {"request": request, "mem_name": mem_name, "bar_lis": bar_lis})
+    return templates.TemplateResponse("dashboard.html", {"request": request, "mem_name": mem_name, "bar_lis": bar_lis, "line_lis": line_lis})
 
 # 대쉬보드 1탭
 @app.get("/dashboard1.html", response_class=HTMLResponse)
@@ -530,51 +537,99 @@ async def render_dashboard4_page(request: Request):
 
 @app.get("/alram.html")
 async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim_e: int = 964):
-    ### alram_draw
-    cursor.execute("""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
-                                                    ETCHBEAMCURRENT,IONGAUGEPRESSURE,
-                                                    ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
-                                                    ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
-                                                    FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
-                    FROM input_data;""")
+
+    cursor.execute(f"""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
+                        ETCHBEAMCURRENT,IONGAUGEPRESSURE,
+                        ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
+                        ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
+                        FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
+                    FROM input_data_1;""")
     existing_user = cursor.fetchall()
-    mem_name = request.session.get('mem_name')
-    colnames = cursor.description # 변수정보
-    cols = [[i, colnames[i][0], colnames[i+1][0]] for i in range(1, len(colnames), 2)] # 변수명
+    
+    colnames = cursor.description  # 변수정보
+    cols = [[i, colnames[i][0], colnames[i+1][0]] for i in range(1, len(colnames), 2)]  # 변수명
     
     alram_dic = {}
     for i in range(1, len(existing_user[0])):
-        alram_dic.update({'alram{}'.format(i) : [{'time': val[0], 'col':val[i]} for val in existing_user]}) # line_alram
-        
+        key = 'alram{}'.format(i)
+        ''' 이런 형태로 알람 딕셔너리 데이터를 생성
+            {'alram1': [{'time': '11:05:11', 'col': -0.1224370708389037},
+            {'time': '11:05:16', 'col': -0.1224370708389037}]'''
+        alram_dic[key] = [{'time': val[0], 'col': val[i]} for val in existing_user]
+
     try:
-        ### rul_line_draw
-        cursor.execute("""SELECT row_index
-                            FROM (SELECT rul_, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                                FROM rul_1) AS temp
-                            WHERE rul_time = 0;""")
+        ## rul이 일정 수치 아래로 가면 해당 row의 index를 list형태로 반환한다.
+        cursor.execute(f"""SELECT row_index
+                        FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                        FROM rul_1) AS temp
+                        WHERE (rul_fl < 10) or (rul_pb < 10) or (rul_ph < 10);""")
         existing_user = cursor.fetchall()
-        
         line_lis = [val[0] for val in existing_user]
-        
-        
-        ### side_bar_list
-        cursor.execute("""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
-                            FROM (SELECT multi_pred, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                                FROM multi_1) AS temp
-                            WHERE multi_pred = 1;""")
+    
+        cursor.execute(f"""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
+                        FROM (SELECT multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                            FROM multi_1) AS temp
+                        WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
         existing_user = cursor.fetchall()
-        
+    
         bar_lis = [[existing_user[0][3], existing_user[0][4]]]
         cnt = 0
-        for i in range(1, len(existing_user)):
-            if existing_user[i][-1] != 1 :
-                bar_lis[len(bar_lis)-1].append(existing_user[i-1][4])
+
+        for i in range(len(existing_user) - 2, -1, -1):
+            if existing_user[i][-1] != 1:
+                bar_lis[len(bar_lis) - 1].append(existing_user[i + 1][4])
                 bar_lis.append([existing_user[i][3], existing_user[i][4]])
-        bar_lis[-1].append(existing_user[-1][4])
-        
+
+        bar_lis[-1].append(existing_user[0][4])
+
     except:
         line_lis = None
         bar_lis = [[None, 0, 0]]
+    # ### alram_draw
+    # cursor.execute("""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
+    #                                               p  ETCHBEAMCURRENT,IONGAUGEPRESSURE,
+    #                                                 ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
+    #                                                 ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
+    #                                                 FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
+    #                 FROM input_data_1;""")
+    # existing_user = cursor.fetchall()
+    mem_name = request.session.get('mem_name')
+    # colnames = cursor.description # 변수정보
+    # cols = [[i, colnames[i][0], colnames[i+1][0]] for i in range(1, len(colnames), 2)] # 변수명
+    
+    # alram_dic = {}
+    # for i in range(1, len(existing_user[0])):
+    #     alram_dic.update({'alram{}'.format(i) : [{'time': val[0], 'col':val[i]} for val in existing_user]}) # line_alram
+        
+    # try:
+    #     ### rul_line_draw
+    #     cursor.execute("""SELECT row_index
+    #                         FROM (SELECT rul_, ROW_NUMBER() OVER (ORDER BY inputDATE_FORMAT(input_time, '%H:%i:%s_time) AS row_index
+    #                             FROM rul_1) AS temp
+    #                         WHERE rul_time = 0;""")
+    #     existing_user = cursor.fetchall()
+        
+    #     line_lis = [val[0] for val in existing_user]
+        
+        
+    #     ### side_bar_list
+    #     cursor.execute("""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
+    #                         FROM (SELECT multi_pred, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+    #                             FROM multi_1) AS temp
+    #                         WHERE multi_pred = 1;""")
+    #     existing_user = cursor.fetchall()
+        
+    #     bar_lis = [[existing_user[0][3], existing_user[0][4]]]
+    #     cnt = 0
+    #     for i in range(1, len(existing_user)):
+    #         if existing_user[i][-1] != 1 :
+    #             bar_lis[len(bar_lis)-1].append(existing_user[i-1][4])
+    #             bar_lis.append([existing_user[i][3], existing_user[i][4]])
+    #     bar_lis[-1].append(existing_user[-1][4])
+        
+    # except:
+    #     line_lis = None
+    #     bar_lis = [[None, 0, 0]]
     
     return templates.TemplateResponse("alram.html", {"request":request,
                                                      'mem_name':mem_name,
