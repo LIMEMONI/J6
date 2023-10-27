@@ -25,48 +25,6 @@
     <script src="/static/js/slimscroll.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <script>
-        // JavaScript로 설정한 시작 시간으로부터 1초씩 시간을 증가시키는 함수
-        function startCountingRuntime(startTime, elementId) {
-            const startTimeObj = new Date(startTime);
-            setInterval(function() {
-                startTimeObj.setSeconds(startTimeObj.getSeconds() + 1); // 1초를 더합니다.
-                const hours = startTimeObj.getUTCHours();
-                const minutes = startTimeObj.getUTCMinutes();
-                const seconds = startTimeObj.getUTCSeconds();
-                document.getElementById(elementId).textContent = `${hours}시간 ${minutes}분 ${seconds}초`;
-            }, 1000);
-        }
-        $(document).ready(function() {
-            // 알람 드롭다운 메뉴 토글 이벤트 위임
-            $(document).on("click", "#alarmDropdownButton", function() {
-                $(".notifications").toggle();
-        });
-
-        // "더 보기" 버튼 클릭 이벤트 위임
-        $(document).on("click", ".view-more", function() {
-                window.location.href = "/alram.html";
-        });
-        });
-
-        // 페이지가 로드된 후 함수 실행
-        // 10초마다 새로운 데이터를 db에서 가져오는 함수
-        window.onload = function() {
-            setInterval(async function(){
-                let response = await fetch("/main.html");
-                let text = await response.text();
-                document.body.innerHTML = text; // 화면 갱신
-            }, 10000); // 10초 간격
-        };
-        // 시작 시간과 element ID를 전달하여 가동시간 증가 카운트 시작
-        startCountingRuntime("{{ start_times['설비 1'] }}", "tool1_runtime");
-        startCountingRuntime("{{ start_times['설비 2'] }}", "tool2_runtime");
-        startCountingRuntime("{{ start_times['설비 2'] }}", "tool3_runtime");
-        startCountingRuntime("{{ start_times['설비 2'] }}", "tool4_runtime");
-    </script>
-    
-        
-
     <style>
         /*안내용 범례*/
         .legend{
@@ -185,6 +143,8 @@
                 <!-- 오른쪽 메뉴 아이콘들 -->                
                 <div id="navbar-menu">
                     <ul class="nav navbar-nav navbar-right">
+                        <!-- Profile 버튼 -->
+                        <li><a href="profile.html"><i class="fa fa-user"></i> Profile</a></li>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
                                 <i class="lnr lnr-alarm"></i>
@@ -493,7 +453,43 @@
 	<!-- END WRAPPER -->
 	<!-- Javascript -->
     <script>
+        // JavaScript로 설정한 시작 시간으로부터 1초씩 시간을 증가시키는 함수
+        function startCountingRuntime(startTime, elementId) {
+            const startTimeObj = new Date(startTime);
+            setInterval(function() {
+                startTimeObj.setSeconds(startTimeObj.getSeconds() + 1); // 1초를 더합니다.
+                const hours = startTimeObj.getUTCHours();
+                const minutes = startTimeObj.getUTCMinutes();
+                const seconds = startTimeObj.getUTCSeconds();
+                document.getElementById(elementId).textContent = `${hours}시간 ${minutes}분 ${seconds}초`;
+            }, 1000);
+        }
+        $(document).ready(function() {
+            // 알람 드롭다운 메뉴 토글 이벤트 위임
+            $(document).on("click", "#alarmDropdownButton", function() {
+                $(".notifications").toggle();
+        });
 
+        // "더 보기" 버튼 클릭 이벤트 위임
+        $(document).on("click", ".view-more", function() {
+                window.location.href = "/alram.html";
+        });
+        });
+
+        // 페이지가 로드된 후 함수 실행
+        // 10초마다 새로운 데이터를 db에서 가져오는 함수
+        window.onload = function() {
+            setInterval(async function(){
+                let response = await fetch("/main.html");
+                let text = await response.text();
+                document.body.innerHTML = text; // 화면 갱신
+            }, 10000); // 10초 간격
+        };
+        // 시작 시간과 element ID를 전달하여 가동시간 증가 카운트 시작
+        startCountingRuntime("{{ start_times['설비 1'] }}", "tool1_runtime");
+        startCountingRuntime("{{ start_times['설비 2'] }}", "tool2_runtime");
+        startCountingRuntime("{{ start_times['설비 2'] }}", "tool3_runtime");
+        startCountingRuntime("{{ start_times['설비 2'] }}", "tool4_runtime");
     </script>
 	<script src="/static/vendor/jquery/jquery.min.js"></script>
 	<script src="/static/vendor/bootstrap/js/bootstrap.min.js"></script>

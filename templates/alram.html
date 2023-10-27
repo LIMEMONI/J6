@@ -65,6 +65,13 @@
             line-height: 15px; /* 숫자 높이와 같도록 설정 */
         }
     </style>
+    <style>
+        /* 스크롤 가능한 목록 스타일 */
+        .nav-scroll {
+            max-height: 470px; /* 스크롤 가능한 높이를 조절하십시오. */
+            overflow-y: scroll;
+        }
+    </style>
 </head>
 <body>
     <!-- WRAPPER -->
@@ -94,8 +101,8 @@
                                     {% set val = item[0] %}
                                     {% set i_s = item[1] %}
                                     {% set i_e = item[2] %}
-                                    <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">이상근접구간 : {{ val }}</a></li>
-                                {% endfor %}
+                                    <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">{{ val }} 이상발생 </a></li>
+                                    {% endfor %}
                                 <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
                             </ul>
                             <span class="alarm-count-badge">{{ bar_lis|length }}</span>
@@ -145,21 +152,33 @@
         <div id="sidebar-nav" class="sidebar" style="text-align: center;">
             <div class="sidebar-scroll" style="overflow: hidden; width: auto; height: 95%;">
                 <nav>
-                    <ul class="nav">
-                    <li>
-                        <a href="#subPages" data-toggle="collapse" class="collapsed"><i class="lnr lnr-alarm"></i> <span> 이상알림 </span> </i></a>
-                        <div id="subPages" class="collapse ">
-                            <ul class="nav">
-                                {% for item in bar_lis %}
-                                    {% set val = item[0] %}
-                                    {% set i_s = item[1] %}
-                                    {% set i_e = item[2] %}
-                                    <li><a href="/alram.html?time={{val}}&xlim_s={{i_s}}&xlim_e={{i_e}}" class="">이상근접구간 : {{val}}</a></li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </li>
-                    </ul>
+                    <!-- 스크롤 가능한 목록 -->
+                    <div class="nav-scroll">
+                        <ul class="nav">
+                            <li>
+                                <a href="#subPages" data-toggle="collapse" class="collapsed"><i class="lnr lnr-alarm"></i> <span> 이상알림 </span> </i></a>
+                                <div id="subPages" class="collapse">
+                                    <ul class="nav">
+                                        {% for item in bar_lis %}
+                                            {% set val = item[0] %}
+                                            {% set i_s = item[1] %}
+                                            {% set i_e = item[2] %}
+                                            <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">{{ val }}<br> 이상발생 </a></li>
+                                            <!-- 스크롤 예시로 생성된 더미 목록 -->
+                                            <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">예시1<br> 이상발생 </a></li>
+                                            <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">예시2<br> 이상발생 </a></li>
+                                            <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">예시3<br> 이상발생 </a></li>
+                                            <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">예시4<br> 이상발생 </a></li>
+                                            <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">예시5<br> 이상발생 </a></li>
+                                            <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">예시6<br> 이상발생 </a></li>
+                                            <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">예시7<br> 이상발생 </a></li>
+                                            <!-- 스크롤 예시로 생성된 더미 목록 -->
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                     <!-- "메인으로 이동" 버튼 추가 -->
                     <div class="text-center" style="position: absolute; bottom: 50px; width: 100%;">
                         <li><a href="dashboard.html"><i class="fa fa-line-chart"></i> 대시보드 이동</a></li>
@@ -214,6 +233,30 @@
     </div>
     <!-- END WRAPPER -->
     <!-- ChartJavascript -->
+    <script>
+        // 스크롤 가능한 컨테이너와 호버 가능한 항목을 선택합니다.
+        var scrollContainer = document.querySelector('.nav-scroll');
+        var notificationItems = document.querySelectorAll('.notification-item');
+        
+        // 스크롤 이벤트 핸들러를 추가합니다.
+        scrollContainer.addEventListener('scroll', function() {
+            // 스크롤 위치를 가져옵니다.
+            var scrollPosition = scrollContainer.scrollTop;
+        
+            // 각 항목에 대한 위치와 호버 효과를 관리합니다.
+            notificationItems.forEach(function(item) {
+                var itemPosition = item.offsetTop;
+        
+                // 스크롤 위치와 항목 위치를 비교하여 호버 클래스를 추가 또는 제거합니다.
+                if (scrollPosition >= itemPosition && scrollPosition < itemPosition + item.clientHeight) {
+                    item.classList.add('hovered');
+                } else {
+                    item.classList.remove('hovered');
+                }
+            });
+        });
+        </script>
+        
 	<div id="line-chart"></div>
 	<script>
 	$(function() {
