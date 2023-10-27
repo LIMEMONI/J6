@@ -221,13 +221,13 @@ async def process_registration(request: Request, user: User):
     return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
 
 # 데이터베이스에서 필요한 데이터를 쿼리하여 bar_lis를 생성
-def fetch_bar_lis_from_database():
-    cursor.execute("""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
+def fetch_bar_lis_from_database(n):
+    cursor.execute(f"""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
                         ETCHBEAMCURRENT,IONGAUGEPRESSURE,
                         ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
                         ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
                         FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
-                    FROM j6database.input_data;""")
+                    FROM input_data_{n};""")
     existing_user = cursor.fetchall()
     
     colnames = cursor.description  # 변수정보
@@ -239,9 +239,9 @@ def fetch_bar_lis_from_database():
     
     try:
         cursor.execute("""SELECT row_index
-                        FROM (SELECT rul_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                            FROM j6database.rul_1) AS temp
-                        WHERE rul_time = 0;""")
+                        FROM (SELECT rul_fl, rul_pb, rul_ph, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+                        FROM rul_1) AS temp
+                        WHERE (rul_fl = 0) or (rul_pb = 0) (rul_ph = 0);""")
         existing_user = cursor.fetchall()
     
         line_lis = [val[0] for val in existing_user]
@@ -259,7 +259,6 @@ def fetch_bar_lis_from_database():
                 bar_lis[len(bar_lis) - 1].append(existing_user[i - 1][2])
                 bar_lis.append([existing_user[i][1], existing_user[i][2]])
         bar_lis[-1].append(existing_user[-1][2])
-    
     except:
         line_lis = None
         bar_lis = [[None, 0, 0]]
