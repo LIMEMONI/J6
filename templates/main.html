@@ -37,10 +37,21 @@
                 document.getElementById(elementId).textContent = `${hours}시간 ${minutes}분 ${seconds}초`;
             }, 1000);
         }
-        // 페이지가 로드된 후 함수 실행 
-        // 4초마다 새로운 데이터를 db에서 가져오는 함수
+        $(document).ready(function() {
+            // 알람 드롭다운 메뉴 토글 이벤트 위임
+            $(document).on("click", "#alarmDropdownButton", function() {
+                $(".notifications").toggle();
+        });
+
+        // "더 보기" 버튼 클릭 이벤트 위임
+        $(document).on("click", ".view-more", function() {
+                window.location.href = "/alram.html";
+        });
+        });
+
+        // 페이지가 로드된 후 함수 실행
+        // 10초마다 새로운 데이터를 db에서 가져오는 함수
         window.onload = function() {
-            // 4초마다 함수 실행
             setInterval(async function(){
                 let response = await fetch("/main.html");
                 let text = await response.text();
@@ -220,7 +231,7 @@
                         <!-- 나머지 메뉴 아이콘들 -->
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <img src="static/img/user1.png" class="img-square" alt="Picture">
+                                <img src="static/img/user.png" class="img-square" alt="Picture">
                                 <span>{{ mem_name }}</span>
                                 
                             </a>
@@ -482,18 +493,7 @@
 	<!-- END WRAPPER -->
 	<!-- Javascript -->
     <script>
-        $(document).ready(function() {
-            // 알람 드롭다운 메뉴를 토글하기
-            $("#alarmDropdownButton").click(function() {
-                $(".notifications").toggle();
-            });
-    
-            // "더 보기" 버튼을 클릭했을 때 이벤트 처리
-            $(".view-more").click(function() {
-                // "alram.html"로 이동
-                window.location.href = "alram.html";
-            });
-        });
+
     </script>
 	<script src="/static/vendor/jquery/jquery.min.js"></script>
 	<script src="/static/vendor/bootstrap/js/bootstrap.min.js"></script>
