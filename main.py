@@ -583,6 +583,20 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
                                                       'bar_lis':bar_lis,
                                                       'line_lis':line_lis,
                                                       "time": time, "xlim_s": xlim_s, "xlim_e": xlim_e})
+
+
+# Profile 페이지로 이동
+@app.get("/profile.html", response_class=HTMLResponse)
+async def render_profile_page(request: Request):
+    # 세션에서 사용자 아이디를 가져옴
+    mem_id = request.session.get("mem_id", None)
+    
+    if mem_id:
+        # 사용자가 로그인한 경우 Profile 페이지를 렌더링
+        return templates.TemplateResponse("profile.html", {"request": request})
+    else:
+        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리디렉트
+        return RedirectResponse(url="/")
     
 
 
