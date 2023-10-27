@@ -536,9 +536,9 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
                                                     ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
                                                     ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
                                                     FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
-                    FROM j6database.input_data;""")
+                    FROM input_data;""")
     existing_user = cursor.fetchall()
-    
+    mem_name = request.session.get('mem_name')
     colnames = cursor.description # 변수정보
     cols = [[i, colnames[i][0], colnames[i+1][0]] for i in range(1, len(colnames), 2)] # 변수명
     
@@ -550,7 +550,7 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
         ### rul_line_draw
         cursor.execute("""SELECT row_index
                             FROM (SELECT rul_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                                FROM j6database.rul_1) AS temp
+                                FROM rul_1) AS temp
                             WHERE rul_time = 0;""")
         existing_user = cursor.fetchall()
         
@@ -560,7 +560,7 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
         ### side_bar_list
         cursor.execute("""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
                             FROM (SELECT multi_pred, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                                FROM j6database.multi_1) AS temp
+                                FROM multi_1) AS temp
                             WHERE multi_pred = 1;""")
         existing_user = cursor.fetchall()
         
@@ -577,6 +577,7 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
         bar_lis = [[None, 0, 0]]
     
     return templates.TemplateResponse("alram.html", {"request":request,
+                                                     'mem_name':mem_name,
                                                       'cols':cols,
                                                       'dic':alram_dic,
                                                       'bar_lis':bar_lis,
