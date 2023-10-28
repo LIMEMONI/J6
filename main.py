@@ -222,6 +222,7 @@ async def process_registration(request: Request, user: User):
 
 # 데이터베이스에서 필요한 데이터를 쿼리하여 bar_lis를 생성
 def fetch_bar_lis_from_database(n=1):
+    
     cursor.execute(f"""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
                         ETCHBEAMCURRENT,IONGAUGEPRESSURE,
                         ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
@@ -259,11 +260,14 @@ def fetch_bar_lis_from_database(n=1):
         bar_lis = [[existing_user[-1][3], existing_user[-1][4]]]
 
         for i in range(len(existing_user) - 2, -1, -1):
-            if existing_user[i][-1] != 1:
+            if existing_user[i][-1] != 0 and existing_user[i][-1]!=1:
+            # if existing_user[i][-1] != 1 :
                 bar_lis[len(bar_lis) - 1].append(existing_user[i + 1][4])
                 bar_lis.append([existing_user[i][3], existing_user[i][4]])
 
         bar_lis[-1].append(existing_user[0][4])
+        bar_lis.append(bar_lis[0])
+        bar_lis = bar_lis[1:]
 
 
     except:
@@ -536,7 +540,7 @@ async def render_dashboard4_page(request: Request):
     return templates.TemplateResponse("dashboard4.html", {"request": request, "mem_name": mem_name})
 
 @app.get("/alram.html")
-async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim_e: int = 964):
+async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
 
     cursor.execute(f"""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
                         ETCHBEAMCURRENT,IONGAUGEPRESSURE,
@@ -559,6 +563,7 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
 
     try:
         ## rul이 일정 수치 아래로 가면 해당 row의 index를 list형태로 반환한다.
+        ### 중복되는 알람이 있을 수 있다. 
         cursor.execute(f"""SELECT row_index
                         FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
                         FROM rul_1) AS temp
@@ -576,11 +581,13 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
         cnt = 0
 
         for i in range(len(existing_user) - 2, -1, -1):
-            if existing_user[i][-1] != 1:
+            if existing_user[i][-1] not in ['0','1']:
                 bar_lis[len(bar_lis) - 1].append(existing_user[i + 1][4])
                 bar_lis.append([existing_user[i][3], existing_user[i][4]])
 
         bar_lis[-1].append(existing_user[0][4])
+        bar_lis.append(bar_lis[0])
+        bar_lis = bar_lis[1:]
 
     except:
         line_lis = None
