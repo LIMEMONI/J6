@@ -84,17 +84,14 @@
                 </a>
 			</div>
 			<div class="container-fluid">
-				<div class="navbar-btn">
-					<button type="button" class="btn-toggle-fullwidth"><i class="lnr lnr-arrow-left-circle"></i></button>
-				</div>
                 <!-- 오른쪽 메뉴 아이콘들 -->                
                 <div id="navbar-menu">
                     <ul class="nav navbar-nav navbar-right">
-                        <!-- Profile 버튼 -->
-                        <li><a href="profile.html"><i class="fa fa-user"></i> Profile</a></li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
-                                <i class="lnr lnr-alarm"></i>
+						<li><a href="main.html"><i class="lnr lnr-home"></i></a></li>
+						<li><a href="dashboard.html"><i class="fa fa-line-chart"></i></a></li>
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
+								<i class="lnr lnr-alarm"></i>
                             </a>
                         <!-- 알람 드롭다운 메뉴 -->
                         <ul class="dropdown-menu notifications">
@@ -128,7 +125,7 @@
                                         </form>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+										<button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
                                         <!-- 파일 업로드 버튼을 눌렀을 때 데이터를 업로드하는 함수 호출 -->
                                         <button type="button" class="btn btn-primary" id="uploadButton" onclick="uploadFile()">불러오기</button>                    
                                     </div>
@@ -137,13 +134,13 @@
                         </div>
                         <!-- 나머지 메뉴 아이콘들 -->
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <img src="static/img/user.png" class="img-square" alt="Picture">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+								<img src="static/img/user1.png" class="img-square" alt="Picture">
                                 <span>{{ mem_name }}</span>
                                 <!-- Profile 버튼 -->
                                 <li><a href="profile.html"><i class="fa fa-user"></i> Profile</a></li>
                             </a>
-                            <li><a href="/"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
+                            <li><a href="javascript:void(0);" onclick="logout()"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
                         </li>
                     </ul>
                 </div>
@@ -171,7 +168,6 @@
                 </nav>
             </div>
         </div>
-
         <!-- END LEFT SIDEBAR -->
         <!-- MAIN -->   
         <div class="main">
