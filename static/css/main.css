@@ -191,11 +191,10 @@ html.fullscreen-bg #wrapper {
 .navbar-btn {
   float: left;
   padding: 16px 0; }
-  /*화살표 버튼*/
   .navbar-btn button {
-    font-size: 30px;
-    padding: 10px 10px;
-    line-height: 1;
+    font-size: 24px;
+    padding: 4px 8px;
+    line-height: .7;
     border: none;
     background: none;
     outline: none; }
@@ -203,9 +202,46 @@ html.fullscreen-bg #wrapper {
     .navbar-btn {
       padding-left: 0; } }
 
+.navbar-btn-right {
+  float: right; }
+
+.navbar-form {
+  padding: 15px;
+  border: 0; }
+  .navbar-form input[type="text"] {
+    min-width: 200px; }
+  @media screen and (max-width: 767px) {
+    .navbar-form {
+      float: left;
+      width: 70%;
+      margin-left: 5px;
+      margin-right: 5px;
+      padding-left: 0;
+      padding-right: 0; }
+      .navbar-form .input-group {
+        width: 70%; }
+      .navbar-form input[type="text"] {
+        min-width: 150px; } }
+  @media screen and (max-width: 640px) {
+    .navbar-form {
+      display: none; } }
+
+.navbar-nav .icon-menu {
+  display: inline-block;
+  vertical-align: middle;
+  *vertical-align: auto;
+  *zoom: 1;
+  *display: inline;
+  padding-top: 28px;
+  padding-bottom: 28px;
+  position: relative; }
+  .navbar-nav .icon-menu .badge {
+    position: absolute;
+    top: 22px;
+    right: 16px; }
 
 .navbar-nav > li > a {
-  padding: 28px 10px; }
+  padding: 28px 20px; }
   .navbar-nav > li > a > i {
     font-size: 22px;
     margin-right: 2px;
@@ -213,7 +249,7 @@ html.fullscreen-bg #wrapper {
     .navbar-nav > li > a > i.icon-submenu {
       margin-left: 2px;
       margin-right: 0;
-      font-size: 11px;
+      font-size: 10px;
       position: relative;
       top: 2px; }
   .navbar-nav > li > a > span {
@@ -320,13 +356,18 @@ ul.notifications > li {
   .dropdown-menu > .disabled > a, .dropdown-menu > .disabled > a:focus, .dropdown-menu > .disabled > a:hover {
     color: #a3a3a3; }
 
+    /* navbar 오른쪽 메뉴들 오른쪽 여백 추가 */
+  #navbar-menu {
+    margin-right: 5%;
+  }
+
 /********************
  * SIDEBAR NAVIGATION
  ********************/
  .sidebar {
   z-index: 9; }
   .sidebar .nav > li > a {
-    padding: 30px 30px;
+    padding: 18px 30px;
     color: #AEB7C2;
     border-left: 5px solid transparent; }
     .sidebar .nav > li > a:hover, .sidebar .nav > li > a:focus, .sidebar .nav > li > a.active {
@@ -365,9 +406,10 @@ ul.notifications > li {
     .sidebar .nav > li > a .badge {
       font-weight: 400;
       background-color: #F9354C; }
-    /*사이드 바*/
+  .sidebar .nav {
+    /* submenu */ }
     .sidebar .nav i {
-      margin-right: 15px;
+      margin-right: 10px;
       font-size: 18px; }
     .sidebar .nav span {
       -webkit-transition: all 0.3s ease-in-out;
@@ -388,6 +430,10 @@ ul.notifications > li {
           border-left-color: transparent; }
         .sidebar .nav .nav > li > a.active a {
           color: #fff; }
+  .text-center {
+    box-sizing: content-box;
+    margin-top: 78%; 
+  }
 /* index.html contact me :: 모달 스타일 */
 .modal {
   display: none;
@@ -1214,15 +1260,28 @@ ul.activity-list > li {
       .auth-box.lockscreen {
         width: 50%;
         padding: 40px 20px; } }
+
   @media screen and (max-width: 640px) {
     .auth-box {
       width: 90%; }
       .auth-box .content {
         width: 95%; }
       .auth-box.lockscreen {
-        width: 90%; } }
+        width: 90%; }
+     }
 
 /*EMPTY Button*/
+.navbar-btn {
+  float: left;
+  padding: 16px 0; }
+
+  .navbar-btn button {
+    font-size: 24px;
+    padding: 4px 8px;
+    line-height: .7;
+    border: none;
+    background: none;
+    outline: none; }
 
 .navbar-btn-right {
   float: right; }
