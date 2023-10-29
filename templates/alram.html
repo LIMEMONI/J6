@@ -98,11 +98,11 @@
                             <!-- 알람 드롭다운 메뉴 -->
                             <ul class="dropdown-menu notifications">
                                 {% for item in bar_lis[:5] %}
-                                    {% set val = item[0] %}
-                                    {% set i_s = item[1] %}
-                                    {% set i_e = item[2] %}
-                                    <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">{{ val }} 이상발생 </a></li>
-                                    {% endfor %}
+                                {% set val = item[0] %}
+                                {% set i_s = item[1] %}
+                                {% set i_e = item[2] %}
+                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">{{ val }} 이상발생 </a></li>
+                                {% endfor %}
                                 <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
                             </ul>
                             <span class="alarm-count-badge">{{ bar_lis|length }}</span>
@@ -137,11 +137,12 @@
                         <!-- 나머지 메뉴 아이콘들 -->
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <img src="static/img/user.png" class="img-square" alt="Picture">
+                                <img src="static/img/user1.png" class="img-square" alt="Picture">
                                 <span>{{ mem_name }}</span>
-                                
+                                <!-- Profile 버튼 -->
+                                <li><a href="profile.html"><i class="fa fa-user"></i> Profile</a></li>
                             </a>
-                            <li><a href="javascript:void(0);" onclick="logout()"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
+                            <li><a href="/"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
                         </li>
                     </ul>
                 </div>

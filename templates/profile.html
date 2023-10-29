@@ -19,308 +19,135 @@
 	<!-- ICONS -->
 	<link rel="apple-touch-icon" sizes="76x76" href="static/img/apple-icon.png">
 	<link rel="icon" type="image/png" sizes="96x96" href="static/img/favicon.png">
+	<!-- D3.js 라이브러리 추가 -->
+	<script src="https://d3js.org/d3.v7.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="/static/js/slimscroll.js"></script>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+	<script src="https://kit.fontawesome.com/02c33e7f68.js" crossorigin="anonymous"></script>
+    <style>
+        /* Google Fonts에서 가져온 Roboto 폰트를 적용 */
+        #sidebar-nav {
+            font-family: 'Roboto', sans-serif;
+            font-size: 20px;
+        }
+    
+        /* Nav 내의 리스트 아이템에 적용된 스타일 변경 */
+        #sidebar-nav li {
+            list-style: none;
+            margin: 10px 0;
+        }
+    
+        #sidebar-nav a {
+            text-decoration: none;
+            color: #fff; /* 글자 색상 설정 */
+            transition: color 0.3s; /* 색상 변경 시 부드러운 전환 효과 */
+        }
+    
+        #sidebar-nav a:hover {
+            color: #007bff; /* 마우스 호버 시 글자 색상 변경 */
+        }
+    </style>
+    <style>
+        /* 알람 갯수를 표시하는 숫자 스타일 */
+        .alarm-count-badge {
+            position: absolute;
+            top: 18px;
+            right: 5px;
+            background-color: red;
+            color: white;
+            width: 20px; /* 숫자 너비 조정 */
+            height: 15px; /* 숫자 높이 조정 */
+            border-radius: 50%;
+            font-size: 10px; /* 숫자 크기 조정 */
+            text-align: center; /* 가운데 정렬을 위한 설정 */
+            line-height: 15px; /* 숫자 높이와 같도록 설정 */
+        }
+    </style>    
 </head>
 
 <body>
-	<!-- WRAPPER -->
-	<div id="wrapper">
-		<!-- NAVBAR -->
-		<nav class="navbar navbar-default navbar-fixed-top">
+    <!-- WRAPPER -->
+    <div id="wrapper">
+        <!-- NAVBAR -->
+        <nav class="navbar navbar-default navbar-fixed-top">
 			<div class="brand">
-				<a href="index.html"><img src="static/img/logo-dark.png" alt="Klorofil Logo" class="img-responsive logo"></a>
+				<a href="main.html">
+                    <img src="static/img/logo2.png" alt="Logo" class="img-responsive-logo" style="width: 120px;">
+                </a>
 			</div>
 			<div class="container-fluid">
-				<div class="navbar-btn">
-					<button type="button" class="btn-toggle-fullwidth"><i class="lnr lnr-arrow-left-circle"></i></button>
-				</div>
-				<form class="navbar-form navbar-left">
-					<div class="input-group">
-						<input type="text" value="" class="form-control" placeholder="Search dashboard...">
-						<span class="input-group-btn"><button type="button" class="btn btn-primary">Go</button></span>
-					</div>
-				</form>
-				<div class="navbar-btn navbar-btn-right">
-					<a class="btn btn-success update-pro" href="https://www.themeineed.com/downloads/klorofil-pro-bootstrap-admin-dashboard-template/?utm_source=klorofil&utm_medium=template&utm_campaign=KlorofilPro" title="Upgrade to Pro" target="_blank"><i class="fa fa-rocket"></i> <span>UPGRADE TO PRO</span></a>
-				</div>
-				<div id="navbar-menu">
-					<ul class="nav navbar-nav navbar-right">
+                <!-- 오른쪽 메뉴 아이콘들 -->                
+                <div id="navbar-menu">
+                    <ul class="nav navbar-nav navbar-right">
+						<li><a href="main.html"><i class="lnr lnr-home"></i></a></li>
+						<li><a href="dashboard.html"><i class="fa fa-line-chart"></i></a></li>
 						<li class="dropdown">
-							<a href="#" class="dropdown-toggle icon-menu" data-toggle="dropdown">
+							<a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
 								<i class="lnr lnr-alarm"></i>
-								<span class="badge bg-danger">5</span>
-							</a>
-							<ul class="dropdown-menu notifications">
-								<li><a href="#" class="notification-item"><span class="dot bg-warning"></span>System space is almost full</a></li>
-								<li><a href="#" class="notification-item"><span class="dot bg-danger"></span>You have 9 unfinished tasks</a></li>
-								<li><a href="#" class="notification-item"><span class="dot bg-success"></span>Monthly report is available</a></li>
-								<li><a href="#" class="notification-item"><span class="dot bg-warning"></span>Weekly meeting in 1 hour</a></li>
-								<li><a href="#" class="notification-item"><span class="dot bg-success"></span>Your request has been approved</a></li>
-								<li><a href="#" class="more">See all notifications</a></li>
-							</ul>
-						</li>
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="lnr lnr-question-circle"></i> <span>Help</span> <i class="icon-submenu lnr lnr-chevron-down"></i></a>
-							<ul class="dropdown-menu">
-								<li><a href="#">Basic Use</a></li>
-								<li><a href="#">Working With Data</a></li>
-								<li><a href="#">Security</a></li>
-								<li><a href="#">Troubleshooting</a></li>
-							</ul>
-						</li>
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><img src="static/img/user.png" class="img-circle" alt="Avatar"> <span>Samuel</span> <i class="icon-submenu lnr lnr-chevron-down"></i></a>
-							<ul class="dropdown-menu">
-								<li><a href="#"><i class="lnr lnr-user"></i> <span>My Profile</span></a></li>
-								<li><a href="#"><i class="lnr lnr-envelope"></i> <span>Message</span></a></li>
-								<li><a href="#"><i class="lnr lnr-cog"></i> <span>Settings</span></a></li>
-								<li><a href="#"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
-							</ul>
-						</li>
-						<!-- <li>
-							<a class="update-pro" href="https://www.themeineed.com/downloads/klorofil-pro-bootstrap-admin-dashboard-template/?utm_source=klorofil&utm_medium=template&utm_campaign=KlorofilPro" title="Upgrade to Pro" target="_blank"><i class="fa fa-rocket"></i> <span>UPGRADE TO PRO</span></a>
-						</li> -->
-					</ul>
-				</div>
-			</div>
-		</nav>
-		<!-- END NAVBAR -->
-
-		<!-- END LEFT SIDEBAR -->
-		<!-- MAIN -->
-		<div class="main">
-			<!-- MAIN CONTENT -->
-			<div class="main-content">
-				<div class="container-fluid">
-					<div class="panel panel-profile">
-						<div class="clearfix">
-							<!-- LEFT COLUMN -->
-							<div class="profile-left">
-								<!-- PROFILE HEADER -->
-								<div class="profile-header">
-									<div class="overlay"></div>
-									<div class="profile-main">
-										<img src="static/img/user-medium.png" class="img-circle" alt="Avatar">
-										<h3 class="name">Samuel Gold</h3>
-										<span class="online-status status-available">Available</span>
-									</div>
-									<div class="profile-stat">
-										<div class="row">
-											<div class="col-md-4 stat-item">
-												45 <span>Projects</span>
-											</div>
-											<div class="col-md-4 stat-item">
-												15 <span>Awards</span>
-											</div>
-											<div class="col-md-4 stat-item">
-												2174 <span>Points</span>
-											</div>
-										</div>
-									</div>
-								</div>
-								<!-- END PROFILE HEADER -->
-								<!-- PROFILE DETAIL -->
-								<div class="profile-detail">
-									<div class="profile-info">
-										<h4 class="heading">Basic Info</h4>
-										<ul class="list-unstyled list-justify">
-											<li>Birthdate <span>24 Aug, 2016</span></li>
-											<li>Mobile <span>(124) 823409234</span></li>
-											<li>Email <span>samuel@mydomain.com</span></li>
-											<li>Website <span><a href="https://www.themeineed.com">www.themeineed.com</a></span></li>
-										</ul>
-									</div>
-									<div class="profile-info">
-										<h4 class="heading">Social</h4>
-										<ul class="list-inline social-icons">
-											<li><a href="#" class="facebook-bg"><i class="fa fa-facebook"></i></a></li>
-											<li><a href="#" class="twitter-bg"><i class="fa fa-twitter"></i></a></li>
-											<li><a href="#" class="google-plus-bg"><i class="fa fa-google-plus"></i></a></li>
-											<li><a href="#" class="github-bg"><i class="fa fa-github"></i></a></li>
-										</ul>
-									</div>
-									<div class "profile-info">
-										<h4 class="heading">About</h4>
-										<p>Interactively fashion excellent information after distinctive outsourcing.</p>
-									</div>
-									<div class="text-center"><a href="#" class="btn btn-primary">Edit Profile</a></div>
-								</div>
-								<!-- END PROFILE DETAIL -->
-							</div>
-							<!-- END LEFT COLUMN -->
-							<!-- RIGHT COLUMN -->
-							<div class="profile-right">
-								<h4 class="heading">Samuel's Awards</h4>
-								<!-- AWARDS -->
-								<div class="awards">
-									<div class="row">
-										<div class="col-md-3 col-sm-6">
-											<div class "award-item">
-												<div class="hexagon">
-													<span class="lnr lnr-sun award-icon"></span>
-												</div>
-												<span>Most Bright Idea</span>
-											</div>
-										</div>
-										<div class="col-md-3 col-sm-6">
-											<div class="award-item">
-												<div class="hexagon">
-													<span class="lnr lnr-clock award-icon"></span>
-												</div>
-												<span>Most On-Time</span>
-											</div>
-										</div>
-										<div class="col-md-3 col-sm-6">
-											<div class="award-item">
-												<div class="hexagon">
-													<span class="lnr lnr-magic-wand award-icon"></span>
-												</div>
-												<span>Problem Solver</span>
-											</div>
-										</div>
-										<div class="col-md-3 col-sm-6">
-											<div class="award-item">
-												<div class="hexagon">
-													<span class="lnr lnr-heart award-icon"></span>
-												</div>
-												<span>Most Loved</span>
-											</div>
-										</div>
-									</div>
-									<div class="text-center"><a href="#" class="btn btn-default">See all awards</a></div>
-								</div>
-								<!-- END AWARDS -->
-								<!-- TABBED CONTENT -->
-								<div class="custom-tabs-line tabs-line-bottom left-aligned">
-									<ul class="nav" role="tablist">
-										<li class="active"><a href="#tab-bottom-left1" role="tab" data-toggle="tab">Recent Activity</a></li>
-										<li><a href="#tab-bottom-left2" role="tab" data-toggle="tab">Projects <span class="badge">7</span></a></li>
-									</ul>
-								</div>
-								<div class="tab-content">
-									<div class="tab-pane fade in active" id="tab-bottom-left1">
-										<ul class "list-unstyled activity-timeline">
-											<li>
-												<i class="fa fa-comment activity-icon"></i>
-												<p>Commented on post <a href="#">Prototyping</a> <span class="timestamp">2 minutes ago</span></p>
-											</li>
-											<li>
-												<i class="fa fa-cloud-upload activity-icon"></i>
-												<p>Uploaded new file <a href="#">Proposal.docx</a> to project <a href="#">New Year Campaign</a> <span class="timestamp">7 hours ago</span></p>
-											</li>
-											<li>
-												<i class="fa fa-plus activity-icon"></i>
-												<p>Added <a href="#">Martin</a> and <a href="#">3 others colleagues</a> to project repository <span class="timestamp">Yesterday</span></p>
-											</li>
-											<li>
-												<i class="fa fa-check activity-icon"></i>
-												<p>Finished 80% of all <a href="#">assigned tasks</a> <span class="timestamp">1 day ago</span></p>
-											</li>
-										</ul>
-										<div class="margin-top-30 text-center"><a href="#" class="btn btn-default">See all activity</a></div>
-									</div>
-									<div class="tab-pane fade" id="tab-bottom-left2">
-										<div class="table-responsive">
-											<table class="table project-table">
-												<thead>
-													<tr>
-														<th>Title</th>
-														<th>Progress</th>
-														<th>Leader</th>
-														<th>Status</th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr>
-														<td><a href="#">Spot Media</a></td>
-														<td>
-															<div class="progress">
-																<div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
-																	<span>60% Complete</span>
-																</div>
-															</div>
-														</td>
-														<td><img src="static/img/user2.png" alt="Avatar" class="avatar img-circle"> <a href="#">Michael</a></td>
-														<td><span class="label label-success">ACTIVE</span></td>
-													</tr>
-													<tr>
-														<td><a href="#">E-Commerce Site</a></td>
-														<td>
-															<div class="progress">
-																<div class="progress-bar" role="progressbar" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100" style="width: 33%;">
-																	<span>33% Complete</span>
-																</div>
-															</div>
-														</td>
-														<td><img src="static/img/user.png" alt="Avatar" class="avatar img-circle"> <a href="#">Antonius</a></td>
-														<td><span class="label label-warning">PENDING</span></td>
-													</tr>
-													<tr>
-														<td><a href="#">Project 123GO</a></td>
-														<td>
-															<div class="progress">
-																<div class="progress-bar" role="progressbar" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100" style="width: 68%;">
-																	<span>68% Complete</span>
-																</div>
-															</div>
-														</td>
-														<td><img src="static/img/user.png" alt="Avatar" class="avatar img-circle"> <a href="#">Antonius</a></td>
-														<td><span class="label label-success">ACTIVE</span></td>
-													</tr>
-													<tr>
-														<td><a href="#">Wordpress Theme</a></td>
-														<td>
-															<div class="progress">
-																<div class="progress-bar" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%;">
-																	<span>75%</span>
-																</div>
-															</div>
-														</td>
-														<td><img src="static/img/user2.png" alt="Avatar" class="avatar img-circle"> <a href="#">Michael</a></td>
-														<td><span class="label label-success">ACTIVE</span></td>
-													</tr>
-													<tr>
-														<td><a href="#">Project 123GO</a></td>
-														<td>
-															<div class="progress">
-																<div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;">
-																	<span>100%</span>
-																</div>
-															</div>
-														</td>
-														<td><img src="static/img/user.png" alt="Avatar" class="avatar img-circle" /> <a href="#">Antonius</a></td>
-														<td><span class="label label-default">CLOSED</span></td>
-													</tr>
-													<tr>
-														<td><a href="#">Redesign Landing Page</a></td>
-														<td>
-															<div class="progress">
-																<div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;">
-																	<span>100%</span>
-																</div>
-															</div>
-														</td>
-														<td><img src="static/img/user5.png" alt="Avatar" class="avatar img-circle" /> <a href="#">Jason</a></td>
-														<td><span class="label label-default">CLOSED</span></td>
-													</tr>
-												</tbody>
-											</table>
-										</div>
-									</div>
-								</div>
-								<!-- END TABBED CONTENT -->
-							</div>
-							<!-- END RIGHT COLUMN -->
-						</div>
-					</div>
-				</div>
-			</div>
-			<!-- END MAIN CONTENT -->
-		</div>
+                            </a>
+                        <!-- 알람 드롭다운 메뉴 -->
+                        <ul class="dropdown-menu notifications">
+                            {% for item in bar_lis[:5] %}
+                                {% set val = item[0] %}
+                                {% set i_s = item[1] %}
+                                {% set i_e = item[2] %}
+                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">이상근접구간 : {{ val }}</a></li>
+                            {% endfor %}
+                            <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
+                        </ul>
+                        <span class="alarm-count-badge">{{ bar_lis|length }}</span>
+                        </li>
+                        <!-- 파일 업로드 모달 대화 상자 -->
+                        <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="uploadModalLabel">CSV 파일 불러오기</h5>
+                                        
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="uploadForm" enctype="multipart/form-data">
+                                            <div class="form-group">
+                                                <label for="csvFile">CSV 파일 선택</label>
+                                                <input type="file" class="form-control-file" id="csvFile" name="file">
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+										<button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                                        <!-- 파일 업로드 버튼을 눌렀을 때 데이터를 업로드하는 함수 호출 -->
+                                        <button type="button" class="btn btn-primary" id="uploadButton" onclick="uploadFile()">불러오기</button>                    
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 나머지 메뉴 아이콘들 -->
+                        <li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+								<img src="static/img/user1.png" class="img-square" alt="Picture">
+                                <span>{{ mem_name }}</span>
+                                <!-- Profile 버튼 -->
+                                <li><a href="profile.html"><i class="fa fa-user"></i> Profile</a></li>
+                            </a>
+                            <li><a href="javascript:void(0);" onclick="logout()"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- END NAVBAR -->
+            <!-- iframe 태그 -->
+            <iframe id="iframe" width="100%" height="620" frameborder="0"></iframe>
 		<!-- END MAIN -->
 		<div class="clearfix"></div>
 		<footer>
 			<div class="container-fluid">
-				<p class="copyright">Shared by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">BootstrapThemes</a>
+				<p class="copyright">Made by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">J6</a>
 </p>
 			</div>
 		</footer>
@@ -331,6 +158,67 @@
 	<script src="static/vendor/bootstrap/js/bootstrap.min.js"></script>
 	<script src="static/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
 	<script src="static/scripts/klorofil-common.js"></script>
+	<script>
+        function logout() {
+            // 서버로 로그아웃 요청을 보내기 위해 fetch 사용
+            fetch('/logout', {
+                method: 'POST'
+            })
+            .then(response => {
+                if (response.redirected) {
+                    // 로그아웃 후, 홈 페이지로 리디렉션
+                    window.location.href = response.url;
+                }
+            })
+            .catch(error => {
+                console.error('로그아웃 오류:', error);
+            });
+        }
+    </script>
+    <script>
+        // 파일 업로드 버튼 클릭 시 호출되는 함수
+        function uploadFile() {
+            var fileInput = document.getElementById('csvFile');
+            var file = fileInput.files[0];
+    
+            var formData = new FormData();
+            formData.append("file", file);
+    
+            // 서버에 파일을 업로드합니다.
+            $.ajax({
+                type: "POST",
+                url: "/uploadfile/",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    // 파일 업로드가 성공하면 원하는 작업을 수행합니다.
+                    // response.filename를 사용하여 업로드된 파일 이름을 확인할 수 있습니다.
+                },
+                error: function (error) {
+                    // 파일 업로드 중 오류가 발생하면 처리합니다.
+                }
+            });
+        }
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            // 알람 드롭다운 메뉴를 토글하기
+            $("#alarmDropdownButton").click(function() {
+                $(".notifications").toggle();
+            });
+    
+            // "더 보기" 버튼을 클릭했을 때 이벤트 처리
+            $(".view-more").click(function() {
+                // "alram.html"로 이동
+                window.location.href = "alram.html";
+            });
+			// 프로필 페이지 로딩 후 iframe에 dashboard1.html 표시
+			var iframe = document.getElementById('iframe');
+			iframe.src = 'profile1.html';
+		});
+    </script>
 </body>
 
 </html>
