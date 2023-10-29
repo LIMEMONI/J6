@@ -104,21 +104,23 @@ async def login(request: Request, mem_id: str = Form(None), mem_pass: str = Form
 
     try:
         # 데이터베이스에서 아이디, 해싱된 비밀번호, 그리고 mem_grade 가져오기
-        cursor.execute("SELECT mem_name, mem_pass, mem_grade FROM member WHERE mem_id = %s", (mem_id,))
+        cursor.execute("SELECT mem_name, mem_pass, mem_grade, mem_ph FROM member WHERE mem_id = %s", (mem_id,))
         user_data = cursor.fetchone()
 
         if user_data:
             # mem_grade 확인
-            mem_name, mem_pass_db, mem_grade = user_data
+            mem_name, mem_pass_db, mem_grade, mem_ph = user_data
             if mem_pass_db == mem_pass:
                 # 비밀번호 일치, mem_grade에 따라 페이지 리디렉션
                 if mem_grade == 0:
                     request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
                     request.session["mem_name"] = mem_name  # 세션에 사용자 이름 저장
+                    request.session["mem_ph"] = mem_ph  # 세션에 사용자 번호 저장
                     return RedirectResponse(url="/main.html")
                 elif mem_grade == 1:
                     request.session["mem_id"] = mem_id  # 세션에 사용자 아이디 저장
                     request.session["mem_name"] = mem_name  # 세션에 사용자 이름 저장
+                    request.session["mem_ph"] = mem_ph  # 세션에 사용자 번호 저장
                     return RedirectResponse(url="/main.html")
                 else:
                     return RedirectResponse(url="/")
@@ -588,15 +590,62 @@ async def page_alram(request: Request, time: str = None, xlim_s: int = 925, xlim
 # Profile 페이지로 이동
 @app.get("/profile.html", response_class=HTMLResponse)
 async def render_profile_page(request: Request):
-    # 세션에서 사용자 아이디를 가져옴
-    mem_id = request.session.get("mem_id", None)
+
+    # 데이터베이스에서 bar_lis 데이터를 가져옴
+    bar_lis = fetch_bar_lis_from_database()
     
+    # 세션에서 사용자 아이디 및 이름 가져오기
+    mem_id = request.session.get("mem_id", None)
+    mem_name = request.session.get("mem_name", "Unknown")
+
     if mem_id:
-        # 사용자가 로그인한 경우 Profile 페이지를 렌더링
-        return templates.TemplateResponse("profile.html", {"request": request})
+        # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
+        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            # 결과를 딕셔너리로 변환
+            column_names = cursor.column_names
+            user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
+
+            # mem_name 필드 추출
+            mem_name = user_dict.get("mem_name", mem_name)
     else:
-        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리디렉트
+        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
+
+    return templates.TemplateResponse("profile.html", {"request": request, "mem_name": mem_name, "bar_lis": bar_lis})
+
+# Profile1 페이지로 이동
+@app.get("/profile1.html", response_class=HTMLResponse)
+async def render_profile_page(request: Request):
+
+    # 데이터베이스에서 bar_lis 데이터를 가져옴
+    bar_lis = fetch_bar_lis_from_database()
+    
+    # 세션에서 사용자 아이디 및 이름 가져오기
+    mem_id = request.session.get("mem_id", None)
+    mem_name = request.session.get("mem_name", "Unknown")
+    mem_ph = request.session.get("mem_ph")
+
+    if mem_id:
+        # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
+        cursor.execute("SELECT * FROM member WHERE mem_id = %s", (mem_id,))
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            # 결과를 딕셔너리로 변환
+            column_names = cursor.column_names
+            user_dict = {column_names[i]: existing_user[i] for i in range(len(column_names))}
+
+            # mem_name 필드 추출
+            mem_name = user_dict.get("mem_name", mem_name)
+    else:
+        # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
+        return RedirectResponse(url="/")
+
+    return templates.TemplateResponse("profile1.html", {"request": request, "mem_id": mem_id, "mem_ph" : mem_ph, "mem_name": mem_name, "bar_lis": bar_lis})
+
     
 
 
