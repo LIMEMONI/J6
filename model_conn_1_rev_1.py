@@ -19,6 +19,18 @@ current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 ## 길이 기준 설정
 avg_len = 500
 
+## 모델 경로
+abnormal_models_path = ['./model/abnormal_detect/RF_model(FL).pkl','./model/abnormal_detect/RF_model(PB).pkl','./model/abnormal_detect/RF_model(PH).pkl']
+rul_models_path = ['./model/RULmodel/231023_xgb_ss_df_fl.pickle','./model/RULmodel/231023_xgb_ss_df_pb.pickle','./model/RULmodel/231023_xgb_ss_df_fl.pickle']
+inverse_scalers_path = ['./model/RULmodel/231023_ss_y_df_fl.pickle','./model/RULmodel/231023_ss_y_df_pb.pickle','./model/RULmodel/231023_ss_y_df_ph.pickle']
+scalers_path = ['./model/RULmodel/231023_ss_x_df_fl.pickle','./model/RULmodel/231023_ss_x_df_pb.pickle','./model/RULmodel/231023_ss_x_df_ph.pickle']
+
+# 모델 및 스케일러 미리 로드
+MODELS = [joblib.load(path) for path in rul_models_path]
+SCALERS = [joblib.load(path) for path in scalers_path]
+INVERSE_SCALERS = [joblib.load(path) for path in inverse_scalers_path]
+ABNORMAL_MODELS = [joblib.load(path) for path in abnormal_models_path]
+
 def fetch_recent_logs(length=avg_len):
     """mysql db에서 최근 로그를 가져오는 함수"""
     # mysql 데이터베이스에 연결
@@ -36,7 +48,7 @@ def fetch_recent_logs(length=avg_len):
                         ETCHBEAMCURRENT,IONGAUGEPRESSURE,
                         ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
                         ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
-                        FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE FROM input_data_2 ORDER BY input_time DESC LIMIT {length}'''
+                        FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE FROM input_data_1 ORDER BY input_time DESC LIMIT {length}'''
             cursor.execute(sql)
             results = cursor.fetchall()
     finally:
@@ -59,7 +71,7 @@ def fetch_recent_logs_for_multi(length=1):
             # 가장 최근의 데이터부터 지정한 길이만큼 가져오는 SQL 쿼리
             sql = f'''SELECT ACTUALROTATIONANGLE, ACTUALSTEPDURATION, ETCHBEAMCURRENT, ETCHGASCHANNEL1READBACK, 
               ETCHPBNGASREADBACK, ETCHSOURCEUSAGE, FIXTURETILTANGLE, FLOWCOOLFLOWRATE, FLOWCOOLPRESSURE, 
-              IONGAUGEPRESSURE FROM input_data_2 ORDER BY input_time DESC LIMIT {length}'''
+              IONGAUGEPRESSURE FROM input_data_1 ORDER BY input_time DESC LIMIT {length}'''
             cursor.execute(sql)
             results = cursor.fetchall()
     finally:
@@ -72,62 +84,35 @@ def dict_to_array(data):
     return np.array([list(item.values()) for item in data])
 
 
-def predict_with_xgb_model(data,model_path,scaler_path,inverse_scaler_path):
-    """xgboost 모델을 사용해 예측하는 함수"""
-    # 데이터 형태 변환
+def predict_with_xgb_model_optimized(data):
+    """수명예측 모델로 예측하는 함수"""
     transformed_data = dict_to_array(data)
-
-    """모델 예측 전 전처리 함수"""
-    # 모델 불러오기
-    scaler = joblib.load(scaler_path)
+    scaled_data_list = [scaler.transform(transformed_data) for scaler in SCALERS]
     
-    # scaler 적용
-    scaled_data = scaler.transform(transformed_data)
-
-    """xgboost 모델을 사용해 예측하는 함수"""
-    # 모델 불러오기
-    model =  joblib.load(model_path)
-
-    # 예측 실행
-    predictions_scaled = model.predict(scaled_data)
-
-    #### rul inverse transfomr 적용 필요!!!!
-     # 모델 불러오기
-    inverse_scaler = joblib.load(inverse_scaler_path)
-    
-    predictions = inverse_scaler.inverse_transform(predictions_scaled.reshape(-1,1))
-
-    return predictions[:,0]
-
-def predict_with_xgb_multi_model(data,model_path):
-    """xgboost 다중분류 모델을 사용해 예측하는 함수"""
-    # 데이터 형태 변환
-    transformed_data = dict_to_array(data)
-
-    """모델 예측 전 전처리 함수"""
-    # 모델 불러오기
-    scaler = joblib.load('./model/abnormal_detect/StandardScaler.pkl')
-    
-    # scaler 적용
-    scaled_data = scaler.transform(transformed_data)
-
-    """xgboost 모델을 사용해 예측하는 함수"""
-    # 모델 불러오기
-    model=  joblib.load(model_path) 
-
-    # 예측 실행
-    predictions = model.predict(scaled_data)
+    predictions = []
+    for model, scaled_data, inverse_scaler in zip(MODELS, scaled_data_list, INVERSE_SCALERS):
+        pred_scaled = model.predict(scaled_data)
+        predictions.append(inverse_scaler.inverse_transform(pred_scaled.reshape(-1,1))[:,0])
 
     return predictions
 
+def predict_with_xgb_multi_model_optimized(data):
+    """고장예측 모델로 예측하는 함수"""
+    transformed_data = dict_to_array(data)
+    scaled_data = SCALERS[0].transform(transformed_data)  # 첫 번째 스케일러만 사용
+
+    predictions = []
+    for model in ABNORMAL_MODELS:
+        predictions.append(model.predict(scaled_data))
+        
+    return predictions
+
 def compute_moving_average(data, window_size=avg_len):
-    """이동평균 계산하는 함수"""
+    """이동평균 예측 함수"""
     return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
-import numpy as np
-
 def compute_moving_median(data, window_size):
-    """이동 중앙값 계산하는 함수"""
+    """이동 중앙값 계산 함수"""
     tmp_data = data.reshape(1,-1)
     num_data = len(tmp_data)
     medians = []
@@ -150,7 +135,7 @@ def insert_single_data(connection, single_data):
             # 현재 시간 가져오기
             current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             # 데이터 삽입 SQL.
-            sql = f'''INSERT INTO input_data_2 (time, Tool, stage, Lot, runnum, recipe, recipe_step,
+            sql = f'''INSERT INTO input_data_1 (time, Tool, stage, Lot, runnum, recipe, recipe_step,
        IONGAUGEPRESSURE, ETCHBEAMVOLTAGE, ETCHBEAMCURRENT,
        ETCHSUPPRESSORVOLTAGE, ETCHSUPPRESSORCURRENT, FLOWCOOLFLOWRATE,
        FLOWCOOLPRESSURE, ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
@@ -168,7 +153,7 @@ def insert_single_rul_data(connection, data, current_time):
     try:
         with connection.cursor() as cursor:
             # 데이터 삽입 SQL.
-            sql = f'''INSERT INTO rul_2(rul_fl, rul_pb, rul_ph, input_time) 
+            sql = f'''INSERT INTO rul_1(rul_fl, rul_pb, rul_ph, input_time) 
                       VALUES (%s, %s, %s, "{current_time}")'''
             cursor.execute(sql, (data[0], data[1], data[2]))
         connection.commit()
@@ -180,7 +165,7 @@ def insert_single_multi_data(connection, data, current_time):
     try:
         with connection.cursor() as cursor:
             # 데이터 삽입 SQL.
-            sql = f'''INSERT INTO multi_2(multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time) 
+            sql = f'''INSERT INTO multi_1(multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time) 
                       VALUES (%s, %s, %s, "{current_time}")'''
             cursor.execute(sql, (data[0], data[1], data[2]))
         connection.commit()
@@ -207,54 +192,35 @@ def main():
     # DataFrame에서 튜플 리스트로 데이터 변환
     data_tuples = list(df.itertuples(index=False, name=None))
 
-    abnormal_models_path = ['./model/abnormal_detect/RF_model(FL).pkl','./model/abnormal_detect/RF_model(PB).pkl','./model/abnormal_detect/RF_model(PH).pkl']
-    rul_models_path = ['./model/RULmodel/231023_xgb_ss_df_fl.pickle','./model/RULmodel/231023_xgb_ss_df_pb.pickle','./model/RULmodel/231023_xgb_ss_df_fl.pickle']
-    inverse_scalers_path = ['./model/RULmodel/231023_ss_y_df_fl.pickle','./model/RULmodel/231023_ss_y_df_pb.pickle','./model/RULmodel/231023_ss_y_df_ph.pickle']
-    scalers_path = ['./model/RULmodel/231023_ss_x_df_fl.pickle','./model/RULmodel/231023_ss_x_df_pb.pickle','./model/RULmodel/231023_ss_x_df_ph.pickle']
 
     ## 데이터를 한줄 씩 밀어넣으면서 진행하는 방식
 
     for single_data in data_tuples:
-
-        start_time = time.time()  # 루프 시작 시간 기록
-
         try:
-            # 데이터 삽입
+            start_time = time.time()
             current_time = insert_single_data(connection, single_data)
-
             data = fetch_recent_logs(length=avg_len)
             data_for_multi = fetch_recent_logs_for_multi()
 
-            rul_insert = []
-            multi_insert = []
+            # 가져온 데이터로 예측 실시
+            rul_predictions_raw = predict_with_xgb_model_optimized(data)
+            # fetch로 가져온 데이터의 길이만큼 이동 평균 적용
+            rul_predictions = [compute_moving_average(pred, window_size=len(data)) for pred in rul_predictions_raw]
 
-            for i in range(len(abnormal_models_path)):
-            
-                # 가져온 데이터를 기반으로 예측하기
-                predictions = predict_with_xgb_model(data,rul_models_path[i],scalers_path[i],inverse_scalers_path[i])
-                predictions_for_multi = predict_with_xgb_multi_model(data_for_multi,abnormal_models_path[i])
-                
-                # 이동평균 계산하기
-                window_size = min(avg_len, len(predictions))  # 데이터 수와 avg_len 중 작은 값을 창 크기로 사용
-                moving_avg = compute_moving_average(predictions, window_size=window_size)
-                # window_size_for_multi = min(avg_len, len(predictions_for_multi))  # 데이터 수와 avg_len 중 작은 값을 창 크기로 사용
-                # moving_avg_for_multi = compute_moving_average(predictions_for_multi, window_size=window_size_for_multi)
-                
-                rul_insert.append(moving_avg[0])
-                multi_insert.append(predictions_for_multi[0])
-                
-            # pred 데이터 삽입
-            insert_single_rul_data(connection, rul_insert, current_time)
-            insert_single_multi_data(connection, multi_insert, current_time)
+            multi_predictions = predict_with_xgb_multi_model_optimized(data_for_multi)
+
+            elapsed_time = time.time() - start_time  # 루프 실행 시간 계산
+            sleep_time = max(4 - elapsed_time, 0)  # 음수가 되지 않도록 최소값을 0으로 설정
+            time.sleep(sleep_time)  # 조절된 sleep 시간만큼 대기
+
+            insert_single_rul_data(connection, rul_predictions, current_time)
+            insert_single_multi_data(connection, multi_predictions, current_time)
 
 
         except Exception as e:
             print(f"Error: {e}")
 
             
-        elapsed_time = time.time() - start_time  # 루프 실행 시간 계산
-        sleep_time = max(4 - elapsed_time, 0)  # 음수가 되지 않도록 최소값을 0으로 설정
-        time.sleep(sleep_time)  # 조절된 sleep 시간만큼 대기
     
     # 연결 종료
     connection.close()    

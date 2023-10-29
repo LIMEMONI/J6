@@ -44,7 +44,7 @@ def fetch_recent_logs(length=avg_len):
 
     return results
 
-def fetch_recent_logs_for_multi(length=avg_len):
+def fetch_recent_logs_for_multi(length=1):
     """mysql db에서 최근 로그를 가져오는 함수"""
     # mysql 데이터베이스에 연결
 
@@ -223,7 +223,7 @@ def main():
             current_time = insert_single_data(connection, single_data)
 
             data = fetch_recent_logs(length=avg_len)
-            data_for_multi = fetch_recent_logs_for_multi(length=avg_len)
+            data_for_multi = fetch_recent_logs_for_multi()
 
             rul_insert = []
             multi_insert = []
@@ -237,8 +237,8 @@ def main():
                 # 이동평균 계산하기
                 window_size = min(avg_len, len(predictions))  # 데이터 수와 avg_len 중 작은 값을 창 크기로 사용
                 moving_avg = compute_moving_average(predictions, window_size=window_size)
-                window_size_for_multi = min(avg_len, len(predictions_for_multi))  # 데이터 수와 avg_len 중 작은 값을 창 크기로 사용
-                moving_avg_for_multi = compute_moving_average(predictions_for_multi, window_size=window_size_for_multi)
+                # window_size_for_multi = min(avg_len, len(predictions_for_multi))  # 데이터 수와 avg_len 중 작은 값을 창 크기로 사용
+                # moving_avg_for_multi = compute_moving_average(predictions_for_multi, window_size=window_size_for_multi)
                 
                 rul_insert.append(moving_avg[0])
                 multi_insert.append(predictions_for_multi[0])
