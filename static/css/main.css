@@ -19,11 +19,12 @@ html {
   position: relative;
   min-height: 100%; }
 
-body {
-  background-color: #F3F5F8;
-  font-family: "Source Sans Pro", sans-serif;
-  font-size: 15px;
-  color: #676a6d; }
+  body {
+    background-color: #F3F5F8;
+    font-family: 'Karla', sans-serif;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px;
+    color: #676a6d; }
 
 a {
   color: #3287B2; }
