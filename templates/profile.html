@@ -83,21 +83,21 @@
                     <ul class="nav navbar-nav navbar-right">
 						<li><a href="main.html"><i class="lnr lnr-home"></i></a></li>
 						<li><a href="dashboard.html"><i class="fa fa-line-chart"></i></a></li>
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
-								<i class="lnr lnr-alarm"></i>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
+                                <i class="lnr lnr-alarm"></i>
                             </a>
-                        <!-- 알람 드롭다운 메뉴 -->
-                        <ul class="dropdown-menu notifications">
-                            {% for item in bar_lis[:5] %}
+                            <!-- 알람 드롭다운 메뉴 -->
+                            <ul class="dropdown-menu notifications">
+                                {% for item in bar_lis[:5] %}
                                 {% set val = item[0] %}
                                 {% set i_s = item[1] %}
                                 {% set i_e = item[2] %}
-                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">이상근접구간 : {{ val }}</a></li>
-                            {% endfor %}
-                            <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
-                        </ul>
-                        <span class="alarm-count-badge">{{ bar_lis|length }}</span>
+                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">{{ val }} 이상발생 </a></li>
+                                {% endfor %}
+                                <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
+                            </ul>
+                            <span class="alarm-count-badge">{{ bar_lis|length }}</span>
                         </li>
                         <!-- 파일 업로드 모달 대화 상자 -->
                         <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
@@ -214,7 +214,7 @@
                 // "alram.html"로 이동
                 window.location.href = "alram.html";
             });
-			// 프로필 페이지 로딩 후 iframe에 dashboard1.html 표시
+			// 프로필 페이지 로딩 후 iframe에 profile1.html 표시
 			var iframe = document.getElementById('iframe');
 			iframe.src = 'profile1.html';
 		});
