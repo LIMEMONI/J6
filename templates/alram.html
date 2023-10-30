@@ -70,7 +70,7 @@
     <style>
         /* 스크롤 가능한 목록 스타일 */
         .nav-scroll {
-            max-height: 470px; /* 스크롤 가능한 높이를 조절하십시오. */
+            max-height: 610px; /* 스크롤 가능한 높이를 조절하십시오. */
             overflow-y: scroll;
         }
     </style>
@@ -137,14 +137,21 @@
                     <div class="nav-scroll">
                         <ul class="nav">
                             <li>
-                                <a href="#subPages" data-toggle="collapse" class="collapsed"><i class="lnr lnr-alarm"></i> <span> 이상알림 </span> </i></a>
+                                <a href="#subPages" data-toggle="collapse" class="collapsed">
+                                    <i class="lnr lnr-alarm"></i> <span> 이상알림 </span>
+                                </a>
                                 <div id="subPages" class="collapse">
                                     <ul class="nav">
                                         {% for item in bar_lis %}
                                             {% set val = item[0] %}
                                             {% set i_s = item[1] %}
                                             {% set i_e = item[2] %}
-                                            <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">{{ val }}<br> 이상발생 </a></li>
+                                            <li>
+                                                <a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">
+                                                    <span style="font-size: 10px; display: block;">{{ val }}</span>
+                                                    <span style="font-size: 10px; display: block;">이상발생</span>
+                                                </a>
+                                            </li>
                                         {% endfor %}
                                     </ul>
                                 </div>

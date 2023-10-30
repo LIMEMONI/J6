@@ -73,18 +73,25 @@
     </script>
     <script>
         $(document).ready(function() {
-            // 알람 드롭다운 메뉴를 토글하기
-            $("#alarmDropdownButton").click(function() {
+            // 알람 드롭다운 메뉴 토글 이벤트 위임
+            $(document).on("click", "#alarmDropdownButton", function() {
                 $(".notifications").toggle();
             });
     
-            // "더 보기" 버튼을 클릭했을 때 이벤트 처리
-            $(".view-more").click(function() {
-                // "alram.html"로 이동
-                window.location.href = "alram.html";
+            // "더 보기" 버튼 클릭 이벤트 위임
+            $(document).on("click", ".view-more", function() {
+                // 이동할 URL과 파라미터 설정
+                var url = "alram.html";
+                var time = ""; // 여기에 적절한 값 설정
+                var xlim_s = ""; // 여기에 적절한 값 설정
+                var xlim_e = ""; // 여기에 적절한 값 설정
+    
+                // URL에 쿼리 매개변수를 추가하여 이동
+                window.location.href = url + "?time=" + time + "&xlim_s=" + xlim_s + "&xlim_e=" + xlim_e;
             });
         });
     </script>
+    
     <style>
 
         /**********
@@ -207,10 +214,10 @@
                         </span>
                     </a>
                     <div class="navbar-btn">
-                        <button type="button" class="btn-toggle-fullwidth" style="font-size: 25px;"><i class="lnr lnr-arrow-left-circle"></i></button>
+                        <button type="button" class="btn-toggle -fullwidth" style="font-size: 25px;"><i class="lnr lnr-arrow-left-circle"></i></button>
                     </div>
                 </div>
-              
+
                 <!-- 오른쪽 메뉴 아이콘들 -->                
                 <div id="navbar-menu" style="margin-right: 70px;">
                     <ul class="nav navbar-nav navbar-right"><i class=""></i>
