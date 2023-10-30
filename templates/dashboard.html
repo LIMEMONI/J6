@@ -61,13 +61,13 @@
         .alarm-count-badge {
             position: absolute;
             top: 23px;
-            right: 15px;
+            right: 5px;
             background-color: red;
             color: white;
             width: 20px; /* 숫자 너비 조정 */
             height: 15px; /* 숫자 높이 조정 */
             border-radius: 50%;
-            font-size: 10px; /* 숫자 크기 조정 */
+            font-size: 11px; /* 숫자 크기 조정 */
             text-align: center; /* 가운데 정렬을 위한 설정 */
             line-height: 15px; /* 숫자 높이와 같도록 설정 */
             font-weight: bold;
@@ -82,22 +82,25 @@
         <!-- NAVBAR -->
         <nav class="navbar navbar-default navbar-fixed-top" style="height: 12%;">
             <div class="container-fluid">
-                <!-- 로고와 사이드바 버튼 -->
+                <!-- 로고와 데이터 불러오기 버튼 -->
                 <div class="navbar-header">
                     <a class="navbar-brand" style="width: 20%; height: 20%; display: flex; align-items: center;">
-                        <img src="static/img/falp_logo.png" alt="J6 Logo" class="img-responsive logo">   
+                        <img src="static/img/logo2.png" alt="J6 Logo" class="img-responsive logo">   
                         </span>
                     </a>
                     <div class="navbar-btn">
-                        <button type="button" class="btn-toggle-fullwidth"><i class="lnr lnr-arrow-left-circle"></i></button>
+                        <button type="button" class="btn-toggle-fullwidth" style="font-size: 25px;"><i class="lnr lnr-arrow-left-circle"></i></button>
                     </div>
                 </div>
+              
                 <!-- 오른쪽 메뉴 아이콘들 -->                
-                <div id="navbar-menu" style="margin-right: 50px;">
-                    <ul class="nav navbar-nav navbar-right">
+                <div id="navbar-menu" style="margin-right: 70px;">
+                    <ul class="nav navbar-nav navbar-right"><i class=""></i>
+                        <li style="margin-right: 10px;"><a href="main.html"><i class="fa-solid fa-house"></i></a></li>
+                        <li style="margin-right: 10px;"><a href="dashboard.html"><i class="fa-solid fa-chart-line"></i></a></li>
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
-                                <i class="lnr lnr-alarm"></i>
+                            <a href="#" class="dropdown-toggle icon-menu" data-toggle="dropdown" id="alarmDropdownButton">
+                                <i class="fa-solid fa-bell"></i>
                             </a>
                         <!-- 알람 드롭다운 메뉴 -->
                         <ul class="dropdown-menu notifications">
@@ -105,7 +108,7 @@
                                 {% set val = item[0] %}
                                 {% set i_s = item[1] %}
                                 {% set i_e = item[2] %}
-                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">이상근접구간 : {{ val }}</a></li>
+                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 공정 이상 감지 구간 : {{ val }}</a></li>
                             {% endfor %}
                             <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
                         </ul>
@@ -113,19 +116,19 @@
                         </li>
                         <!-- 나머지 메뉴 아이콘들 -->
                         <li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-								<img src="static/img/user1.png" class="img-square" alt="Picture">
-                                <span>{{ mem_name }}</span>
-                                <!-- Profile 버튼 -->
-                                <li><a href="profile.html"><i class="fa fa-user"></i> Profile</a></li>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <li><a href="profile.html"><img src="static/img/user1.png" class="img-square" alt="Picture"><span style="font-weight: bold;">{{ mem_name }}</span></a></li>
                             </a>
-                            <li><a href="javascript:void(0);" onclick="logout()"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
+                            <li><a href="/"><i class="fa-solid fa-arrow-right-from-bracket"></i><span style="font-weight: bold;">Logout</span></a></li>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
-        <!-- END NAVBAR -->
+    </div>
+    <!-- END NAVBAR -->
+
+    
 
         <!-- LEFT SIDEBAR -->
         <div id="sidebar-nav" class="sidebar">
