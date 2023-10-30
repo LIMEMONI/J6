@@ -225,24 +225,24 @@ async def process_registration(request: Request, user: User):
 # 데이터베이스에서 필요한 데이터를 쿼리하여 bar_lis를 생성
 def fetch_bar_lis_from_database(n=1):
     
-    cursor.execute(f"""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
-                        ETCHBEAMCURRENT,IONGAUGEPRESSURE,
-                        ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
-                        ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
-                        FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
-                    FROM input_data_{n};""")
-    existing_user = cursor.fetchall()
+    # cursor.execute(f"""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
+    #                     ETCHBEAMCURRENT,IONGAUGEPRESSURE,
+    #                     ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
+    #                     ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
+    #                     FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
+    #                 FROM input_data_{n};""")
+    # existing_user = cursor.fetchall()
     
-    colnames = cursor.description  # 변수정보
-    cols = [[i, colnames[i][0], colnames[i+1][0]] for i in range(1, len(colnames), 2)]  # 변수명
+    # colnames = cursor.description  # 변수정보
+    # cols = [[i, colnames[i][0], colnames[i+1][0]] for i in range(1, len(colnames), 2)]  # 변수명
     
-    alram_dic = {}
-    for i in range(1, len(existing_user[0])):
-        key = 'alram{}'.format(i)
-        ''' 이런 형태로 알람 딕셔너리 데이터를 생성
-            {'alram1': [{'time': '11:05:11', 'col': -0.1224370708389037},
-            {'time': '11:05:16', 'col': -0.1224370708389037}]'''
-        alram_dic[key] = [{'time': val[0], 'col': val[i]} for val in existing_user]
+    # alram_dic = {}
+    # for i in range(1, len(existing_user[0])):
+    #     key = 'alram{}'.format(i)
+    #     ''' 이런 형태로 알람 딕셔너리 데이터를 생성
+    #         {'alram1': [{'time': '11:05:11', 'col': -0.1224370708389037},
+    #         {'time': '11:05:16', 'col': -0.1224370708389037}]'''
+    #     alram_dic[key] = [{'time': val[0], 'col': val[i]} for val in existing_user]
 
     try:
         ## rul이 일정 수치 아래로 가면 해당 row의 index를 list형태로 반환한다.
@@ -259,17 +259,18 @@ def fetch_bar_lis_from_database(n=1):
                         WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
         existing_user = cursor.fetchall()
     
-        bar_lis = [[existing_user[-1][3], existing_user[-1][4]]]
+        bar_lis = []
 
-        for i in range(len(existing_user) - 2, -1, -1):
-            if existing_user[i][-1] != 0 and existing_user[i][-1]!=1:
-            # if existing_user[i][-1] != 1 :
-                bar_lis[len(bar_lis) - 1].append(existing_user[i + 1][4])
-                bar_lis.append([existing_user[i][3], existing_user[i][4]])
+        # 마지막 열 값이 >1 인 데이터와 None 값을 무시
+        for idx, row in enumerate(existing_user[:-1]):
+            if row[-1] is not None and row[-1] > 1:
+                current_datetime = row[3]
+                current_value = row[-2]
+                next_value = existing_user[idx + 1][-2]
+                bar_lis.append((current_datetime, current_value, next_value))
 
-        bar_lis[-1].append(existing_user[0][4])
-        bar_lis.append(bar_lis[0])
-        bar_lis = bar_lis[1:]
+        # 전체 순서 역으로 정렬
+        bar_lis = sorted(bar_lis, key=lambda x: x[0], reverse=True)
 
 
     except:
@@ -544,12 +545,12 @@ async def render_dashboard4_page(request: Request):
 @app.get("/alram.html")
 async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
 
-    cursor.execute(f"""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
+    cursor.execute(f"""SELECT DATE_FORMAT(input_time, '%dD %H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
                         ETCHBEAMCURRENT,IONGAUGEPRESSURE,
                         ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
                         ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
                         FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
-                    FROM input_data_1;""")
+                    FROM input_data_1 order by input_time;""")
     existing_user = cursor.fetchall()
     
     colnames = cursor.description  # 변수정보
@@ -579,17 +580,18 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
                         WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
         existing_user = cursor.fetchall()
     
-        bar_lis = [[existing_user[-1][3], existing_user[-1][4]]]
+        bar_lis = []
 
-        for i in range(len(existing_user) - 2, -1, -1):
-            if existing_user[i][-1] != 0 and existing_user[i][-1]!=1:
-            # if existing_user[i][-1] != 1 :
-                bar_lis[len(bar_lis) - 1].append(existing_user[i + 1][4])
-                bar_lis.append([existing_user[i][3], existing_user[i][4]])
+        # 마지막 열 값이 >1 인 데이터와 None 값을 무시
+        for idx, row in enumerate(existing_user[:-1]):
+            if row[-1] is not None and row[-1] > 1:
+                current_datetime = row[3]
+                current_value = row[-2]
+                next_value = existing_user[idx + 1][-2]
+                bar_lis.append((current_datetime, current_value, next_value))
 
-        bar_lis[-1].append(existing_user[0][4])
-        bar_lis.append(bar_lis[0])
-        bar_lis = bar_lis[1:]
+        # 전체 순서 역으로 정렬
+        bar_lis = sorted(bar_lis, key=lambda x: x[0], reverse=True)
 
     except:
         line_lis = None
