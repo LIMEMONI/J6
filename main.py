@@ -579,11 +579,11 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
                         WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
         existing_user = cursor.fetchall()
     
-        bar_lis = [[existing_user[0][3], existing_user[0][4]]]
-        cnt = 0
+        bar_lis = [[existing_user[-1][3], existing_user[-1][4]]]
 
         for i in range(len(existing_user) - 2, -1, -1):
-            if existing_user[i][-1] not in ['0','1']:
+            if existing_user[i][-1] != 0 and existing_user[i][-1]!=1:
+            # if existing_user[i][-1] != 1 :
                 bar_lis[len(bar_lis) - 1].append(existing_user[i + 1][4])
                 bar_lis.append([existing_user[i][3], existing_user[i][4]])
 
