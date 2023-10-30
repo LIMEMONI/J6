@@ -688,7 +688,6 @@ async def render_profile_page(request: Request):
     # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
     mem_name = request.session.get("mem_name", "Unknown")
-    mem_ph = request.session.get("mem_ph")
 
     if mem_id:
         # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
@@ -706,7 +705,7 @@ async def render_profile_page(request: Request):
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
 
-    return templates.TemplateResponse("profile1.html", {"request": request, "mem_id": mem_id, "mem_ph" : mem_ph, "mem_name": mem_name, "bar_lis": bar_lis})
+    return templates.TemplateResponse("profile1.html", {"request": request, "mem_name": mem_name, "bar_lis": bar_lis})
 
     
 

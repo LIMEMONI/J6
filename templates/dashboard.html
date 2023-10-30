@@ -79,90 +79,88 @@
     <div id="wrapper">
         <div class="row">
             <div class="col-md-12">
-        <!-- NAVBAR -->
-        <nav class="navbar navbar-default navbar-fixed-top" style="height: 12%;">
-            <div class="container-fluid">
-                <!-- 로고와 데이터 불러오기 버튼 -->
-                <div class="navbar-header">
-                    <a class="navbar-brand" style="width: 20%; height: 20%; display: flex; align-items: center;">
-                        <img src="static/img/logo2.png" alt="J6 Logo" class="img-responsive logo">   
-                        </span>
-                    </a>
-                    <div class="navbar-btn">
-                        <button type="button" class="btn-toggle-fullwidth" style="font-size: 25px;"><i class="lnr lnr-arrow-left-circle"></i></button>
+                <!-- NAVBAR -->
+                <nav class="navbar navbar-default navbar-fixed-top"  style="height: 12%;">
+                    <!-- 로고와 데이터 불러오기 버튼 -->
+                    <div class="navbar-header">
+                        <!-- 오른쪽 메뉴 아이콘들 --> 
+                        <div class="container-fluid" style="display: flex; justify-content: flex-end;">     
+                            <div id="navbar-menu">
+                                <a class="navbar-brand" style="width: 15%; height: 15%; margin-top: 20px; display: flex; align-items: center;">
+                                    <img src="static/img/logo2.png" alt="J6 Logo" class="img-responsive logo">   
+                                </a>
+                                <div class="navbar-btn">
+                                    <button type="button" class="btn-toggle-fullwidth" style="font-size: 25px;"><i class="lnr lnr-arrow-left-circle"></i></button>
+                                </div>
+                                <ul class="nav navbar-nav navbar-right">
+                                    <li style="margin-right: 10px;"><a href="main.html"><i class="fa-solid fa-house"></i></a></li>
+                                    <li style="margin-right: 10px;"><a href="dashboard.html"><i class="fa-solid fa-chart-line"></i></a></li>
+                                    <li class="dropdown">
+                                        <a href="#" class="dropdown-toggle icon-menu" data-toggle="dropdown" id="alarmDropdownButton">
+                                            <i class="fa-solid fa-bell"></i>
+                                        </a>
+                                    <!-- 알람 드롭다운 메뉴 -->
+                                    <ul class="dropdown-menu notifications">
+                                        {% for item in bar_lis[:5] %}
+                                            {% set val = item[0] %}
+                                            {% set i_s = item[1] %}
+                                            {% set i_e = item[2] %}
+                                            <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 공정 이상 감지 구간 : {{ val }}</a></li>
+                                        {% endfor %}
+                                        <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
+                                    </ul>
+                                    <span class="alarm-count-badge">{{ bar_lis|length }}</span>
+                                    </li>
+                                    <!-- 나머지 메뉴 아이콘들 -->
+                                    <li class="dropdown">
+                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                            <li><a href="profile.html"><img src="static/img/user1.png" class="img-square" alt="Picture"><span style="font-weight: bold;">{{ mem_name }}</span></a></li>
+                                        </a>
+                                        <li><a href="/"><i class="fa-solid fa-arrow-right-from-bracket"></i><span style="font-weight: bold;">Logout</span></a></li>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
                     </div>
-                </div>
-              
-                <!-- 오른쪽 메뉴 아이콘들 -->                
-                <div id="navbar-menu" style="margin-right: 70px;">
-                    <ul class="nav navbar-nav navbar-right"><i class=""></i>
-                        <li style="margin-right: 10px;"><a href="main.html"><i class="fa-solid fa-house"></i></a></li>
-                        <li style="margin-right: 10px;"><a href="dashboard.html"><i class="fa-solid fa-chart-line"></i></a></li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle icon-menu" data-toggle="dropdown" id="alarmDropdownButton">
-                                <i class="fa-solid fa-bell"></i>
-                            </a>
-                        <!-- 알람 드롭다운 메뉴 -->
-                        <ul class="dropdown-menu notifications">
-                            {% for item in bar_lis[:5] %}
-                                {% set val = item[0] %}
-                                {% set i_s = item[1] %}
-                                {% set i_e = item[2] %}
-                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 공정 이상 감지 구간 : {{ val }}</a></li>
-                            {% endfor %}
-                            <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
-                        </ul>
-                        <span class="alarm-count-badge">{{ bar_lis|length }}</span>
-                        </li>
-                        <!-- 나머지 메뉴 아이콘들 -->
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <li><a href="profile.html"><img src="static/img/user1.png" class="img-square" alt="Picture"><span style="font-weight: bold;">{{ mem_name }}</span></a></li>
-                            </a>
-                            <li><a href="/"><i class="fa-solid fa-arrow-right-from-bracket"></i><span style="font-weight: bold;">Logout</span></a></li>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </div>
-    <!-- END NAVBAR -->
-
-    
-
-        <!-- LEFT SIDEBAR -->
-        <div id="sidebar-nav" class="sidebar">
-            <div class="sidebar-scroll">
-                <nav>
-                    <!-- 각 탭 버튼 -->
-                    <ul class="nav" id="myTabs">
-                        <li><a data-toggle="tab" href="#dashboard1" onclick="changeTab('dashboard1')"><i class="fa-solid fa-desktop"></i><span>M01</span></a></li>
-                        <li><a data-toggle="tab" href="#dashboard2" onclick="changeTab('dashboard2')"><i class="fa-solid fa-desktop"></i><span>M02</span></a></li>
-                        <li><a data-toggle="tab" href="#dashboard3" onclick="changeTab('dashboard3')"><i class="fa-solid fa-desktop"></i><span>M03</span></a></li>
-                        <li><a data-toggle="tab" href="#dashboard4" onclick="changeTab('dashboard4')"><i class="fa-solid fa-desktop"></i><span>M04</span></a></li>
-                    </ul>
                 </nav>
             </div>
         </div>
-        <!-- END LEFT SIDEBAR -->
-        <!-- MAIN -->   
-        <div class="main">
-            <!-- MAIN CONTENT -->
-            <div>
-
-            <!-- iframe 태그 -->
-            <iframe id="iframe" width="100%" height="620" frameborder="0"></iframe>
-
+        <!-- END NAVBAR -->
+        
+                <!-- LEFT SIDEBAR -->
+                <div id="sidebar-nav" class="sidebar">
+                    <div class="sidebar-scroll">
+                        <nav>
+                            <!-- 각 탭 버튼 -->
+                            <ul class="nav" id="myTabs">
+                                <li><a data-toggle="tab" href="#dashboard1" onclick="changeTab('dashboard1')"><i class="fa-solid fa-desktop"></i><span>M01</span></a></li>
+                                <li><a data-toggle="tab" href="#dashboard2" onclick="changeTab('dashboard2')"><i class="fa-solid fa-desktop"></i><span>M02</span></a></li>
+                                <li><a data-toggle="tab" href="#dashboard3" onclick="changeTab('dashboard3')"><i class="fa-solid fa-desktop"></i><span>M03</span></a></li>
+                                <li><a data-toggle="tab" href="#dashboard4" onclick="changeTab('dashboard4')"><i class="fa-solid fa-desktop"></i><span>M04</span></a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                <!-- END LEFT SIDEBAR -->
+                <!-- MAIN -->   
+                <div class="main">
+                    <!-- MAIN CONTENT -->
+                    <div>
+                    <!-- iframe 태그 -->
+                    <iframe id="iframe" width="100%" height="620" frameborder="0"></iframe>
+                    </div>
+                    <!-- END MAIN CONTENT -->
+                </div>
+                <!-- END MAIN -->
+                <div class="clearfix"></div>
+                <footer>
+                    <div class="container-fluid">
+                        <p class="copyright">Made by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">J6</a></p>
+                    </div>
+                </footer>
             </div>
-            <!-- END MAIN CONTENT -->
         </div>
-        <!-- END MAIN -->
-        <div class="clearfix"></div>
-        <footer>
-            <div class="container-fluid">
-                <p class="copyright">Made by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">J6</a></p>
-            </div>
-        </footer>
     </div>
     <!-- END WRAPPER -->
 
