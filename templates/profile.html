@@ -103,7 +103,7 @@
                                 {% set i_e = item[2] %}
                                 <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 공정 이상 감지 구간 : {{ val }}</a></li>
                             {% endfor %}
-                            <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
+                            <li><a class="view-more" style="text-align: center;" href="/alram.html?time={{ bar_lis[0][0] }}&xlim_s={{ bar_lis[0][1] }}&xlim_e={{ bar_lis[0][2] }}" ><i class="lnr lnr-alarm" ></i> 더 보기</a></li>
                         </ul>
                         <span class="alarm-count-badge">{{ bar_lis|length }}</span>
                         </li>
