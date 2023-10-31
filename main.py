@@ -370,6 +370,7 @@ async def render_main_page(request: Request):
         cursor.execute("SELECT Lot FROM input_data LIMIT 4")
         lots = [result[0] for result in cursor.fetchall()]
 
+
         return templates.TemplateResponse("main.html", {
             "request": request,
             'mem_name':mem_name,
