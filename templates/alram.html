@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Abnormal detectionㅣFALP Service  </title>
+    <title>AbnormalㅣFALP Service</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -18,18 +18,19 @@
     <!-- GOOGLE FONTS -->
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
     <!-- ICONS -->
-    <link rel="apple-touch-icon" sizes="76x76" href="/static/img/j6.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/static/img/j6.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/img/top-icon.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/img/top-icon.png">
     <!-- D3.js 라이브러리 추가 -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/static/js/slimscroll.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/02c33e7f68.js" crossorigin="anonymous"></script>
     <style>
-        /* Google Fonts에서 가져온 Roboto 폰트를 적용 */
+        /* Google Fonts에서 가져온 Source Sans Pro 폰트를 적용 */
         #sidebar-nav {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Source Sans Pro', sans-serif;
             font-size: 20px;
         }
     
@@ -53,133 +54,124 @@
         /* 알람 갯수를 표시하는 숫자 스타일 */
         .alarm-count-badge {
             position: absolute;
-            top: 18px;
+            top: 23px;
             right: 5px;
             background-color: red;
             color: white;
             width: 20px; /* 숫자 너비 조정 */
             height: 15px; /* 숫자 높이 조정 */
             border-radius: 50%;
-            font-size: 10px; /* 숫자 크기 조정 */
+            font-size: 11px; /* 숫자 크기 조정 */
             text-align: center; /* 가운데 정렬을 위한 설정 */
             line-height: 15px; /* 숫자 높이와 같도록 설정 */
+            font-weight: bold;
         }
-    </style>
+    </style> 
     <style>
         /* 스크롤 가능한 목록 스타일 */
         .nav-scroll {
-            max-height: 470px; /* 스크롤 가능한 높이를 조절하십시오. */
+            max-height: 610px; /* 스크롤 가능한 높이를 조절하십시오. */
             overflow-y: scroll;
+            scrollbar-width: thin;
+            scrollbar-color: #333 #ccc;
         }
+        .nav-scroll::-webkit-scrollbar {
+            width: 10px; /* 스크롤바 폭 설정 */
+        }
+        .nav-scroll::-webkit-scrollbar-thumb {
+            background-color: #333; /* 스크롤바 썸의 배경색 설정 */
+        }
+        .nav-scroll::-webkit-scrollbar-thumb:hover {
+            background-color: #666; /* 호버 상태일 때 스크롤바 썸의 배경색 설정 */
+        }
+    </style>
+    <style>
+        dialog {
+            font-family: 'Source Sans Pro', sans-serif;
+        } 
     </style>
 </head>
 <body>
     <!-- WRAPPER -->
     <div id="wrapper">
-        <!-- NAVBAR -->
-        <nav class="navbar navbar-default navbar-fixed-top">
-			<div class="brand">
-				<a href="main.html">
-                    <img src="static/img/logo2.png" alt="Logo" class="img-responsive-logo" style="width: 120px;">
-                </a>
-			</div>
-			<div class="container-fluid">
-				<div class="navbar-btn">
-					<button type="button" class="btn-toggle-fullwidth"><i class="lnr lnr-arrow-left-circle"></i></button>
-				</div>
-                <!-- 오른쪽 메뉴 아이콘들 -->                
-                <div id="navbar-menu">
-                    <ul class="nav navbar-nav navbar-right">
-                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#uploadModal" style="margin-top: 20px;">데이터 불러오기</button>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle icon-me  nu" data-toggle="dropdown" id="alarmDropdownButton">
-                                <i class="lnr lnr-alarm"></i>
-                            </a>
-                            <!-- 알람 드롭다운 메뉴 -->
-                            <ul class="dropdown-menu notifications">
-                                {% for item in bar_lis[:5] %}
-                                {% set val = item[0] %}
-                                {% set i_s = item[1] %}
-                                {% set i_e = item[2] %}
-                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">{{ val }} 이상발생 </a></li>
-                                {% endfor %}
-                                <li><a class="view-more" style="text-align: center;"><i class="lnr lnr-alarm"></i> 더 보기</a></li>
-                            </ul>
-                            <span class="alarm-count-badge">{{ bar_lis|length }}</span>
-                        </li>
-                        <!-- 파일 업로드 모달 대화 상자 -->
-                        <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="uploadModalLabel">CSV 파일 불러오기</h5>
-                                        
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form id="uploadForm" enctype="multipart/form-data">
-                                            <div class="form-group">
-                                                <label for="csvFile">CSV 파일 선택</label>
-                                                <input type="file" class="form-control-file" id="csvFile" name="file">
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
-                                        <!-- 파일 업로드 버튼을 눌렀을 때 데이터를 업로드하는 함수 호출 -->
-                                        <button type="button" class="btn btn-primary" id="uploadButton" onclick="uploadFile()">불러오기</button>                    
-                                    </div>
+        <div class="row">
+            <div class="col-md-12">
+                <!-- NAVBAR -->
+                <nav class="navbar navbar-default navbar-fixed-top"  style="height: 12%;">
+                    <!-- 로고와 데이터 불러오기 버튼 -->
+                    <div class="navbar-header">
+                        <!-- 오른쪽 메뉴 아이콘들 --> 
+                        <div class="container-fluid" style="display: flex; justify-content: flex-end;">     
+                            <div id="navbar-menu">
+                                <a class="navbar-brand" style="width: 15%; height: 15%; margin-top: 20px; display: flex; align-items: center;">
+                                    <img src="static/img/logo2.png" alt="J6 Logo" class="img-responsive logo">   
+                                </a>
+                                <div class="navbar-btn">
+                                    <button type="button" class="btn-toggle-fullwidth" style="font-size: 25px;"><i class="lnr lnr-arrow-left-circle"></i></button>
                                 </div>
+                                <ul class="nav navbar-nav navbar-right">
+                                    <li style="margin-right: 10px;"><a href="main.html"><i class="fa-solid fa-house"></i></a></li>
+                                    <li style="margin-right: 10px;"><a href="dashboard.html"><i class="fa-solid fa-chart-line"></i></a></li>
+                                    <li class="dropdown">
+                                        <a href="#" class="dropdown-toggle icon-menu" data-toggle="dropdown" id="alarmDropdownButton">
+                                            <i class="fa-solid fa-bell"></i>
+                                        </a>
+                                        <!-- 알람 드롭다운 메뉴 -->
+                                        <ul class="dropdown-menu notifications">
+                                            {% for item in bar_lis[:5] %}
+                                                {% set val = item[0] %}
+                                                {% set i_s = item[1] %}
+                                                {% set i_e = item[2] %}
+                                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 공정 이상 감지 구간 : {{ val }}</a></li>                                                    <!-- 알람음 추가 -->
+                                                    <audio id="alarmAudio" preload="auto">
+                                                        <source src="/static/alarm.mp3" type="audio/mpeg">
+                                                    </audio></a></li>
+                                            {% endfor %}
+                                            <li><a class="view-more" style="text-align: center;" href="/alram.html?time={{ bar_lis[0][0] }}&xlim_s={{ bar_lis[0][1] }}&xlim_e={{ bar_lis[0][2] }}" ><i class="lnr lnr-alarm" ></i> 더 보기</a></li>
+                                        </ul>
+                                    <span class="alarm-count-badge">{{ bar_lis|length }}</span>
+                                    </li>
+                                    <!-- 나머지 메뉴 아이콘들 -->
+                                    <li class="dropdown">
+                                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                            <li><a href="profile.html"><img src="static/img/user1.png" class="img-square" alt="Picture"><span style="font-weight: bold;">{{ mem_name }}</span></a></li>
+                                        </a>
+                                        <li><a href="/"><i class="fa-solid fa-arrow-right-from-bracket"></i><span style="font-weight: bold;">Logout</span></a></li>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
-                        <!-- 나머지 메뉴 아이콘들 -->
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <img src="static/img/user1.png" class="img-square" alt="Picture">
-                                <span>{{ mem_name }}</span>
-                                <!-- Profile 버튼 -->
-                                <li><a href="profile.html"><i class="fa fa-user"></i> Profile</a></li>
-                            </a>
-                            <li><a href="/"><i class="lnr lnr-exit"></i> <span>Logout</span></a></li>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        <!-- END NAVBAR -->
-        <!-- LEFT SIDEBAR -->
-        <div id="sidebar-nav" class="sidebar" style="text-align: center;">
-            <div class="sidebar-scroll" style="overflow: hidden; width: auto; height: 95%;">
-                <nav>
-                    <!-- 스크롤 가능한 목록 -->
-                    <div class="nav-scroll">
-                        <ul class="nav">
-                            <li>
-                                <a href="#subPages" data-toggle="collapse" class="collapsed"><i class="lnr lnr-alarm"></i> <span> 이상알림 </span> </i></a>
-                                <div id="subPages" class="collapse">
-                                    <ul class="nav">
-                                        {% for item in bar_lis %}
-                                            {% set val = item[0] %}
-                                            {% set i_s = item[1] %}
-                                            {% set i_e = item[2] %}
-                                            <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">{{ val }}<br> 이상발생 </a></li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                    <!-- "메인으로 이동" 버튼 추가 -->
-                    <div class="text-center" style="position: absolute; bottom: 50px; width: 100%;">
-                        <li><a href="dashboard.html"><i class="fa fa-line-chart"></i> 대시보드 이동</a></li>
-                        <a href="main.html"><i class="lnr lnr-home"></i> Main</a>
+                        
                     </div>
                 </nav>
             </div>
         </div>
-
+        <!-- END NAVBAR -->
+    
+        <!-- LEFT SIDEBAR -->
+        <div id="sidebar-nav" class="sidebar">
+            <div class="sidebar-scroll">
+                <nav>
+                    <ul class="nav">
+                        <li><a href="#subPages" data-toggle="collapse" class="collapsed"><i class="fa-solid fa-bell"></i> <span> 이상 목록 </span><i class="icon-submenu lnr lnr-chevron-left"></i></a>
+                            <div id="subPages" class="collapse">
+                                <ul class="nav">
+                                    {% for item in bar_lis %}
+                                        {% set val = item[0] %}
+                                        {% set i_s = item[1] %}
+                                        {% set i_e = item[2] %}
+                                        <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"><span style="font-size: 15px; display: block;">{{ val }}</span><span style="font-size: 15px; display: block;">이상발생</span></a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>  
+                <div class="text-center" style="position: absolute; bottom: 10px; width: 100%;">
+                    <span class="helper-text" style="font-size: 16px;"><i class="fa-solid fa-wrench"></i> <a href="#" id="myButton"> J6 Pro</a></span>
+                </div>
+            </div>
+        </div>
         <!-- END LEFT SIDEBAR -->
 
 		<!-- MAIN -->
@@ -224,6 +216,25 @@
         </footer>
     </div>
     <!-- END WRAPPER -->
+
+    <!-- contact :: 수리 버튼에 대한 모달창 -->
+    <dialog id="dialog1" style="width: 20%; height: 20%; border-radius: 5px;">
+        <p style="font-weight: bold; font-size: 18px;">수리 요청 하시겠습니까?</p>
+        <br>
+        <form method="dialog" id="dialog">
+        <button value="close">닫기</button>
+        <button value="confirm">확인</button>
+        </form>
+    </dialog>
+
+    <dialog id="dialog2" style="width: 20%; height: 20%; border-radius: 5px;">
+        <p style="font-weight: bold; font-size: 18px;">정상적으로 요청되었습니다.</p>
+        <br>
+        <form method="dialog" id="dialog">
+        <button value="close">닫기</button>
+        </form>
+    </dialog>
+
     <!-- ChartJavascript -->
     <script>
         // 스크롤 가능한 컨테이너와 호버 가능한 항목을 선택합니다.
@@ -420,6 +431,53 @@
                 window.location.href = "alram.html";
             });
         });
+    </script>
+
+    <!--모달 창 send 이벤트 처리-->
+    <script>
+        var myButton = document.getElementById('myButton');
+        var dialog1 = document.getElementById('dialog1');
+        var dialog2 = document.getElementById('dialog2');
+        
+        // "제출" 버튼 클릭 시 dialog1 열기
+        myButton.addEventListener('click', function() {
+            dialog1.showModal();
+        });
+        
+        // dialog1에서 버튼 클릭 시 처리
+        dialog1.addEventListener('click', function(e) {
+            if (e.target.value === 'confirm') {
+                // "확인" 버튼을 클릭하면 dialog1 닫고 dialog2 열기
+                dialog1.close();
+                dialog2.showModal();
+            } else if (e.target.value === 'close') {
+                // "닫기" 버튼을 클릭하면 dialog1 닫기
+                dialog1.close();
+            }
+        });
+        
+        // dialog2에서 버튼 클릭 시 처리
+        dialog2.addEventListener('click', function(e) {
+            if (e.target.value === 'close') {
+                // "닫기" 버튼을 클릭하면 dialog2 닫고 페이지 초기화
+                dialog2.close();
+                location.reload(); // 페이지 초기화
+            }
+        });
+    </script>
+
+    <script>
+        // 이상탐지 시 알람음 재생
+        function playAlarmSound() {
+            var audio = document.getElementById('alarmAudio');
+            audio.play();
+        }
+        
+        // 알림이 쌓일 때 호출되는 함수
+        function handleNewNotification() {
+            // 새로운 알림이 쌓였을 때 알림음을 재생합니다.
+            playAlarmSound();
+        }
     </script>
 </body>
 </html>
