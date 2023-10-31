@@ -370,6 +370,7 @@ async def render_main_page(request: Request):
         cursor.execute("SELECT Lot FROM input_data LIMIT 4")
         lots = [result[0] for result in cursor.fetchall()]
 
+
         return templates.TemplateResponse("main.html", {
             "request": request,
             'mem_name':mem_name,
@@ -579,11 +580,10 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
                         WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
         existing_user = cursor.fetchall()
     
-        bar_lis = [[existing_user[0][3], existing_user[0][4]]]
-        cnt = 0
+        bar_lis = [[existing_user[-1][3], existing_user[-1][4]]]
 
         for i in range(len(existing_user) - 2, -1, -1):
-            if existing_user[i][-1] not in ['0','1']:
+            if existing_user[i][-1] != 0 and existing_user[i][-1]!=1:
                 bar_lis[len(bar_lis) - 1].append(existing_user[i + 1][4])
                 bar_lis.append([existing_user[i][3], existing_user[i][4]])
 
@@ -594,51 +594,8 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
     except:
         line_lis = None
         bar_lis = [[None, 0, 0]]
-    # ### alram_draw
-    # cursor.execute("""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
-    #                                               p  ETCHBEAMCURRENT,IONGAUGEPRESSURE,
-    #                                                 ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
-    #                                                 ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
-    #                                                 FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
-    #                 FROM input_data_1;""")
-    # existing_user = cursor.fetchall()
+
     mem_name = request.session.get('mem_name')
-    # colnames = cursor.description # 변수정보
-    # cols = [[i, colnames[i][0], colnames[i+1][0]] for i in range(1, len(colnames), 2)] # 변수명
-    
-    # alram_dic = {}
-    # for i in range(1, len(existing_user[0])):
-    #     alram_dic.update({'alram{}'.format(i) : [{'time': val[0], 'col':val[i]} for val in existing_user]}) # line_alram
-        
-    # try:
-    #     ### rul_line_draw
-    #     cursor.execute("""SELECT row_index
-    #                         FROM (SELECT rul_, ROW_NUMBER() OVER (ORDER BY inputDATE_FORMAT(input_time, '%H:%i:%s_time) AS row_index
-    #                             FROM rul_1) AS temp
-    #                         WHERE rul_time = 0;""")
-    #     existing_user = cursor.fetchall()
-        
-    #     line_lis = [val[0] for val in existing_user]
-        
-        
-    #     ### side_bar_list
-    #     cursor.execute("""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
-    #                         FROM (SELECT multi_pred, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-    #                             FROM multi_1) AS temp
-    #                         WHERE multi_pred = 1;""")
-    #     existing_user = cursor.fetchall()
-        
-    #     bar_lis = [[existing_user[0][3], existing_user[0][4]]]
-    #     cnt = 0
-    #     for i in range(1, len(existing_user)):
-    #         if existing_user[i][-1] != 1 :
-    #             bar_lis[len(bar_lis)-1].append(existing_user[i-1][4])
-    #             bar_lis.append([existing_user[i][3], existing_user[i][4]])
-    #     bar_lis[-1].append(existing_user[-1][4])
-        
-    # except:
-    #     line_lis = None
-    #     bar_lis = [[None, 0, 0]]
     
     return templates.TemplateResponse("alram.html", {"request":request,
                                                      'mem_name':mem_name,
@@ -654,7 +611,7 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
 async def render_profile_page(request: Request):
 
     # 데이터베이스에서 bar_lis 데이터를 가져옴
-    bar_lis = fetch_bar_lis_from_database()
+    bar_lis,line_lis = fetch_bar_lis_from_database()
     
     # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
@@ -676,7 +633,7 @@ async def render_profile_page(request: Request):
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
 
-    return templates.TemplateResponse("profile.html", {"request": request, "mem_name": mem_name, "bar_lis": bar_lis})
+    return templates.TemplateResponse("profile.html", {"request": request, "mem_name": mem_name, "bar_lis": bar_lis, "line_lis": line_lis})
 
 # Profile1 페이지로 이동
 @app.get("/profile1.html", response_class=HTMLResponse)
@@ -688,6 +645,7 @@ async def render_profile_page(request: Request):
     # 세션에서 사용자 아이디 및 이름 가져오기
     mem_id = request.session.get("mem_id", None)
     mem_name = request.session.get("mem_name", "Unknown")
+    mem_ph = request.session.get("mem_ph")
 
     if mem_id:
         # 사용자가 로그인한 경우, 사용자 정보를 데이터베이스에서 가져온다.
@@ -705,7 +663,7 @@ async def render_profile_page(request: Request):
         # 세션에 사용자 아이디가 없는 경우, 로그인 페이지로 리다이렉트
         return RedirectResponse(url="/")
 
-    return templates.TemplateResponse("profile1.html", {"request": request, "mem_name": mem_name, "bar_lis": bar_lis})
+    return templates.TemplateResponse("profile1.html", {"request": request, "mem_id": mem_id, "mem_ph" : mem_ph, "mem_name": mem_name, "bar_lis": bar_lis})
 
     
 

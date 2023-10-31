@@ -94,6 +94,10 @@
          opacity: 1;
          transform: translate(-50%, -50%);
       }
+
+    dialog {
+        font-family: 'Source Sans Pro', sans-serif;
+    } 
    </style>
 </head>
 
@@ -154,6 +158,7 @@
         </div>
     </div>
    <!-- END WRAPPER -->
+
 <!-- contact 모달 창 -->
 <div id="myModal" class="modal">
 <div class="modal-content">
@@ -215,16 +220,18 @@
 </div>
 
 <!-- contact :: send 버튼에 대한 모달창 -->
-<dialog id="dialog1">
-    <p style="font-weight: bold;">보내시겠습니까?</p>
+<dialog id="dialog1" style="width: 20%; height: 20%; border-radius: 5px;">
+    <p style="font-weight: bold; font-size: 18px;">보내시겠습니까?</p>
+    <br>
     <form method="dialog" id="dialog">
        <button value="close">닫기</button>
        <button value="confirm">확인</button>
     </form>
  </dialog>
 
- <dialog id="dialog2">
-    <p style="font-weight: bold;">완료되었습니다.</p>
+ <dialog id="dialog2" style="width: 20%; height: 20%; border-radius: 5px;">
+    <p style="font-weight: bold; font-size: 18px;">완료되었습니다.</p>
+    <br>
     <form method="dialog" id="dialog">
        <button value="close">닫기</button>
     </form>
@@ -309,34 +316,29 @@ document.getElementById("login-button").addEventListener("click", function() {
 
     // 모든 입력과 텍스트 영역 요소, 그리고 체크박스의 상태를 확인하는 함수
     function checkInputs() {
-    var allInputsFilled = true;
-    for (var i = 0; i < inputElements.length; i++) {
-        if (inputElements[i].value.trim() === '') {
-        allInputsFilled = false;
-        break;
+        var allInputsFilled = true;
+        for (var i = 0; i < inputElements.length; i++) {
+            if (inputElements[i].value.trim() === '') {
+            allInputsFilled = false;
+            break;
+            }
         }
-    }
 
-    // 결과에 따라 버튼을 활성화 또는 비활성화하고 배경색을 변경합니다.
-    if (allInputsFilled && checkbox.checked) {
-        myButton.disabled = false;
-        myButton.style.backgroundColor = '#2B333E';
-    } else {
-        myButton.disabled = true;
-        myButton.style.backgroundColor = 'gray';
-    }
+        // 결과에 따라 버튼을 활성화 또는 비활성화하고 배경색을 변경합니다.
+        if (allInputsFilled && checkbox.checked) {
+            myButton.disabled = false;
+            myButton.style.backgroundColor = '#2B333E';
+        } else {
+            myButton.disabled = true;
+            myButton.style.backgroundColor = 'gray';
+        }
     }
 
     // 각 입력과 텍스트 영역 요소에 이벤트 리스너를 추가합니다.
     inputElements.forEach(function (element) {
-    element.addEventListener('input', checkInputs);
-    });
+        element.addEventListener('input', checkInputs);
+        });
 
-    // 체크박스 상태 변경에 대한 이벤트 리스너 추가
-    checkbox.addEventListener('change', checkInputs);
-
-    // 페이지 로드 시 초기 상태를 설정합니다.
-    checkInputs();
     </script>
 
     <!--모달 창 send 이벤트 처리-->
@@ -344,16 +346,18 @@ document.getElementById("login-button").addEventListener("click", function() {
     // 모달 엘리먼트 가져오기
     var dialog1 = document.getElementById('dialog1');
     var dialog2 = document.getElementById('dialog2');
-    
+    var contactForm = document.getElementById('contact-form'); // 추가: 폼 요소 가져오기
+
     // "제출" 버튼 클릭 시 dialog1 열기
-    myButton.addEventListener('click', function() {
+    myButton.addEventListener('click', function(event) {
+        event.preventDefault(); // 추가: 기본 제출 동작 방지
         dialog1.showModal();
     });
-    
+
     // dialog1에서 버튼 클릭 시 처리
     dialog1.addEventListener('click', function(e) {
         if (e.target.value === 'confirm') {
-            // "확인" 버튼을 클릭하면 dialog1 닫고 dialog2 열기
+            // 추가: "확인" 버튼을 클릭하면 dialog1 닫고 dialog2 열기
             dialog1.close();
             dialog2.showModal();
         } else if (e.target.value === 'close') {
