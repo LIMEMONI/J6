@@ -365,6 +365,8 @@ ul.notifications > li {
     .sidebar .nav > li > a .badge {
       font-weight: 400;
       background-color: #F9354C; }
+    .sidebar .nav {
+        /* submenu */ }
     /*사이드 바*/
     .sidebar .nav i {
       margin-right: 15px;
@@ -388,6 +390,7 @@ ul.notifications > li {
           border-left-color: transparent; }
         .sidebar .nav .nav > li > a.active a {
           color: #fff; }
+          
 /* index.html contact me :: 모달 스타일 */
 .modal {
   display: none;

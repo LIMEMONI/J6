@@ -72,7 +72,23 @@
         .nav-scroll {
             max-height: 610px; /* 스크롤 가능한 높이를 조절하십시오. */
             overflow-y: scroll;
+            scrollbar-width: thin;
+            scrollbar-color: #333 #ccc;
         }
+        .nav-scroll::-webkit-scrollbar {
+            width: 10px; /* 스크롤바 폭 설정 */
+        }
+        .nav-scroll::-webkit-scrollbar-thumb {
+            background-color: #333; /* 스크롤바 썸의 배경색 설정 */
+        }
+        .nav-scroll::-webkit-scrollbar-thumb:hover {
+            background-color: #666; /* 호버 상태일 때 스크롤바 썸의 배경색 설정 */
+        }
+    </style>
+    <style>
+        dialog {
+            font-family: 'Source Sans Pro', sans-serif;
+        } 
     </style>
 </head>
 <body>
@@ -130,41 +146,29 @@
         <!-- END NAVBAR -->
     
         <!-- LEFT SIDEBAR -->
-        <div id="sidebar-nav" class="sidebar" style="text-align: center;">
-            <div class="sidebar-scroll" style="overflow: hidden; width: auto; height: 95%;">
+        <div id="sidebar-nav" class="sidebar">
+            <div class="sidebar-scroll">
                 <nav>
-                    <!-- 스크롤 가능한 목록 -->
-                    <div class="nav-scroll">
-                        <ul class="nav">
-                            <li>
-                                <a href="#subPages" data-toggle="collapse" class="collapsed">
-                                    <i class="fa-solid fa-bell"></i> <span> 이상알림 </span>
-                                </a>
-                                <div id="subPages" class="collapse">
-                                    <ul class="nav">
-                                        {% for item in bar_lis %}
-                                            {% set val = item[0] %}
-                                            {% set i_s = item[1] %}
-                                            {% set i_e = item[2] %}
-                                            <li>
-                                                <a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">
-                                                    <span style="font-size: 10px; display: block;">{{ val }}</span>
-                                                    <span style="font-size: 10px; display: block;">이상발생</span>
-                                                </a>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>              
+                    <ul class="nav">
+                        <li><a href="#subPages" data-toggle="collapse" class="collapsed"><i class="fa-solid fa-bell"></i> <span> 이상 목록 </span><i class="icon-submenu lnr lnr-chevron-left"></i></a>
+                            <div id="subPages" class="collapse">
+                                <ul class="nav">
+                                    {% for item in bar_lis %}
+                                        {% set val = item[0] %}
+                                        {% set i_s = item[1] %}
+                                        {% set i_e = item[2] %}
+                                        <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"><span style="font-size: 15px; display: block;">{{ val }}</span><span style="font-size: 15px; display: block;">이상발생</span></a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>  
                 <div class="text-center" style="position: absolute; bottom: 10px; width: 100%;">
-                    <li><button style="border-radius: 5px;" id="myButton"><i class="fa-solid fa-wrench"></i> 010-1234-1234</li></button>
+                    <span class="helper-text" style="font-size: 16px;"><i class="fa-solid fa-wrench"></i> <a href="#" id="myButton"> J6 Pro</a></span>
                 </div>
             </div>
         </div>
-
         <!-- END LEFT SIDEBAR -->
 
 		<!-- MAIN -->
@@ -210,17 +214,19 @@
     </div>
     <!-- END WRAPPER -->
 
-    <!-- contact :: send 버튼에 대한 모달창 -->
-    <dialog id="dialog1">
-        <p style="font-weight: bold;">수리 요청 하시겠습니까?</p>
+    <!-- contact :: 수리 버튼에 대한 모달창 -->
+    <dialog id="dialog1" style="width: 20%; height: 20%; border-radius: 5px;">
+        <p style="font-weight: bold; font-size: 18px;">수리 요청 하시겠습니까?</p>
+        <br>
         <form method="dialog" id="dialog">
         <button value="close">닫기</button>
         <button value="confirm">확인</button>
         </form>
     </dialog>
 
-    <dialog id="dialog2">
-        <p style="font-weight: bold;">정상적으로 요청되었습니다.</p>
+    <dialog id="dialog2" style="width: 20%; height: 20%; border-radius: 5px;">
+        <p style="font-weight: bold; font-size: 18px;">정상적으로 요청되었습니다.</p>
+        <br>
         <form method="dialog" id="dialog">
         <button value="close">닫기</button>
         </form>
@@ -455,6 +461,6 @@
                 location.reload(); // 페이지 초기화
             }
         });
-        </script>
+    </script>
 </body>
 </html>

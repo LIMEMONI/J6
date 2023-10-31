@@ -319,7 +319,7 @@
                                 {% elif tool1_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
                                 {% endif %}">
                             
-                                <a href="dashboard.html?tab=dashboard1" style="color: #392f31;"> <!-- M01설비의 Dashboard 페이지로 이동 -->
+                                <a id="tool1_link" href="dashboard.html?tab=dashboard1" style="color: #392f31;"> <!-- M01설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
                                         <!--상태표시 초록원-->
                                         <span class="normal-status-topRight">
@@ -345,7 +345,7 @@
                                                 {% endif %}
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>예측 수리 시간</b> : {{tool1_rul}}
+                                                - <b>잔여 수명 시간</b> : {{tool1_rul}}
                                             </span>
                                             <span class="panel-body-text">
                                                 - <b>가동 시간</b> : 
@@ -373,7 +373,7 @@
                                 style="{% if tool2_status == 0 %} border: 7px solid #90DA80; margin-left: 42px;
                                 {% elif tool2_status == 1 %} border: 7px solid #f26464; margin-left: 42px;
                                 {% endif %}">
-                            <a href="dashboard.html?tab=dashboard2" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
+                            <a id="tool2_link" href="dashboard.html?tab=dashboard2" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
                                 <div class="panel-heading" style="">
                                     <!--상태 표시 초록원-->
                                     <span class="normal-status-topRight">
@@ -397,7 +397,7 @@
                                             {% endif %}
                                         </span>
                                         <span class="panel-body-text">
-                                            - <b>예측 수리 시간</b> : {{tool2_rul}}
+                                            - <b>잔여 수명 시간</b> : {{tool2_rul}}
                                         </span>
                                         <span class="panel-body-text">
                                             - <b>가동 시간</b> : 
@@ -429,7 +429,7 @@
                                 style="{% if tool3_status == 0 %} border: 6px solid #93db93; margin-left: 42px; 
                                 {% elif tool3_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
                                 {% endif %}">
-                                <a href="dashboard.html?tab=dashboard3" style="color: #392f31;"> <!-- M03설비의 Dashboard 페이지로 이동 -->
+                                <a id="tool3_link" href="dashboard.html?tab=dashboard3" style="color: #392f31;"> <!-- M03설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
                                         <!--상태 표시 초록원-->
                                         <span class="normal-status-topRight">
@@ -453,7 +453,7 @@
                                                 {% endif %}
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>예측 수리 시간</b> : {{tool3_rul}}
+                                                - <b>잔여 수명 시간</b> : {{tool3_rul}}
                                             </span>
                                             <span class="panel-body-text">
                                                 - <b>가동 시간</b> : 
@@ -482,7 +482,7 @@
                                 style="{% if tool4_status == 0 %} border: 6px solid #93db93; margin-left: 42px;
                                 {% elif tool4_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
                                 {% endif %}">
-                                <a href="dashboard.html?tab=dashboard4"> <!-- M04설비의 Dashboard 페이지로 이동 -->
+                                <a id="tool4_link" href="dashboard.html?tab=dashboard4"> <!-- M04설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
                                         <span class="abnormal-status-topRight">
                                             <i class="fa-solid fa-power-off fa-fade"
@@ -505,7 +505,7 @@
                                                 {% endif %}
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>예측 수리 시간</b> : {{tool4_rul}}
+                                                - <b>잔여 수명 시간</b> : {{tool4_rul}}
                                             </span>                                            
                                             <span class="panel-body-text">
                                                 - <b>가동 시간</b>: 
@@ -541,6 +541,47 @@
 	</div>
 	<!-- END WRAPPER -->
 	<!-- Javascript -->
+    <script>
+        // 페이지가 로드될 때 실행되는 함수
+            document.addEventListener("DOMContentLoaded", function () {
+                var tool1_rul = {{tool1_rul}}; 
+                var tool2_rul = {{tool2_rul}}; 
+                var tool3_rul = {{tool3_rul}}; 
+                var tool4_rul = {{tool4_rul}}; 
+    
+                // tool1 처리
+                var tool1Link = document.getElementById("tool1_link");
+                if (tool1_rul === 0) {
+                    alert("Flowcool Pressure Too High check Flowcool Pump이 발생했습니다.");
+                    tool1Link.style.pointerEvents = "none";
+                    tool1Link.style.color = "#999"; // 링크의 색상을 회색으로 변경 (비활성화 표시)
+                }
+    
+                // tool2 처리
+                var tool2Link = document.getElementById("tool2_link");
+                if (tool2_rul === 0) {
+                    alert("Flowcool Pressure Too High check Flowcool Pump이 발생했습니다.");
+                    tool2Link.style.pointerEvents = "none";
+                    tool2Link.style.color = "#999";
+                }
+    
+                // tool3 처리
+                var tool3Link = document.getElementById("tool3_link");
+                if (tool3_rul === 0) {
+                    alert("Flowcool Pressure Too High check Flowcool Pump이 발생했습니다.");
+                    tool3Link.style.pointerEvents = "none";
+                    tool3Link.style.color = "#999";
+                }
+    
+                // tool4 처리
+                var tool4Link = document.getElementById("tool4_link");
+                if (tool4_rul === 0) {
+                    alert("Flowcool Pressure Too High check Flowcool Pump이 발생했습니다.");
+                    tool4Link.style.pointerEvents = "none";
+                    tool4Link.style.color = "#999";
+                }
+            });
+        </script>
     <script>
         // JavaScript로 설정한 시작 시간으로부터 1초씩 시간을 증가시키는 함수
         function startCountingRuntime(startTime, elementId) {
