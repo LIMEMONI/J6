@@ -229,12 +229,18 @@ def fetch_bar_lis_from_database(n=1):
     
     try:
         ## rul이 일정 수치 아래로 가면 해당 row의 index를 list형태로 반환한다.
-        cursor.execute(f"""SELECT row_index
+        cursor.execute(f"""SELECT row_index, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
                         FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                        FROM rul_{n}) AS temp
-                        WHERE (rul_fl < 10) or (rul_pb < 10) or (rul_ph < 10);""")
+                            FROM rul_1) AS temp
+                        WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
         existing_user = cursor.fetchall()
-        line_lis = [val[0] for val in existing_user]
+
+
+        line_lis = []
+        for idx, row in enumerate(existing_user[:-1]):
+            if row[-1] is not None and row[1] > 1:
+                current_value = row[-2]
+                line_lis.append(current_value)
     
         cursor.execute(f"""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
                         FROM (SELECT multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
@@ -589,7 +595,7 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
         cursor.execute(f"""SELECT row_index, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
                         FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
                             FROM rul_1) AS temp
-                        WHERE (rul_fl < 10) or (rul_pb < 10) or (rul_ph < 10);""")
+                        WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
         existing_user = cursor.fetchall()
 
 
@@ -598,7 +604,6 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
             if row[-1] is not None and row[1] > 1:
                 current_value = row[-2]
                 line_lis.append(current_value)
-        line_lis
     
         cursor.execute(f"""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
                         FROM (SELECT multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index

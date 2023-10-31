@@ -26,9 +26,9 @@ def generate_rul_data_rows():
     multi_rows = []
     rul_rows = []
 
-    rul_fl = random.randint(500, 1000)
-    rul_pb = random.randint(500, 1000)
-    rul_ph = random.randint(500, 1000)
+    rul_fl = random.randint(300, 500)
+    rul_pb = random.randint(300, 500)
+    rul_ph = random.randint(300, 500)
 
     decrement_fl = random.randint(1, 20)
     decrement_pb = random.randint(1, 20)
@@ -49,13 +49,13 @@ def generate_rul_data_rows():
         rul_ph -= decrement_ph
 
         if rul_fl <= 0:
-            rul_fl = random.randint(500, 1000)
+            rul_fl = random.randint(300, 500)
             decrement_fl = random.randint(1, 20)
         if rul_pb <= 0:
-            rul_pb = random.randint(500, 1000)
+            rul_pb = random.randint(300, 500)
             decrement_pb = random.randint(1, 20)
         if rul_ph <= 0:
-            rul_ph = random.randint(500, 1000)
+            rul_ph = random.randint(300, 500)
             decrement_ph = random.randint(1, 20)
 
     return multi_rows,rul_rows

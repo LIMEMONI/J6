@@ -208,7 +208,7 @@ def main():
     
     # CSV 파일 읽기
     df = pd.read_csv("./test_file/file_3.csv")
-    df = df.iloc[:,1:]
+    # df = df.iloc[:,1:]
     
     # DataFrame에서 튜플 리스트로 데이터 변환
     data_tuples = list(df.itertuples(index=False, name=None))

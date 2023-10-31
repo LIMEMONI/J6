@@ -63,7 +63,7 @@
                 let response = await fetch("/main.html");
                 let text = await response.text();
                 document.body.innerHTML = text; // 화면 갱신
-            }, 10000); // 10초 간격
+            }, 4000); // 10초 간격
         };
         // 시작 시간과 element ID를 전달하여 가동시간 증가 카운트 시작
         startCountingRuntime("{{ start_times['설비 1'] }}", "tool1_runtime");
@@ -359,10 +359,10 @@
                                                 {% endif %}
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>recipe</b> :
+                                                - <b>recipe</b> :  {{tool1_recipe}}
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>stage</b> :
+                                                - <b>stage</b> :  {{tool1_stage}}
                                             </span>
                                         </div>
                                     </div>
@@ -396,7 +396,7 @@
                                             {% if tool2_status == 0 %}
                                             정상
                                             {% else %}
-                                            <span style="color: rgb(37, 208, 227); margin-left: 5px;">고장!</span>
+                                            <span style="color: rgb(37, 208, 227); margin-left: 5px;">{{tool2_status_index}}!</span>
                                             {% endif %}
                                         </span>
                                         <span class="panel-body-text">
@@ -411,10 +411,10 @@
                                             {% endif %}
                                         </span>
                                         <span class="panel-body-text">
-                                            - <b>recipe</b> :
+                                            - <b>recipe</b> :  {{tool2_recipe}}
                                         </span>
                                         <span class="panel-body-text">
-                                            - <b>stage</b> :
+                                            - <b>stage</b> :  {{tool2_stage}}
                                         </span>
                                         </div>
                                     </div>
@@ -452,7 +452,7 @@
                                                 {% if tool3_status == 0 %}
                                                 정상
                                                 {% else %}
-                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">고장!</span>
+                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">{{tool3_status_index}}!</span>
                                                 {% endif %}
                                             </span>
                                             <span class="panel-body-text">
@@ -467,10 +467,10 @@
                                                 {% endif %}
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>recipe</b> :
+                                                - <b>recipe</b> :  {{tool3_recipe}}
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>stage</b> :
+                                                - <b>stage</b> :  {{tool3_stage}}
                                             </span>
                                         </div>
                                     </div>
@@ -504,7 +504,7 @@
                                                 {% if tool4_status == 0 %}
                                                 정상
                                                 {% else %}
-                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">고장!</span>
+                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">{{tool4_status_index}}!</span>
                                                 {% endif %}
                                             </span>
                                             <span class="panel-body-text">
@@ -519,10 +519,10 @@
                                                 {% endif %}
                                             </span>
                                         <span class="panel-body-text">
-                                            - <b>recipe</b> :
+                                            - <b>recipe</b> :  {{tool4_recipe}}
                                         </span>
                                         <span class="panel-body-text">
-                                            - <b>stage</b> :
+                                            - <b>stage</b> :  {{tool4_stage}}
                                         </span>
                                         </div>
                                     </div>
@@ -585,7 +585,7 @@
                 }
             });
         </script>
-    <script>
+    <!-- <script>
         // JavaScript로 설정한 시작 시간으로부터 1초씩 시간을 증가시키는 함수
         function startCountingRuntime(startTime, elementId) {
             const startTimeObj = new Date(startTime);
@@ -623,7 +623,7 @@
         startCountingRuntime("{{ start_times['설비 2'] }}", "tool2_runtime");
         startCountingRuntime("{{ start_times['설비 2'] }}", "tool3_runtime");
         startCountingRuntime("{{ start_times['설비 2'] }}", "tool4_runtime");
-    </script>
+    </script> -->
     <script>
         function formatAMPM(date) {
             var hours = date.getHours();
