@@ -223,7 +223,7 @@
                                             {% set val = item[0] %}
                                             {% set i_s = item[1] %}
                                             {% set i_e = item[2] %}
-                                            <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 공정 이상 감지 구간 : {{ val }}</a></li>
+                                            <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 이상 발생 : {{ val }}</a></li>
                                         {% endfor %}
                                         <li><a class="view-more" style="text-align: center;" href="/alram.html?time={{ bar_lis[0][0] }}&xlim_s={{ bar_lis[0][1] }}&xlim_e={{ bar_lis[0][2] }}" ><i class="lnr lnr-alarm" ></i> 더 보기</a></li>
                                     </ul>
@@ -277,7 +277,7 @@
                             </div>
                             <div class="legend-row">
                                 <div class="legend-col">
-                                    <i class="fa-solid fa-power-off" style="color: white; margin-right: 4px;"></i>
+                                    <i class="fa-solid fa-power-off" style="color: #f26464; margin-right: 4px;"></i>
                                     <span style="color: white;"><b>설비 정지</b></span>
                                 </div>
                             </div>
@@ -327,8 +327,8 @@
                                         <!--상태표시 초록원-->
                                         <span class="normal-status-topRight">
                                             <i class="fa-solid fa-power-off fa-fade"
-                                            style="{% if tool1_status == 0 %} color : #93db93; margin-right : 10px;
-                                            {% elif tool1_status == 1 %} color : #f26464; margin-right : 10px;
+                                            style="{% if tool1_rul != 0 %} color : #93db93; margin-right : 10px;
+                                            {% elif tool1_rul == 0 %} color : #f26464; margin-right : 10px;
                                             {% endif %}"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M01</b></h3>
                                         </span> 
@@ -381,8 +381,8 @@
                                     <!--상태 표시 초록원-->
                                     <span class="normal-status-topRight">
                                         <i class="fa-solid fa-power-off fa-fade"
-                                        style="{% if tool2_status == 0 %} color : #93db93;  margin-right : 10px;
-                                        {% elif tool2_status == 1 %} color : #f26464; margin-right : 10px;
+                                        style="{% if tool2_rul != 0 %} color : #93db93;  margin-right : 10px;
+                                        {% elif tool2_rul == 0 %} color : #f26464; margin-right : 10px;
                                         {% endif %}"></i>
                                         <h3 class="panel-title"><b>Ion_Miller_M02</b></h3> <!--설비 이름-->
                                     </span>
@@ -437,8 +437,8 @@
                                         <!--상태 표시 초록원-->
                                         <span class="normal-status-topRight">
                                             <i class="fa-solid fa-power-off fa-fade"
-                                            style="{% if tool2_status == 0 %} color : #93db93;  margin-right : 10px;
-                                            {% elif tool2_status == 1 %} color : #f26464; margin-right : 10px;
+                                            style="{% if tool3_rul != 0 %} color : #93db93;  margin-right : 10px;
+                                            {% elif tool3_rul == 0 %} color : #f26464; margin-right : 10px;
                                             {% endif %}"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M03</b></h3>
                                         </span> 
@@ -489,8 +489,8 @@
                                     <div class="panel-heading">
                                         <span class="abnormal-status-topRight">
                                             <i class="fa-solid fa-power-off fa-fade"
-                                            style="{% if tool2_status == 0 %} color : #93db93;  margin-right : 10px;
-                                            {% elif tool2_status == 1 %} color : #f26464; margin-right : 10px;
+                                            style="{% if tool4_rul != 0 %} color : #93db93;  margin-right : 10px;
+                                            {% elif tool4_rul == 0 %} color : #f26464; margin-right : 10px;
                                             {% endif %}"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M04</b></h3>
                                         </span> 
