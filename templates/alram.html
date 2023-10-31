@@ -337,7 +337,8 @@
 		
 			var layout = {
 				xaxis: {
-					range: [{{xlim_s}}, {{xlim_e}}] // row_num
+					range: [{{xlim_s-5}}, {{xlim_e+5}}], // row_num
+                    tickformat: '%H:%M:%S',
 				},
 				yaxis: {
 				},
@@ -347,7 +348,7 @@
 					l: 20, // 왼쪽 여백
 					r: 20, // 오른쪽 여백
 					t: 20, // 상단 여백
-					b: 40  // 하단 여백
+					b: 80  // 하단 여백
 				},
 				shapes: [
 					{% for shape in rect_shape_lis %}

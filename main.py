@@ -224,26 +224,9 @@ async def process_registration(request: Request, user: User):
 
 # 데이터베이스에서 필요한 데이터를 쿼리하여 bar_lis를 생성
 def fetch_bar_lis_from_database(n=1):
+    line_lis = None
+    bar_lis = [[None, 0, 0]]
     
-    cursor.execute(f"""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
-                        ETCHBEAMCURRENT,IONGAUGEPRESSURE,
-                        ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
-                        ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
-                        FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
-                    FROM input_data_{n};""")
-    existing_user = cursor.fetchall()
-    
-    colnames = cursor.description  # 변수정보
-    cols = [[i, colnames[i][0], colnames[i+1][0]] for i in range(1, len(colnames), 2)]  # 변수명
-    
-    alram_dic = {}
-    for i in range(1, len(existing_user[0])):
-        key = 'alram{}'.format(i)
-        ''' 이런 형태로 알람 딕셔너리 데이터를 생성
-            {'alram1': [{'time': '11:05:11', 'col': -0.1224370708389037},
-            {'time': '11:05:16', 'col': -0.1224370708389037}]'''
-        alram_dic[key] = [{'time': val[0], 'col': val[i]} for val in existing_user]
-
     try:
         ## rul이 일정 수치 아래로 가면 해당 row의 index를 list형태로 반환한다.
         cursor.execute(f"""SELECT row_index
@@ -259,17 +242,17 @@ def fetch_bar_lis_from_database(n=1):
                         WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
         existing_user = cursor.fetchall()
     
-        bar_lis = [[existing_user[-1][3], existing_user[-1][4]]]
+        bar_lis = []
+        for idx, row in enumerate(existing_user[:-1]):
+            if row[-1] is not None and row[5] > 1:
+                current_datetime = row[3]
+                current_value = row[-2]
+                next_value = existing_user[idx - 1][-2]
+                bar_lis.append((current_datetime, next_value, current_value))
+        bar_lis
 
-        for i in range(len(existing_user) - 2, -1, -1):
-            if existing_user[i][-1] != 0 and existing_user[i][-1]!=1:
-            # if existing_user[i][-1] != 1 :
-                bar_lis[len(bar_lis) - 1].append(existing_user[i + 1][4])
-                bar_lis.append([existing_user[i][3], existing_user[i][4]])
-
-        bar_lis[-1].append(existing_user[0][4])
-        bar_lis.append(bar_lis[0])
-        bar_lis = bar_lis[1:]
+        # 전체 순서 역으로 정렬
+        bar_lis = sorted(bar_lis, key=lambda x: x[0], reverse=True)
 
 
     except:
@@ -317,21 +300,40 @@ def get_tool_data(cursor, tool_number):
 # Tool 상태와 RUL 계산
 def compute_tool_status_and_rul(tool_data):
     status = tool_data[1:4]
-    status_value, status_index = (1, status.index('1')) if '1' in status else (0, None)
+    status_value, status_index = (1, status.index(1)) if 1 in status else (0, None)
 
     rul_index = min(enumerate(tool_data[5:8]), key=lambda x: float(x[1]))[0]
     rul_value = max(float(tool_data[5:8][rul_index]), 0)
 
     return status_value, status_index, rul_value, rul_index
 
-
 def convert_to_year_month_day_hour(rul_value):
-    """RUL 값을 년.월.일.시 형식으로 변환"""
-    year = int(rul_value // (365 * 24))
-    month = int((rul_value % (365 * 24)) // (30 * 24)) 
-    day = int((rul_value % (30 * 24)) // 24)
-    hour = int(rul_value % 24)
-    return f"{year:02}Y {month:02}M {day:02}D {hour:02}H"
+    """RUL 값을 년.월.일.시.분.초 형식으로 변환"""
+    
+    # 초 단위로 각 시간 값을 정의
+    SECONDS_IN_MINUTE = 60
+    SECONDS_IN_HOUR = 3600
+    SECONDS_IN_DAY = SECONDS_IN_HOUR * 24
+    SECONDS_IN_MONTH = SECONDS_IN_DAY * 30  
+    SECONDS_IN_YEAR = SECONDS_IN_DAY * 365 
+
+    # 각 시간 단위로 rul_value를 나누어 값 계산
+    # year = int(rul_value // SECONDS_IN_YEAR)
+    # rul_value %= SECONDS_IN_YEAR
+
+    month = int(rul_value // SECONDS_IN_MONTH)
+    rul_value %= SECONDS_IN_MONTH
+
+    day = int(rul_value // SECONDS_IN_DAY)
+    rul_value %= SECONDS_IN_DAY
+
+    hour = int(rul_value // SECONDS_IN_HOUR)
+    rul_value %= SECONDS_IN_HOUR
+
+    minute = int(rul_value // SECONDS_IN_MINUTE)
+    rul_value %= SECONDS_IN_MINUTE 
+
+    return f"{month:02}M {day:02}D {hour:02}H {minute:02}M"
 
 
 # 메인 페이지를 랜더링하는 엔드포인트
@@ -370,6 +372,14 @@ async def render_main_page(request: Request):
         cursor.execute("SELECT Lot FROM input_data LIMIT 4")
         lots = [result[0] for result in cursor.fetchall()]
 
+        status_name = ['Flow leak 이상','Flow pressure high 이상','Flow pressure low 이상']
+
+        def status_return(num):
+            try:
+                return status_name[num]
+            except:
+                return None
+            
 
         return templates.TemplateResponse("main.html", {
             "request": request,
@@ -382,10 +392,10 @@ async def render_main_page(request: Request):
             "tool2_status": status_rul_list[1][0],
             "tool3_status": status_rul_list[2][0],
             "tool4_status": status_rul_list[3][0],
-            "tool1_status_index": status_rul_list[0][1],
-            "tool2_status_index": status_rul_list[1][1],
-            "tool3_status_index": status_rul_list[2][1],
-            "tool4_status_index": status_rul_list[3][1],
+            "tool1_status_index": status_return(status_rul_list[0][1]),
+            "tool2_status_index": status_return(status_rul_list[1][1]),
+            "tool3_status_index": status_return(status_rul_list[2][1]),
+            "tool4_status_index": status_return(status_rul_list[3][1]),
             "tool1_rul": rul_converted_list[0],
             "tool2_rul": rul_converted_list[1],
             "tool3_rul": rul_converted_list[2],
@@ -402,6 +412,14 @@ async def render_main_page(request: Request):
             "tool2_lot": tool_data_list[1][11],
             "tool3_lot": tool_data_list[2][11],
             "tool4_lot": tool_data_list[3][11],
+            "tool1_stage": tool_data_list[0][10],
+            "tool2_stage": tool_data_list[1][10],
+            "tool3_stage": tool_data_list[2][10],
+            "tool4_stage": tool_data_list[3][10],
+            "tool1_recipe": tool_data_list[0][13],
+            "tool2_recipe": tool_data_list[1][13],
+            "tool3_recipe": tool_data_list[2][13],
+            "tool4_recipe": tool_data_list[3][13],
             "start_times": start_times,
             "Lots": lots,
             'bar_lis':bar_lis,
@@ -544,13 +562,14 @@ async def render_dashboard4_page(request: Request):
 
 @app.get("/alram.html")
 async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
-
-    cursor.execute(f"""SELECT distinct DATE_FORMAT(input_time, '%H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
+    line_lis = None
+    bar_lis = [[None, 0, 0]]
+    cursor.execute(f"""SELECT DATE_FORMAT(input_time, '%dD %H:%i:%s'), ACTUALROTATIONANGLE, FIXTURETILTANGLE,
                         ETCHBEAMCURRENT,IONGAUGEPRESSURE,
                         ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
                         ACTUALSTEPDURATION, ETCHSOURCEUSAGE,
                         FLOWCOOLFLOWRATE,FLOWCOOLPRESSURE
-                    FROM input_data_1;""")
+                    FROM input_data_1 order by input_time;""")
     existing_user = cursor.fetchall()
     
     colnames = cursor.description  # 변수정보
@@ -567,12 +586,19 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
     try:
         ## rul이 일정 수치 아래로 가면 해당 row의 index를 list형태로 반환한다.
         ### 중복되는 알람이 있을 수 있다. 
-        cursor.execute(f"""SELECT row_index
+        cursor.execute(f"""SELECT row_index, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
                         FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                        FROM rul_1) AS temp
+                            FROM rul_1) AS temp
                         WHERE (rul_fl < 10) or (rul_pb < 10) or (rul_ph < 10);""")
         existing_user = cursor.fetchall()
-        line_lis = [val[0] for val in existing_user]
+
+
+        line_lis = []
+        for idx, row in enumerate(existing_user[:-1]):
+            if row[-1] is not None and row[1] > 1:
+                current_value = row[-2]
+                line_lis.append(current_value)
+        line_lis
     
         cursor.execute(f"""SELECT temp.*, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
                         FROM (SELECT multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
@@ -580,16 +606,17 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
                         WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
         existing_user = cursor.fetchall()
     
-        bar_lis = [[existing_user[-1][3], existing_user[-1][4]]]
+        bar_lis = []
+        for idx, row in enumerate(existing_user[:-1]):
+            if row[-1] is not None and row[5] > 1:
+                current_datetime = row[3]
+                current_value = row[-2]
+                next_value = existing_user[idx - 1][-2]
+                bar_lis.append((current_datetime, next_value, current_value))
+        bar_lis
 
-        for i in range(len(existing_user) - 2, -1, -1):
-            if existing_user[i][-1] != 0 and existing_user[i][-1]!=1:
-                bar_lis[len(bar_lis) - 1].append(existing_user[i + 1][4])
-                bar_lis.append([existing_user[i][3], existing_user[i][4]])
-
-        bar_lis[-1].append(existing_user[0][4])
-        bar_lis.append(bar_lis[0])
-        bar_lis = bar_lis[1:]
+        # 전체 순서 역으로 정렬
+        bar_lis = sorted(bar_lis, key=lambda x: x[0], reverse=True)
 
     except:
         line_lis = None

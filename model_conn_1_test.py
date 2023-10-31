@@ -21,39 +21,44 @@ current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 ## 랜덤데이터 생성
 
+
 def generate_rul_data_rows():
-    data_rows = []
+    multi_rows = []
+    rul_rows = []
 
-    rul_fl = random.randint(300, 500)
-    rul_pb = random.randint(300, 500)
-    rul_ph = random.randint(300, 500)
+    rul_fl = random.randint(500, 1000)
+    rul_pb = random.randint(500, 1000)
+    rul_ph = random.randint(500, 1000)
 
-    decrement_fl = random.randint(1, 5)
-    decrement_pb = random.randint(1, 5)
-    decrement_ph = random.randint(1, 5)
+    decrement_fl = random.randint(1, 20)
+    decrement_pb = random.randint(1, 20)
+    decrement_ph = random.randint(1, 20)
 
     for _ in range(1000):
-        data_row = (rul_fl, rul_pb, rul_ph)
-        data_rows.append(data_row)
+        fl_value = 1 if 0 < rul_fl <= 100 else 0
+        pb_value = 1 if 0 < rul_pb <= 100 else 0
+        ph_value = 1 if 0 < rul_ph <= 100 else 0
+
+        multi_row = (fl_value, pb_value, ph_value)
+        multi_rows.append(multi_row)
+        rul_row = (rul_fl, rul_pb, rul_ph)
+        rul_rows.append(rul_row)
 
         rul_fl -= decrement_fl
         rul_pb -= decrement_pb
         rul_ph -= decrement_ph
 
         if rul_fl <= 0:
-            rul_fl = random.randint(300, 500)
-            decrement_fl = random.randint(1, 5)
+            rul_fl = random.randint(500, 1000)
+            decrement_fl = random.randint(1, 20)
         if rul_pb <= 0:
-            rul_pb = random.randint(300, 500)
-            decrement_pb = random.randint(1, 5)
+            rul_pb = random.randint(500, 1000)
+            decrement_pb = random.randint(1, 20)
         if rul_ph <= 0:
-            rul_ph = random.randint(300, 500)
-            decrement_ph = random.randint(1, 5)
+            rul_ph = random.randint(500, 1000)
+            decrement_ph = random.randint(1, 20)
 
-    return data_rows
-
-def generate_random_data(prob=0.015):
-    return 1 if random.random() < prob else 0
+    return multi_rows,rul_rows
 
 def generate_multi_data_rows():
     data_rows = []
@@ -63,6 +68,9 @@ def generate_multi_data_rows():
         data_rows.append(data_row)
 
     return data_rows
+
+def generate_random_data(prob=0.5):
+    return 1 if random.random() < prob else 0
 
 
 ########################################################################################################################################
@@ -133,8 +141,8 @@ def main():
 
     ## 데이터 생성
 
-    rul_data = generate_rul_data_rows()
-    multi_data = generate_multi_data_rows()
+    multi_data,rul_data = generate_rul_data_rows()
+    # multi_data = generate_multi_data_rows()
 
     ## 길이 기준
     # DataFrame에서 튜플 리스트로 데이터 변환
