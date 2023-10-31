@@ -128,7 +128,7 @@
             border: 6px solid green;
             border-radius: 25px; /* 원하는 모서리 둥근 정도를 조절할 수 있습니다. */
             color: gray;
-            width: 550px;
+            width: 100%;
             height: 250px;
             margin-bottom: 28px;
         }
@@ -285,6 +285,7 @@
                                 <div>
                                     <span style="color: white;"><b>[ Process Condition ]</b></span>
                                 </div>
+                                <br>
                                 <div class="legend-col">
                                     <i class="fa-regular fa-square" style="color: #93db93; margin-right: 4px;"></i>
                                     <span style="color: white;"><b>Normal</b></span>
@@ -292,14 +293,8 @@
                             </div>
                             <div class="legend-row">
                                 <div class="legend-col">
-                                    <i class="fa-regular fa-square" style="color: #fcee67; margin-right: 4px;"></i>
-                                    <span style="color: white;"><b>Near abnormal</b></span>
-                                </div>
-                            </div>
-                            <div class="legend-row">
-                                <div class="legend-col">
                                     <i class="fa-regular fa-square" style="color: #f26464; margin-right: 4px;"></i>
-                                    <span style="color: white;"><b>Abnormal</b></span>
+                                    <span style="color: white;"><b>Near Abnormal</b></span>
                                 </div>
                             </div>
                         </div>
@@ -321,8 +316,7 @@
                             <!-- BASIC TABLE -->
                             <div class="panel-board" id="Ion_Miller_M01" 
                             style="{% if tool1_status == 0 %} border: 6px solid #93db93; margin-left: 42px;
-                                {% elif tool1_status == 1 %} border: 6px solid #fcee67; margin-left: 42px;
-                                {% elif tool1_status == 2 %} border: 6px solid #f26464; margin-left: 42px;
+                                {% elif tool1_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
                                 {% endif %}">
                             
                                 <a href="dashboard.html?tab=dashboard1" style="color: #392f31;"> <!-- M01설비의 Dashboard 페이지로 이동 -->
@@ -331,8 +325,7 @@
                                         <span class="normal-status-topRight">
                                             <i class="fa-solid fa-power-off fa-fade"
                                             style="{% if tool1_status == 0 %} color : #93db93; margin-right : 10px;
-                                            {% elif tool1_status == 1 %} color : #fcee67; margin-right : 10px;
-                                            {% elif tool1_status == 2 %} color : #f26464; margin-right : 10px;
+                                            {% elif tool1_status == 1 %} color : #f26464; margin-right : 10px;
                                             {% endif %}"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M01</b></h3>
                                         </span> 
@@ -378,8 +371,7 @@
                             <!-- BASIC TABLE -->
                             <div class="panel-board" 
                                 style="{% if tool2_status == 0 %} border: 7px solid #90DA80; margin-left: 42px;
-                                {% elif tool2_status == 1 %} border: 7px solid #F9F871; margin-left: 42px;
-                                {% elif tool2_status == 2 %} border: 7px solid #FF676F; margin-left: 42px;
+                                {% elif tool2_status == 1 %} border: 7px solid #f26464; margin-left: 42px;
                                 {% endif %}">
                             <a href="dashboard.html?tab=dashboard2" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
                                 <div class="panel-heading" style="">
@@ -387,8 +379,7 @@
                                     <span class="normal-status-topRight">
                                         <i class="fa-solid fa-power-off fa-fade"
                                         style="{% if tool2_status == 0 %} color : #93db93;  margin-right : 10px;
-                                        {% elif tool2_status == 1 %} color : #fcee67; margin-right : 10px;
-                                        {% elif tool2_status == 2 %} color : #f26464; margin-right : 10px;
+                                        {% elif tool2_status == 1 %} color : #f26464; margin-right : 10px;
                                         {% endif %}"></i>
                                         <h3 class="panel-title"><b>Ion_Miller_M02</b></h3> <!--설비 이름-->
                                     </span>
@@ -436,8 +427,7 @@
                             <!-- TABLE STRIPED -->
                             <div class="panel-board" 
                                 style="{% if tool3_status == 0 %} border: 6px solid #93db93; margin-left: 42px; 
-                                {% elif tool3_status == 1 %} border: 6px solid #fcee67; margin-left: 42px;
-                                {% elif tool3_status == 2 %} border: 6px solid #f26464 margin-left: 42px;
+                                {% elif tool3_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
                                 {% endif %}">
                                 <a href="dashboard.html?tab=dashboard3" style="color: #392f31;"> <!-- M03설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
@@ -445,8 +435,7 @@
                                         <span class="normal-status-topRight">
                                             <i class="fa-solid fa-power-off fa-fade"
                                             style="{% if tool2_status == 0 %} color : #93db93;  margin-right : 10px;
-                                            {% elif tool2_status == 1 %} color : #fcee67; margin-right : 10px;
-                                            {% elif tool2_status == 2 %} color : #f26464; margin-right : 10px;
+                                            {% elif tool2_status == 1 %} color : #f26464; margin-right : 10px;
                                             {% endif %}"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M03</b></h3>
                                         </span> 
@@ -491,16 +480,14 @@
                             <!-- TABLE HOVER -->
                             <div class="panel-board" 
                                 style="{% if tool4_status == 0 %} border: 6px solid #93db93; margin-left: 42px;
-                                {% elif tool4_status == 1 %} border: 6px solid #fcee67; margin-left: 42px;
-                                {% elif tool4_status == 2 %} border: 6px solid #f26464 ; margin-left: 42px;
+                                {% elif tool4_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
                                 {% endif %}">
                                 <a href="dashboard.html?tab=dashboard4"> <!-- M04설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
                                         <span class="abnormal-status-topRight">
                                             <i class="fa-solid fa-power-off fa-fade"
                                             style="{% if tool2_status == 0 %} color : #93db93;  margin-right : 10px;
-                                            {% elif tool2_status == 1 %} color : #fcee67; margin-right : 10px;
-                                            {% elif tool2_status == 2 %} color : #f26464; margin-right : 10px;
+                                            {% elif tool2_status == 1 %} color : #f26464; margin-right : 10px;
                                             {% endif %}"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M04</b></h3>
                                         </span> 

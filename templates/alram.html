@@ -158,12 +158,10 @@
                             </li>
                         </ul>
                     </div>
-                </nav>
-                <footer style="text-align: center;">
-                    <div class="container-fluid">
-                        <li><i class="fa-solid fa-wrench"></i><span> 010-1234-1234</span></li>
-                    </div>
-                </footer>
+                </nav>              
+                <div class="text-center" style="position: absolute; bottom: 10px; width: 100%;">
+                    <li><button style="border-radius: 5px;" id="myButton"><i class="fa-solid fa-wrench"></i> 010-1234-1234</li></button>
+                </div>
             </div>
         </div>
 
@@ -211,6 +209,23 @@
         </footer>
     </div>
     <!-- END WRAPPER -->
+
+    <!-- contact :: send 버튼에 대한 모달창 -->
+    <dialog id="dialog1">
+        <p style="font-weight: bold;">수리 요청 하시겠습니까?</p>
+        <form method="dialog" id="dialog">
+        <button value="close">닫기</button>
+        <button value="confirm">확인</button>
+        </form>
+    </dialog>
+
+    <dialog id="dialog2">
+        <p style="font-weight: bold;">정상적으로 요청되었습니다.</p>
+        <form method="dialog" id="dialog">
+        <button value="close">닫기</button>
+        </form>
+    </dialog>
+
     <!-- ChartJavascript -->
     <script>
         // 스크롤 가능한 컨테이너와 호버 가능한 항목을 선택합니다.
@@ -408,5 +423,38 @@
             });
         });
     </script>
+
+    <!--모달 창 send 이벤트 처리-->
+    <script>
+        var myButton = document.getElementById('myButton');
+        var dialog1 = document.getElementById('dialog1');
+        var dialog2 = document.getElementById('dialog2');
+        
+        // "제출" 버튼 클릭 시 dialog1 열기
+        myButton.addEventListener('click', function() {
+            dialog1.showModal();
+        });
+        
+        // dialog1에서 버튼 클릭 시 처리
+        dialog1.addEventListener('click', function(e) {
+            if (e.target.value === 'confirm') {
+                // "확인" 버튼을 클릭하면 dialog1 닫고 dialog2 열기
+                dialog1.close();
+                dialog2.showModal();
+            } else if (e.target.value === 'close') {
+                // "닫기" 버튼을 클릭하면 dialog1 닫기
+                dialog1.close();
+            }
+        });
+        
+        // dialog2에서 버튼 클릭 시 처리
+        dialog2.addEventListener('click', function(e) {
+            if (e.target.value === 'close') {
+                // "닫기" 버튼을 클릭하면 dialog2 닫고 페이지 초기화
+                dialog2.close();
+                location.reload(); // 페이지 초기화
+            }
+        });
+        </script>
 </body>
 </html>
