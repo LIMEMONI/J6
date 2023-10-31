@@ -25,6 +25,45 @@
     <script src="/static/js/slimscroll.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script>
+        // JavaScript로 설정한 시작 시간으로부터 1초씩 시간을 증가시키는 함수
+        function startCountingRuntime(startTime, elementId) {
+            const startTimeObj = new Date(startTime);
+            setInterval(function() {
+                startTimeObj.setSeconds(startTimeObj.getSeconds() + 1); // 1초를 더합니다.
+                const hours = startTimeObj.getUTCHours();
+                const minutes = startTimeObj.getUTCMinutes();
+                const seconds = startTimeObj.getUTCSeconds();
+                document.getElementById(elementId).textContent = `${hours}시간 ${minutes}분 ${seconds}초`;
+            }, 1000);
+        }
+        $(document).ready(function() {
+            // 알람 드롭다운 메뉴 토글 이벤트 위임
+            $(document).on("click", "#alarmDropdownButton", function() {
+                $(".notifications").toggle();
+        });
+
+        // "더 보기" 버튼 클릭 이벤트 위임
+        $(document).on("click", ".view-more", function() {
+                window.location.href = "/alram.html";
+        });
+        });
+
+        // 페이지가 로드된 후 함수 실행
+        // 10초마다 새로운 데이터를 db에서 가져오는 함수
+        window.onload = function() {
+            setInterval(async function(){
+                let response = await fetch("/main.html");
+                let text = await response.text();
+                document.body.innerHTML = text; // 화면 갱신
+            }, 10000); // 10초 간격
+        };
+        // 시작 시간과 element ID를 전달하여 가동시간 증가 카운트 시작
+        startCountingRuntime("{{ start_times['설비 1'] }}", "tool1_runtime");
+        startCountingRuntime("{{ start_times['설비 2'] }}", "tool2_runtime");
+        startCountingRuntime("{{ start_times['설비 2'] }}", "tool3_runtime");
+        startCountingRuntime("{{ start_times['설비 2'] }}", "tool4_runtime");
+    </script>
     <style>
         /*안내용 범례*/
         .legend{
@@ -257,8 +296,7 @@
                             <!-- BASIC TABLE -->
                             <div class="panel-board" id="Ion_Miller_M01" 
                                 style="{% if tool1_status == 0 %} border: 6px solid #93db93; 
-                                    {% elif tool1_status == 1 %} border: 6px solid #fcee67;
-                                    {% elif tool1_status == 2 %} border: 6px solid #f26464;
+                                    {% elif tool1_status == 1 %} border: 6px solid #f26464;
                                     {% endif %}">
                             
                                 <a href="dashboard.html?tab=dashboard1" style="color: #392f31;"> <!-- M01설비의 Dashboard 페이지로 이동 -->
@@ -292,7 +330,7 @@
                                                 {% endif %}
                                             </b>
                                             <b class="panel-body-text">
-                                                - Lot: {{tool1_name}}
+                                                - Lot: {{tool1_lot}} {{tool1_stage}} {{tool1_recipe}} 
                                             </b>
                                         </div>
                                     </div>
@@ -304,8 +342,7 @@
                             <!-- BASIC TABLE -->
                             <div class="panel-board" 
                                 style="{% if tool2_status == 0 %} border: 6px solid #93db93;
-                                    {% elif tool2_status == 1 %} border: 6px solid #fcee67;
-                                    {% elif tool2_status == 2 %} border: 6px solid #f26464
+                                    {% elif tool2_status == 1 %} border: 6px solid #f26464;
                                     {% endif %}">
                                 <a href="dashboard.html?tab=dashboard2" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
@@ -336,7 +373,7 @@
                                                 {% endif %}
                                             </b>
                                             <b class="panel-body-text">
-                                                - Lot: {{tool2_name}}
+                                                - Lot: {{tool2_lot}} {{tool2_stage}} {{tool2_recipe}}
                                             </b>
                                         </div>
                                     </div>
@@ -352,8 +389,7 @@
                             <!-- TABLE STRIPED -->
                             <div class="panel-board" 
                                 style="{% if tool3_status == 0 %} border: 6px solid #93db93; 
-                                    {% elif tool3_status == 1 %} border: 6px solid #fcee67;
-                                    {% elif tool3_status == 2 %} border: 6px solid #f26464
+                                    {% elif tool3_status == 1 %} border: 6px solid #f26464;
                                     {% endif %}">
                                 <a href="dashboard.html?tab=dashboard3" style="color: #392f31;"> <!-- M03설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
@@ -384,7 +420,7 @@
                                                 {% endif %}
                                             </b>
                                             <b class="panel-body-text">
-                                                - Lot: {{tool3_name}}
+                                                - Lot: {{tool3_lot}} {{tool3_stage}} {{tool3_recipe}}
                                             </b>
                                         </div>
                                     </div>
@@ -396,10 +432,7 @@
                         <div class="col-md-6">
                             <!-- TABLE HOVER -->
                             <div class="panel-board" 
-                                style="{% if tool4_status == 0 %} border: 6px solid #93db93; 
-                                    {% elif tool4_status == 1 %} border: 6px solid #fcee67;
-                                    {% elif tool4_status == 2 %} border: 6px solid #f26464
-                                    {% endif %}">
+                                style="border: 6px solid #969393;">
                                 <a href="dashboard.html?tab=dashboard4"> <!-- M04설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
                                         <span class="abnormal-status-topRight">&nbsp</span> <!--상태표시 원-->
@@ -429,7 +462,7 @@
                                                 {% endif %}
                                             </b>
                                             <b class="panel-body-text">
-                                                - Lot: {{tool4_name}}
+                                                - Lot: {{tool4_lot}} {{tool4_stage}} {{tool4_recipe}}
                                             </b>
                                         </div>
                                     </div>
@@ -451,45 +484,7 @@
 	</div>
 	<!-- END WRAPPER -->
 	<!-- Javascript -->
-    <script>
-        // JavaScript로 설정한 시작 시간으로부터 1초씩 시간을 증가시키는 함수
-        function startCountingRuntime(startTime, elementId) {
-            const startTimeObj = new Date(startTime);
-            setInterval(function() {
-                startTimeObj.setSeconds(startTimeObj.getSeconds() + 1); // 1초를 더합니다.
-                const hours = startTimeObj.getUTCHours();
-                const minutes = startTimeObj.getUTCMinutes();
-                const seconds = startTimeObj.getUTCSeconds();
-                document.getElementById(elementId).textContent = `${hours}시간 ${minutes}분 ${seconds}초`;
-            }, 1000);
-        }
-        $(document).ready(function() {
-            // 알람 드롭다운 메뉴 토글 이벤트 위임
-            $(document).on("click", "#alarmDropdownButton", function() {
-                $(".notifications").toggle();
-        });
-
-        // "더 보기" 버튼 클릭 이벤트 위임
-        $(document).on("click", ".view-more", function() {
-                window.location.href = "/alram.html";
-        });
-        });
-
-        // 페이지가 로드된 후 함수 실행
-        // 10초마다 새로운 데이터를 db에서 가져오는 함수
-        window.onload = function() {
-            setInterval(async function(){
-                let response = await fetch("/main.html");
-                let text = await response.text();
-                document.body.innerHTML = text; // 화면 갱신
-            }, 10000); // 10초 간격
-        };
-        // 시작 시간과 element ID를 전달하여 가동시간 증가 카운트 시작
-        startCountingRuntime("{{ start_times['설비 1'] }}", "tool1_runtime");
-        startCountingRuntime("{{ start_times['설비 2'] }}", "tool2_runtime");
-        startCountingRuntime("{{ start_times['설비 2'] }}", "tool3_runtime");
-        startCountingRuntime("{{ start_times['설비 2'] }}", "tool4_runtime");
-    </script>
+    
 	<script src="/static/vendor/jquery/jquery.min.js"></script>
 	<script src="/static/vendor/bootstrap/js/bootstrap.min.js"></script>
 	<script src="/static/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
