@@ -255,7 +255,6 @@ def fetch_bar_lis_from_database(n=1):
                 current_value = row[-2]
                 next_value = existing_user[idx - 1][-2]
                 bar_lis.append((current_datetime, next_value, current_value))
-        bar_lis
 
         # 전체 순서 역으로 정렬
         bar_lis = sorted(bar_lis, key=lambda x: x[0], reverse=True)
@@ -339,7 +338,7 @@ def convert_to_year_month_day_hour(rul_value):
     # minute = int(rul_value // SECONDS_IN_MINUTE)
     # rul_value %= SECONDS_IN_MINUTE 
 
-    return f"{month:02} Month {day:02} Day"
+    return (month,day)
 
 
 # 메인 페이지를 랜더링하는 엔드포인트
@@ -378,7 +377,7 @@ async def render_main_page(request: Request):
         cursor.execute("SELECT Lot FROM input_data LIMIT 4")
         lots = [result[0] for result in cursor.fetchall()]
 
-        status_name = ['Flow leak 이상','Flow pressure high 이상','Flow pressure low 이상']
+        status_name = ['Flowleak','FlowPressureHigh','FlowPressureLow']
 
         def status_return(num):
             try:
@@ -406,10 +405,14 @@ async def render_main_page(request: Request):
             "tool2_rul": rul_converted_list[1],
             "tool3_rul": rul_converted_list[2],
             "tool4_rul": rul_converted_list[3],
-            "tool1_rul_index": status_rul_list[0][3],
-            "tool2_rul_index": status_rul_list[1][3],
-            "tool3_rul_index": status_rul_list[2][3],
-            "tool4_rul_index": status_rul_list[3][3],
+            "tool1_rul_index": status_return(status_rul_list[0][3]),
+            "tool2_rul_index": status_return(status_rul_list[1][3]),
+            "tool3_rul_index": status_return(status_rul_list[2][3]),
+            "tool4_rul_index": status_return(status_rul_list[3][3]),
+            # "tool1_rul_index": status_rul_list[0][3],
+            # "tool2_rul_index": status_rul_list[1][3],
+            # "tool3_rul_index": status_rul_list[2][3],
+            # "tool4_rul_index": status_rul_list[3][3],
             "tool1_name": tool_data_list[0][9],
             "tool2_name": tool_data_list[1][9],
             "tool3_name": tool_data_list[2][9],
