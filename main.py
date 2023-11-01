@@ -333,13 +333,13 @@ def convert_to_year_month_day_hour(rul_value):
     day = int(rul_value // SECONDS_IN_DAY)
     rul_value %= SECONDS_IN_DAY
 
-    hour = int(rul_value // SECONDS_IN_HOUR)
-    rul_value %= SECONDS_IN_HOUR
+    # hour = int(rul_value // SECONDS_IN_HOUR)
+    # rul_value %= SECONDS_IN_HOUR
 
-    minute = int(rul_value // SECONDS_IN_MINUTE)
-    rul_value %= SECONDS_IN_MINUTE 
+    # minute = int(rul_value // SECONDS_IN_MINUTE)
+    # rul_value %= SECONDS_IN_MINUTE 
 
-    return f"{month:02}M {day:02}D {hour:02}H {minute:02}M"
+    return f"{month:02} Month {day:02} Day"
 
 
 # 메인 페이지를 랜더링하는 엔드포인트
