@@ -377,7 +377,7 @@ async def render_main_page(request: Request):
         cursor.execute("SELECT Lot FROM input_data LIMIT 4")
         lots = [result[0] for result in cursor.fetchall()]
 
-        status_name = ['Flowleak','FlowPressureHigh','FlowPressureLow']
+        status_name = ['Flow leak','Flow Pressure High','Flow Pressure Low']
 
         def status_return(num):
             try:
