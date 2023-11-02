@@ -223,7 +223,7 @@
                                             {% set val = item[0] %}
                                             {% set i_s = item[1] %}
                                             {% set i_e = item[2] %}
-                                            <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 공정 이상 감지 구간 : {{ val }}</a></li>
+                                            <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 이상 발생 : {{ val }}</a></li>
                                         {% endfor %}
                                         <li><a class="view-more" style="text-align: center;" href="/alram.html?time={{ bar_lis[0][0] }}&xlim_s={{ bar_lis[0][1] }}&xlim_e={{ bar_lis[0][2] }}" ><i class="lnr lnr-alarm" ></i> 더 보기</a></li>
                                     </ul>
@@ -277,7 +277,7 @@
                             </div>
                             <div class="legend-row">
                                 <div class="legend-col">
-                                    <i class="fa-solid fa-power-off" style="color: white; margin-right: 4px;"></i>
+                                    <i class="fa-solid fa-power-off" style="color: #f26464; margin-right: 4px;"></i>
                                     <span style="color: white;"><b>설비 정지</b></span>
                                 </div>
                             </div>
@@ -348,7 +348,12 @@
                                                 {% endif %}
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>잔여 수명 시간</b> : {{tool1_rul}}
+                                                - <b>잔여 수명 시간</b> :
+                                                {% if (tool1_rul[0] == 0) and (tool1_rul[1] < 2) %}
+                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">{{ tool1_rul[0] }} Month {{ tool1_rul[1] }} Day</span>
+                                                {% else %}
+                                                {{ tool1_rul[0] }} Month {{ tool1_rul[1] }} Day
+                                                {% endif %}
                                             </span>
                                             <span class="panel-body-text">
                                                 - <b>가동 시간</b> : 
@@ -373,7 +378,7 @@
                         <div class="col-md-6">
                             <!-- BASIC TABLE -->
                             <div class="panel-board" 
-                                style="{% if tool2_status == 0 %} border: 7px solid #90DA80; margin-left: 42px;
+                                style="{% if tool2_status == 0 %} border: 7px solid #93db93; margin-left: 42px;
                                 {% elif tool2_status == 1 %} border: 7px solid #f26464; margin-left: 42px;
                                 {% endif %}">
                             <a id="tool2_link" href="dashboard.html?tab=dashboard2" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
@@ -400,7 +405,12 @@
                                             {% endif %}
                                         </span>
                                         <span class="panel-body-text">
-                                            - <b>잔여 수명 시간</b> : {{tool2_rul}}
+                                            - <b>잔여 수명 시간</b> :
+                                            {% if (tool2_rul[0] == 0) and (tool2_rul[1] < 2) %}
+                                            <span style="color: rgb(241, 83, 31); margin-left: 5px;">{{ tool2_rul[0] }} Month {{ tool2_rul[1] }} Day</span>
+                                            {% else %}
+                                            {{ tool2_rul[0] }} Month {{ tool2_rul[1] }} Day
+                                            {% endif %}
                                         </span>
                                         <span class="panel-body-text">
                                             - <b>가동 시간</b> : 
@@ -437,8 +447,8 @@
                                         <!--상태 표시 초록원-->
                                         <span class="normal-status-topRight">
                                             <i class="fa-solid fa-power-off fa-fade"
-                                            style="{% if tool2_status == 0 %} color : #93db93;  margin-right : 10px;
-                                            {% elif tool2_status == 1 %} color : #f26464; margin-right : 10px;
+                                            style="{% if tool3_status == 0 %} color : #93db93;  margin-right : 10px;
+                                            {% elif tool3_status == 1 %} color : #f26464; margin-right : 10px;
                                             {% endif %}"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M03</b></h3>
                                         </span> 
@@ -456,7 +466,12 @@
                                                 {% endif %}
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>잔여 수명 시간</b> : {{tool3_rul}}
+                                                - <b>잔여 수명 시간</b> :
+                                                {% if (tool3_rul[0] == 0) and (tool3_rul[1] < 2) %}
+                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">{{ tool3_rul[0] }} Month {{ tool3_rul[1] }} Day</span>
+                                                {% else %}
+                                                {{ tool3_rul[0] }} Month {{ tool3_rul[1] }} Day
+                                                {% endif %}
                                             </span>
                                             <span class="panel-body-text">
                                                 - <b>가동 시간</b> : 
@@ -482,16 +497,13 @@
                         <div class="col-md-6">
                             <!-- TABLE HOVER -->
                             <div class="panel-board" 
-                                style="{% if tool4_status == 0 %} border: 6px solid #93db93; margin-left: 42px;
-                                {% elif tool4_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
-                                {% endif %}">
+                                style="border: 6px solid #838383; margin-left: 42px;">
                                 <a id="tool4_link" href="dashboard.html?tab=dashboard4"> <!-- M04설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
+                                        <!-- 스위치-->
                                         <span class="abnormal-status-topRight">
-                                            <i class="fa-solid fa-power-off fa-fade"
-                                            style="{% if tool2_status == 0 %} color : #93db93;  margin-right : 10px;
-                                            {% elif tool2_status == 1 %} color : #f26464; margin-right : 10px;
-                                            {% endif %}"></i>
+                                            <i class="fa-solid fa-power-off"
+                                            style="color : #f26464; margin-right : 10px;"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M04</b></h3>
                                         </span> 
                                     </div>
@@ -500,29 +512,19 @@
                                         <img class="tool-icon" src="static/img/tool.png">
                                         <div style= "display: flex; flex-direction: column; width: 250%;">
                                             <span class="panel-body-text" style="display: flex; align-items: center;">
-                                                - <b>공정 이상 여부</b> :
-                                                {% if tool4_status == 0 %}
-                                                정상
-                                                {% else %}
-                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">{{tool4_status_index}}!</span>
-                                                {% endif %}
+                                                - <b>공정 이상 여부</b> : 이상
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>잔여 수명 시간</b> : {{tool4_rul}}
+                                                - <b>잔여 수명 시간</b> : -
                                             </span>                                            
                                             <span class="panel-body-text">
-                                                - <b>가동 시간</b>: 
-                                                {% if  tool4_status == 0 %}
-                                                <span id="tool4_runtime"></span>
-                                                {% else %}
-                                                --
-                                                {% endif %}
+                                                - <b>가동 시간</b>: 15시간 10분 24초
                                             </span>
                                         <span class="panel-body-text">
-                                            - <b>recipe</b> :  {{tool4_recipe}}
+                                            - <b>recipe</b> : -
                                         </span>
                                         <span class="panel-body-text">
-                                            - <b>stage</b> :  {{tool4_stage}}
+                                            - <b>stage</b> : -
                                         </span>
                                         </div>
                                     </div>
@@ -547,39 +549,68 @@
     <script>
         // 페이지가 로드될 때 실행되는 함수
             document.addEventListener("DOMContentLoaded", function () {
-                var tool1_rul = {{tool1_rul}}; 
-                var tool2_rul = {{tool2_rul}}; 
-                var tool3_rul = {{tool3_rul}}; 
-                var tool4_rul = {{tool4_rul}}; 
+                var tool1_month_rul = {{tool1_rul[0]}}; 
+                var tool1_rul = {{tool1_rul[1]}}; 
+                var tool2_month_rul = {{tool2_rul[0]}}; 
+                var tool2_rul = {{tool2_rul[1]}}; 
+                var tool3_month_rul = {{tool3_rul[0]}}; 
+                var tool3_rul = {{tool3_rul[1]}}; 
+                var tool4_month_rul = {{tool4_rul[0]}}; 
+                var tool4_rul = {{tool4_rul[1]}}; 
+                var tool1_rul_index = '{{tool1_rul_index}}'; 
+                var tool2_rul_index = '{{tool2_rul_index}}'; 
+                var tool3_rul_index = '{{tool3_rul_index}}'; 
+                var tool4_rul_index = '{{tool4_rul_index}}'; 
+                var test = 'this is test!!'
     
                 // tool1 처리
                 var tool1Link = document.getElementById("tool1_link");
-                if (tool1_rul === 0) {
-                    alert("Flowcool Pressure Too High check Flowcool Pump이 발생했습니다.");
+                if (tool1_month_rul == 0 && tool1_rul == 0) {
+                    alert(`${tool1_rul_index}!! M01 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
+                    tool1Link.style.pointerEvents = "none";
+                    tool1Link.style.color = "#999"; // 링크의 색상을 회색으로 변경 (비활성화 표시)
+                }
+                else if (tool1_month_rul == 0 && tool1_rul <= 3) {
+                    alert(`${tool1_rul_index}!! M01의 작동 수명이 얼마 남지 않았습니다.`);
                     tool1Link.style.pointerEvents = "none";
                     tool1Link.style.color = "#999"; // 링크의 색상을 회색으로 변경 (비활성화 표시)
                 }
     
                 // tool2 처리
                 var tool2Link = document.getElementById("tool2_link");
-                if (tool2_rul === 0) {
-                    alert("Flowcool Pressure Too High check Flowcool Pump이 발생했습니다.");
+                if (tool2_month_rul == 0 && tool2_rul == 0) {
+                    alert(`${tool2_rul_index}!! M02 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
+                    tool2Link.style.pointerEvents = "none";
+                    tool2Link.style.color = "#999";
+                }
+                else if (tool2_month_rul == 0 && tool2_rul <= 3) {
+                    alert(`${tool2_rul_index}!! M02의 작동 수명이 얼마 남지 않았습니다.`);
                     tool2Link.style.pointerEvents = "none";
                     tool2Link.style.color = "#999";
                 }
     
                 // tool3 처리
                 var tool3Link = document.getElementById("tool3_link");
-                if (tool3_rul === 0) {
-                    alert("Flowcool Pressure Too High check Flowcool Pump이 발생했습니다.");
+                if (tool3_month_rul == 0 && tool3_rul == 0) {
+                    alert(`${tool3_rul_index}!! M03 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
+                    tool3Link.style.pointerEvents = "none";
+                    tool3Link.style.color = "#999";
+                }
+                else if (tool3_month_rul == 0 && tool3_rul <= 3) {
+                    alert(`${tool3_rul_index}!! M03의 작동 수명이 얼마 남지 않았습니다.`);
                     tool3Link.style.pointerEvents = "none";
                     tool3Link.style.color = "#999";
                 }
     
                 // tool4 처리
                 var tool4Link = document.getElementById("tool4_link");
-                if (tool4_rul === 0) {
-                    alert("Flowcool Pressure Too High check Flowcool Pump이 발생했습니다.");
+                if (tool4_month_rul == 0 && tool4_rul == 0) {
+                    alert(`${tool4_rul_index}!! M04 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
+                    tool4Link.style.pointerEvents = "none";
+                    tool4Link.style.color = "#999";
+                }
+                else if (tool4_month_rul == 0 && tool4_rul <= 3) {
+                    alert(`${tool4_rul_index}!! M04의 작동 수명이 얼마 남지 않았습니다.`);
                     tool4Link.style.pointerEvents = "none";
                     tool4Link.style.color = "#999";
                 }
