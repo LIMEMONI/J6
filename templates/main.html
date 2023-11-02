@@ -482,16 +482,13 @@
                         <div class="col-md-6">
                             <!-- TABLE HOVER -->
                             <div class="panel-board" 
-                                style="{% if tool4_status == 0 %} border: 6px solid #93db93; margin-left: 42px;
-                                {% elif tool4_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
-                                {% endif %}">
+                                style="border: 6px solid #838383; margin-left: 42px;">
                                 <a id="tool4_link" href="dashboard.html?tab=dashboard4"> <!-- M04설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
+                                        <!-- 스위치-->
                                         <span class="abnormal-status-topRight">
-                                            <i class="fa-solid fa-power-off fa-fade"
-                                            style="{% if tool4_rul != 0 %} color : #93db93;  margin-right : 10px;
-                                            {% elif tool4_rul == 0 %} color : #f26464; margin-right : 10px;
-                                            {% endif %}"></i>
+                                            <i class="fa-solid fa-power-off"
+                                            style="color : #f26464; margin-right : 10px;"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M04</b></h3>
                                         </span> 
                                     </div>
@@ -500,29 +497,19 @@
                                         <img class="tool-icon" src="static/img/tool.png">
                                         <div style= "display: flex; flex-direction: column; width: 250%;">
                                             <span class="panel-body-text" style="display: flex; align-items: center;">
-                                                - <b>공정 이상 여부</b> :
-                                                {% if tool4_status == 0 %}
-                                                정상
-                                                {% else %}
-                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">고장!</span>
-                                                {% endif %}
+                                                - <b>공정 이상 여부</b> : 이상
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>잔여 수명 시간</b> : {{tool4_rul}}
+                                                - <b>잔여 수명 시간</b> : -
                                             </span>                                            
                                             <span class="panel-body-text">
-                                                - <b>가동 시간</b>: 
-                                                {% if  tool4_status == 0 %}
-                                                <span id="tool4_runtime"></span>
-                                                {% else %}
-                                                --
-                                                {% endif %}
+                                                - <b>가동 시간</b>: 15시간 10분 24초
                                             </span>
                                         <span class="panel-body-text">
-                                            - <b>recipe</b> :
+                                            - <b>recipe</b> : -
                                         </span>
                                         <span class="panel-body-text">
-                                            - <b>stage</b> :
+                                            - <b>stage</b> : -
                                         </span>
                                         </div>
                                     </div>
