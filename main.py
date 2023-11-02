@@ -621,7 +621,6 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
                 current_value = row[-2]
                 next_value = existing_user[idx - 1][-2]
                 bar_lis.append((current_datetime, next_value, current_value))
-        bar_lis
 
         # 전체 순서 역으로 정렬
         bar_lis = sorted(bar_lis, key=lambda x: x[0], reverse=True)
