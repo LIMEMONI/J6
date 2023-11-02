@@ -122,7 +122,7 @@
                                                 {% set val = item[0] %}
                                                 {% set i_s = item[1] %}
                                                 {% set i_e = item[2] %}
-                                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 공정 이상 감지 구간 : {{ val }}</a></li>                                                    <!-- 알람음 추가 -->
+                                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 이상 발생 : {{ val }}</a></li>                                                    <!-- 알람음 추가 -->
                                                     <audio id="alarmAudio" preload="auto">
                                                         <source src="/static/alarm.mp3" type="audio/mpeg">
                                                     </audio></a></li>

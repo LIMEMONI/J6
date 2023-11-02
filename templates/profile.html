@@ -96,7 +96,7 @@
                                             {% set val = item[0] %}
                                             {% set i_s = item[1] %}
                                             {% set i_e = item[2] %}
-                                            <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 공정 이상 감지 구간 : {{ val }}</a></li>
+                                            <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 이상 발생 : {{ val }}</a></li>
                                         {% endfor %}
                                         <li><a class="view-more" style="text-align: center;" href="/alram.html?time={{ bar_lis[0][0] }}&xlim_s={{ bar_lis[0][1] }}&xlim_e={{ bar_lis[0][2] }}" ><i class="lnr lnr-alarm" ></i> 더 보기</a></li>
                                     </ul>
@@ -118,30 +118,18 @@
         </div>
         <!-- END NAVBAR -->
     
-            <!-- iframe 태그 -->
-            <iframe id="iframe" width="100%" height="620" style="align: center;" frameborder="0"></iframe>
+        <!-- iframe 태그 -->
+        <iframe id="iframe" width="100%" height="620" style="align: center;" frameborder="0"></iframe>
 		<!-- END MAIN -->
 		<div class="clearfix"></div>
 		<footer style="height: 1%;">
 			<div class="container-fluid">
-				<p class="copyright">Made by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">J6</a>
-</p>
+				<p class="copyright">Made by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">J6</a></p>
 			</div>
 		</footer>
 	</div>
 	<!-- END WRAPPER -->
 
-    <!-- iframe 태그 -->
-    <iframe id="iframe" width="100%" height="620" frameborder="0"></iframe>
-    <!-- END MAIN -->
-    <div class="clearfix"></div>
-    <footer>
-       <div class="container-fluid">
-          <p class="copyright">Made by <i class="fa fa-love"></i><a href="https://bootstrapthemes.co">J6</a></p>
-       </div>
-    </footer>
- </div>
- <!-- END WRAPPER -->
 
  <!-- Javascript -->
  <script src="static/vendor/jquery/jquery.min.js"></script>
