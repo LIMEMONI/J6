@@ -57,13 +57,108 @@
         });
 
         // 페이지가 로드된 후 함수 실행
-        // 10초마다 새로운 데이터를 db에서 가져오는 함수
+        // 전역변수 설정
+        var alerted = {
+            tool1: false,
+            tool2: false,
+            tool3: false,
+            tool4: false
+        };
+
         window.onload = function() {
-            setInterval(async function(){
+
+            setInterval(async function() {
+                checkTools();
                 let response = await fetch("/main.html");
                 let text = await response.text();
                 document.body.innerHTML = text; // 화면 갱신
-            }, 4000); // 10초 간격
+
+
+            }, 10000); // 10초 간격
+        };
+
+        function checkTools() {
+            // 페이지가 로드될 때 실행되는 함수
+            var tool1_month_rul = {{tool1_rul[0]}};
+            var tool1_rul = {{tool1_rul[1]}};
+            var tool2_month_rul = {{tool2_rul[0]}};
+            var tool2_rul = {{tool2_rul[1]}};
+            var tool3_month_rul = {{tool3_rul[0]}};
+            var tool3_rul = {{tool3_rul[1]}};
+            var tool4_month_rul = {{tool4_rul[0]}};
+            var tool4_rul = {{tool4_rul[1]}};
+            var tool1_rul_index = '{{tool1_rul_index}}';
+            var tool2_rul_index = '{{tool2_rul_index}}';
+            var tool3_rul_index = '{{tool3_rul_index}}';
+            var tool4_rul_index = '{{tool4_rul_index}}';
+
+            // tool1 처리
+            var tool1Link = document.getElementById("tool1_link");
+            if (!alerted.tool1 && tool1_month_rul == 0 && tool1_rul == 0) {
+                alert(`${tool1_rul_index}!! M01 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요.`);
+                tool1Link.style.pointerEvents = "none";
+                tool1Link.style.color = "#555";
+                alerted.tool1 = true;
+                alerted.tool1 = true;
+            } else if (!alerted.tool1 && tool1_month_rul == 0 && tool1_rul <= 3) {
+                alert(`${tool1_rul_index}!! M01의 작동 수명이 얼마 남지 않았습니다.`);
+                // tool1Link.style.pointerEvents = "none";
+                // tool1Link.style.color = "#555";
+                // alerted.tool1 = true;
+            } else if (alerted.tool1) {
+                tool1Link.style.pointerEvents = "none";
+            }
+
+            // tool2 처리
+            var tool2Link = document.getElementById("tool2_link");
+            if (!alerted.tool2 && tool2_month_rul == 0 && tool2_rul == 0) {
+                alert(`${tool2_rul_index}!! M02 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요.`);
+                tool2Link.style.pointerEvents = "none";
+                tool2Link.style.color = "#555";
+                alerted.tool2 = true;
+                alerted.tool2 = true;
+            } else if (!alerted.tool2 && tool2_month_rul == 0 && tool2_rul <= 3) {
+                alert(`${tool2_rul_index}!! M02의 작동 수명이 얼마 남지 않았습니다.`);
+                // tool2Link.style.pointerEvents = "none";
+                // tool2Link.style.color = "#555";
+                // alerted.tool2 = true;
+            } else if (alerted.tool2) {
+                tool2Link.style.pointerEvents = "none";
+            }
+
+            // tool3 처리
+            var tool3Link = document.getElementById("tool3_link");
+            if (!alerted.tool3 && tool3_month_rul == 0 && tool3_rul == 0) {
+                alert(`${tool3_rul_index}!! M03 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요.`);
+                tool3Link.style.pointerEvents = "none";
+                tool3Link.style.color = "#555";
+                alerted.tool3 = true;
+                alerted.tool3 = true;
+            } else if (!alerted.tool3 && tool3_month_rul == 0 && tool3_rul <= 3) {
+                alert(`${tool3_rul_index}!! M03의 작동 수명이 얼마 남지 않았습니다.`);
+                // tool3Link.style.pointerEvents = "none";
+                // tool3Link.style.color = "#555";
+                // alerted.tool3 = true;
+            } else if (alerted.tool3) {
+                tool3Link.style.pointerEvents = "none";
+            }
+
+            // tool4 처리
+            var tool4Link = document.getElementById("tool4_link");
+            if (!alerted.tool4 && tool4_month_rul == 0 && tool4_rul == 0) {
+                alert(`${tool4_rul_index}!! M04 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요.`);
+                tool4Link.style.pointerEvents = "none";
+                tool4Link.style.color = "#555";
+                alerted.tool4 = true;
+                alerted.tool4 = true;
+            } else if (!alerted.tool4 && tool4_month_rul == 0 && tool4_rul <= 3) {
+                alert(`${tool4_rul_index}!! M04의 작동 수명이 얼마 남지 않았습니다.`);
+                // tool4Link.style.pointerEvents = "none";
+                // tool4Link.style.color = "#555";
+                // alerted.tool4 = true;
+            } else if (alerted.tool4) {
+                tool4Link.style.pointerEvents = "none";
+            }
         };
         // 시작 시간과 element ID를 전달하여 가동시간 증가 카운트 시작
         startCountingRuntime("{{ start_times['설비 1'] }}", "tool1_runtime");
