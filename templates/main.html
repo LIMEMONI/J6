@@ -70,13 +70,13 @@
         };
 
         window.onload = function() {
-            checkTools();
+            // checkTools();
 
             setInterval(async function() {
                 let response = await fetch("/main.html");
                 let text = await response.text();
                 document.body.innerHTML = text; // 화면 갱신
-                checkTools();
+                // checkTools();
             }, 4000);
         };
 
