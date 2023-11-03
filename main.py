@@ -222,6 +222,17 @@ async def process_registration(request: Request, user: User):
     # / 페이지로 리디렉트
     return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
 
+## 인덱스 찾기용 함수
+
+def find_status(lst):
+    indices = [0, 1, 2]
+    status_name = ['Flow leak','Flow Pressure High','Flow Pressure Low']
+    for index in indices:
+        if lst[index] == 1:
+            return status_name[index]
+    return None
+
+
 # 데이터베이스에서 필요한 데이터를 쿼리하여 bar_lis를 생성
 def fetch_bar_lis_from_database(n=1):
     line_lis = None
@@ -252,6 +263,8 @@ def fetch_bar_lis_from_database(n=1):
                             FROM multi_{n}) AS temp
                         WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
         existing_user = cursor.fetchall()
+
+        
     
         bar_lis = []
         for idx, row in enumerate(existing_user[:-1]):
@@ -259,7 +272,8 @@ def fetch_bar_lis_from_database(n=1):
                 current_datetime = row[3]
                 current_value = row[-2]
                 next_value = existing_user[idx - 1][-2]
-                bar_lis.append((current_datetime, next_value, current_value))
+                current_status = find_status(row)
+                bar_lis.append((current_datetime, next_value, current_value,current_status))
 
         # 전체 순서 역으로 정렬
         bar_lis = sorted(bar_lis, key=lambda x: x[0], reverse=True)
@@ -642,7 +656,8 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
                 current_datetime = row[3]
                 current_value = row[-2]
                 next_value = existing_user[idx - 1][-2]
-                bar_lis.append((current_datetime, next_value, current_value))
+                current_status = find_status(row)
+                bar_lis.append((current_datetime, next_value, current_value,current_status))
 
         # 전체 순서 역으로 정렬
         bar_lis = sorted(bar_lis, key=lambda x: x[0], reverse=True)
@@ -730,3 +745,4 @@ async def render_profile_page(request: Request):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

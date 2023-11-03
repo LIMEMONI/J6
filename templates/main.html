@@ -76,7 +76,7 @@
                 let response = await fetch("/main.html");
                 let text = await response.text();
                 document.body.innerHTML = text; // 화면 갱신
-                // checkTools();
+                                // checkTools();
             }, 4000);
         };
 
@@ -168,13 +168,14 @@
         startCountingRuntime("{{ start_times['설비 2'] }}", "tool3_runtime");
         startCountingRuntime("{{ start_times['설비 2'] }}", "tool4_runtime");
     </script>
+ 
     <script>
         $(document).ready(function() {
             // 알람 드롭다운 메뉴를 토글하기
             $("#alarmDropdownButton").click(function() {
                 $(".notifications").toggle();
             });
-    
+            
             // "더 보기" 버튼을 클릭했을 때 이벤트 처리
             $(".view-more").click(function() {
                 // "alram.html"로 이동
@@ -320,7 +321,8 @@
                                             {% set val = item[0] %}
                                             {% set i_s = item[1] %}
                                             {% set i_e = item[2] %}
-                                            <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 이상 발생 : {{ val }}</a></li>
+                                            {% set status = item[3] %}
+                                            <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> M01 {{status}} 이상 발생 : {{ val }}</a></li>
                                         {% endfor %}
                                         <li><a class="view-more" style="text-align: center;" href="/alram.html?time={{ bar_lis[0][0] }}&xlim_s={{ bar_lis[0][1] }}&xlim_e={{ bar_lis[0][2] }}" ><i class="lnr lnr-alarm" ></i> 더 보기</a></li>
                                     </ul>
@@ -615,43 +617,64 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <!-- TABLE HOVER -->
+                            <!-- TABLE STRIPED -->
                             <div class="panel-board" 
-                                style="border: 6px solid #838383; margin-left: 42px;">
-                                <a id="tool4_link" href="dashboard.html?tab=dashboard4"> <!-- M04설비의 Dashboard 페이지로 이동 -->
+                                style="{% if tool4_status == 0 %} border: 6px solid #93db93; margin-left: 42px; 
+                                {% elif tool4_status == 1 or (tool4_rul[0] == 0 and tool4_rul[1] == 0)%} border: 6px solid #f26464; margin-left: 42px;
+                                {% endif %}">
+                                <a id="tool4_link" href="dashboard.html?tab=dashboard4" style="color: #392f31;"> <!-- M04설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
-                                        <!-- 스위치-->
-                                        <span class="abnormal-status-topRight">
-                                            <i class="fa-solid fa-power-off"
-                                            style="color : #f26464; margin-right : 10px;"></i>
+                                        <!--상태 표시 초록원-->
+                                        <span class="normal-status-topRight">
+                                            <i class="fa-solid fa-power-off fa-fade"
+                                            style="{% if tool4_status == 0 %} color : #93db93;  margin-right : 10px;
+                                            {% elif tool4_status == 1 %} color : #f26464; margin-right : 10px;
+                                            {% endif %}"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M04</b></h3>
                                         </span> 
                                     </div>
                                     <hr class="head-line"> <!--설비 이름-내용 구분선-->
                                     <div class="panel-body" style="display: flex; align-items: center;">
                                         <img class="tool-icon" src="static/img/tool.png">
-                                        <div style= "display: flex; flex-direction: column; width: 250%;">
-                                            <span class="panel-body-text" style="display: flex; align-items: center;">
-                                                - <b>공정 이상 여부</b> : 이상
+                                        <div style="display: flex; flex-direction: column; width: 250%;">
+                                            <span class="panel-body-text">
+                                                - <b>공정 이상 여부</b> :
+                                                {% if tool4_status == 0 %}
+                                                정상
+                                                {% else %}
+                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">{{tool4_status_index}}!</span>
+                                                {% endif %}
                                             </span>
                                             <span class="panel-body-text">
-                                                - <b>잔여 수명 시간</b> : -
-                                            </span>                                            
-                                            <span class="panel-body-text">
-                                                - <b>가동 시간</b>: 15시간 10분 24초
+                                                - <b>잔여 수명 시간</b> :
+                                                {% if (tool4_rul[0] == 0) and (tool4_rul[1] < 1) %}
+                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">{{ tool4_rul[0] }} Month {{ tool4_rul[1] }} Day</span>
+                                                {% else %}
+                                                {{ tool4_rul[0] }} Month {{ tool4_rul[1] }} Day
+                                                {% endif %}
                                             </span>
-                                        <span class="panel-body-text">
-                                            - <b>recipe</b> : -
-                                        </span>
-                                        <span class="panel-body-text">
-                                            - <b>stage</b> : -
-                                        </span>
+                                            <span class="panel-body-text">
+                                                - <b>가동 시간</b> : 
+                                                {% if (tool4_rul[0] == 0 and tool4_rul[1] == 0) %}
+                                                --
+                                                {% elif  tool4_status == 0 %}
+                                                <span id="tool4_runtime"></span>
+                                                {% else %}
+                                                --
+                                                {% endif %}
+                                            </span>
+                                            <span class="panel-body-text">
+                                                - <b>recipe</b> :  {{tool4_recipe}}
+                                            </span>
+                                            <span class="panel-body-text">
+                                                - <b>stage</b> :  {{tool4_stage}}
+                                            </span>
                                         </div>
                                     </div>
                                 </a>
                             </div>
-                        <!-- END TABLE HOVER -->
-                    </div>                 
+                        </div>
+                                   
 			</div>
 			<!-- END MAIN CONTENT -->
 		</div>
@@ -670,7 +693,7 @@
         data-tool4-rul-index="{{tool4_rul_index}}"
         >
         </div>
-		<!-- END MAIN -->
+        		<!-- END MAIN -->
 		<div class="clearfix"></div>
 		<footer>
 			<div class="container-fluid">

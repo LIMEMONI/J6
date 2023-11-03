@@ -122,7 +122,8 @@
                                                 {% set val = item[0] %}
                                                 {% set i_s = item[1] %}
                                                 {% set i_e = item[2] %}
-                                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 이상 발생 : {{ val }}</a></li>                                                    <!-- 알람음 추가 -->
+                                                {% set status = item[3] %}
+                                                <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}">M01 {{status}} 이상 발생 : {{ val }}</a></li>                                                    <!-- 알람음 추가 -->
                                                     <audio id="alarmAudio" preload="auto">
                                                         <source src="/static/alarm.mp3" type="audio/mpeg">
                                                     </audio></a></li>
@@ -160,7 +161,8 @@
                                         {% set val = item[0] %}
                                         {% set i_s = item[1] %}
                                         {% set i_e = item[2] %}
-                                        <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"><span style="font-size: 15px; display: block;">{{ val }}</span><span style="font-size: 15px; display: block;">이상발생</span></a></li>
+                                        {% set status = item[3] %}
+                                        <li><a href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"><span style="font-size: 15px; display: block;">{{ val }}</span><span style="font-size: 15px; display: block;">M01 {{status}}</span><span style="font-size: 15px; display: block;">이상 발생</span></a></li>
                                     {% endfor %}
                                 </ul>
                             </div>
