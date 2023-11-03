@@ -50,7 +50,7 @@ def fetch_recent_logs(length=1):
        FLOWCOOLPRESSURE, ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
        FIXTURETILTANGLE, ROTATIONSPEED, ACTUALROTATIONANGLE,
        FIXTURESHUTTERPOSITION, ETCHSOURCEUSAGE, ETCHAUXSOURCETIMER,
-       ETCHAUX2SOURCETIMER, ACTUALSTEPDURATION FROM input_data_3 ORDER BY input_time DESC LIMIT {length+51}'''
+       ETCHAUX2SOURCETIMER, ACTUALSTEPDURATION FROM input_data_4 ORDER BY input_time DESC LIMIT {length+51}'''
             cursor.execute(sql)
             results = cursor.fetchall()
     finally:
@@ -71,7 +71,7 @@ def fetch_recent_rul_logs(length=avg_len):
     try:
         with connection.cursor() as cursor:
             # 가장 최근의 데이터부터 지정한 길이만큼 가져오는 SQL 쿼리
-            sql = f'''SELECT rul_fl, rul_pb, rul_ph FROM rul_3 ORDER BY input_time DESC LIMIT {length}'''
+            sql = f'''SELECT rul_fl, rul_pb, rul_ph FROM rul_4 ORDER BY input_time DESC LIMIT {length}'''
             cursor.execute(sql)
             results = cursor.fetchall()
     finally:
@@ -94,7 +94,7 @@ def fetch_recent_logs_for_multi(length=1):
             # 가장 최근의 데이터부터 지정한 길이만큼 가져오는 SQL 쿼리
             sql = f'''SELECT ACTUALROTATIONANGLE, ACTUALSTEPDURATION, ETCHBEAMCURRENT, ETCHGASCHANNEL1READBACK, 
               ETCHPBNGASREADBACK, ETCHSOURCEUSAGE, FIXTURETILTANGLE, FLOWCOOLFLOWRATE, FLOWCOOLPRESSURE, 
-              IONGAUGEPRESSURE FROM input_data_3 ORDER BY input_time DESC LIMIT {length}'''
+              IONGAUGEPRESSURE FROM input_data_4 ORDER BY input_time DESC LIMIT {length}'''
             cursor.execute(sql)
             results = cursor.fetchall()
     finally:
@@ -181,7 +181,7 @@ def insert_single_data(connection, single_data):
             # 현재 시간 가져오기
             current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             # 데이터 삽입 SQL.
-            sql = f'''INSERT INTO input_data_3 (time, Tool, stage, Lot, runnum, recipe, recipe_step,
+            sql = f'''INSERT INTO input_data_4 (time, Tool, stage, Lot, runnum, recipe, recipe_step,
        IONGAUGEPRESSURE, ETCHBEAMVOLTAGE, ETCHBEAMCURRENT,
        ETCHSUPPRESSORVOLTAGE, ETCHSUPPRESSORCURRENT, FLOWCOOLFLOWRATE,
        FLOWCOOLPRESSURE, ETCHGASCHANNEL1READBACK, ETCHPBNGASREADBACK,
@@ -199,7 +199,7 @@ def insert_single_rul_data(connection, data, current_time):
     try:
         with connection.cursor() as cursor:
             # 데이터 삽입 SQL.
-            sql = f'''INSERT INTO rul_3(rul_fl, rul_pb, rul_ph, input_time) 
+            sql = f'''INSERT INTO rul_4(rul_fl, rul_pb, rul_ph, input_time) 
                       VALUES (%s, %s, %s, "{current_time}")'''
             cursor.execute(sql, (data[0], data[1], data[2]))
         connection.commit()
@@ -211,7 +211,7 @@ def insert_single_rul_avg_data(connection, data, current_time):
     try:
         with connection.cursor() as cursor:
             # 데이터 삽입 SQL.
-            sql = f'''INSERT INTO rul_3_avg(rul_fl, rul_pb, rul_ph, input_time) 
+            sql = f'''INSERT INTO rul_4_avg(rul_fl, rul_pb, rul_ph, input_time) 
                       VALUES (%s, %s, %s, "{current_time}")'''
             cursor.execute(sql, (data[0], data[1], data[2]))
         connection.commit()
@@ -223,7 +223,7 @@ def insert_single_multi_data(connection, data, current_time):
     try:
         with connection.cursor() as cursor:
             # 데이터 삽입 SQL.
-            sql = f'''INSERT INTO multi_3(multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time) 
+            sql = f'''INSERT INTO multi_4(multi_pred_fl, multi_pred_pb, multi_pred_ph, input_time) 
                       VALUES (%s, %s, %s, "{current_time}")'''
             cursor.execute(sql, (data[0], data[1], data[2]))
         connection.commit()
@@ -245,17 +245,8 @@ def main():
                                  cursorclass=pymysql.cursors.DictCursor)
     
     # CSV 파일 읽기
-    # multi_path = './for_presentation\M02_dummy.csv'
-    rul_path = './for_presentation\M03_dummy.csv'
-
-    df = pd.read_csv("./test_file/file_2.csv")
-    # df_multi = pd.read_csv(multi_path)
-    df_rul = pd.read_csv(rul_path)
+    df = pd.read_csv("./test_file/file_3.csv")
     df = df.iloc[:,1:]
-    # multi_target_cols = ['fault_labeling_x','fault_labeling_y','fault_labeling']
-    rul_target_cols = ['TTF_FlowCool Pressure Dropped Below Limit','TTF_Flowcool Pressure Too High Check Flowcool Pump','TTF_Flowcool leak']
-    # multi_data = df_multi[multi_target_cols].values
-    rul_data = df_rul[rul_target_cols].values
     
     # DataFrame에서 튜플 리스트로 데이터 변환
     data_tuples = list(df.itertuples(index=False, name=None))
@@ -263,10 +254,10 @@ def main():
 
     ## 데이터를 한줄 씩 밀어넣으면서 진행하는 방식
 
-    for i in range(len(rul_data)):
+    for single_data in data_tuples:
         try:
             start_time = time.time()
-            current_time = insert_single_data(connection, data_tuples[i])
+            current_time = insert_single_data(connection, single_data)
             data = fetch_recent_logs(length=avg_len)
             data_for_multi = fetch_recent_logs_for_multi()
 
@@ -274,21 +265,21 @@ def main():
             rul_predictions = predict_with_xgb_model_optimized(data)
             multi_predictions = predict_with_xgb_multi_model_optimized(data_for_multi)
 
-            insert_single_rul_data(connection, rul_data[i], current_time)
+            insert_single_rul_data(connection, rul_predictions, current_time)
             insert_single_multi_data(connection, multi_predictions, current_time)
 
-            # # 이동평균을 위한 예측 실시
-            # data_for_rul = fetch_recent_rul_logs()
-            # array_data = dict_to_array(data_for_rul)
-            # avg_data_0 = compute_moving_average(array_data[:,0],500)
-            # avg_data_1 = compute_moving_average(array_data[:,1],500)
-            # avg_data_2 = compute_moving_average(array_data[:,2],500)
-            # avg_pred = (float(avg_data_0),float(avg_data_1),float(avg_data_2))
+            # 이동평균을 위한 예측 실시
+            data_for_rul = fetch_recent_rul_logs()
+            array_data = dict_to_array(data_for_rul)
+            avg_data_0 = compute_moving_average(array_data[:,0],500)
+            avg_data_1 = compute_moving_average(array_data[:,1],500)
+            avg_data_2 = compute_moving_average(array_data[:,2],500)
+            avg_pred = (float(avg_data_0),float(avg_data_1),float(avg_data_2))
 
-            # insert_single_rul_avg_data(connection, avg_pred, current_time)
+            insert_single_rul_avg_data(connection, avg_pred, current_time)
 
             elapsed_time = time.time() - start_time  # 루프 실행 시간 계산
-            sleep_time = max(1 - elapsed_time, 0)  # 음수가 되지 않도록 최소값을 0으로 설정
+            sleep_time = max(4 - elapsed_time, 0)  # 음수가 되지 않도록 최소값을 0으로 설정
             time.sleep(sleep_time)  # 조절된 sleep 시간만큼 대기
 
 

@@ -234,6 +234,11 @@ def fetch_bar_lis_from_database(n=1):
                             FROM rul_{n}_avg) AS temp
                         WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
         existing_user = cursor.fetchall()
+        # cursor.execute(f"""SELECT row_index, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
+        #                 FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+        #                     FROM rul_{n}) AS temp
+        #                 WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
+        # existing_user = cursor.fetchall()
 
 
         line_lis = []
@@ -301,6 +306,17 @@ def get_tool_data(cursor, tool_number):
         LIMIT 1;
     """)
     return cursor.fetchone()
+# 데이터베이스에서 Tool 데이터 가져오기
+def get_tool_avg_data(cursor, tool_number):
+    cursor.execute(f"""
+        SELECT multi_{tool_number}.*, rul_{tool_number}_avg.*, input_data_{tool_number}.*
+        FROM rul_{tool_number}_avg
+        LEFT JOIN multi_{tool_number} ON rul_{tool_number}_avg.input_time = multi_{tool_number}.input_time
+        LEFT JOIN input_data_{tool_number} ON input_data_{tool_number}.input_time = multi_{tool_number}.input_time
+        ORDER BY rul_{tool_number}_avg.input_time DESC
+        LIMIT 1;
+    """)
+    return cursor.fetchone()
 
 # Tool 상태와 RUL 계산
 def compute_tool_status_and_rul(tool_data):
@@ -361,7 +377,8 @@ async def render_main_page(request: Request):
             mem_name = user_dict.get("mem_name", mem_name)
 
         # 각 Tool의 데이터를 가져온다.
-        tool_data_list = [get_tool_data(cursor, i) for i in range(1, 5)]
+        # tool_data_list = [get_tool_data(cursor, i) for i in range(1, 5)]
+        tool_data_list = [get_tool_avg_data(cursor, i) for i in range(1, 5)]
         status_rul_list = [compute_tool_status_and_rul(tool_data) for tool_data in tool_data_list]
         rul_converted_list = [convert_to_year_month_day_hour(rul[2]) for rul in status_rul_list]
     
@@ -600,6 +617,11 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
                             FROM rul_1_avg) AS temp
                         WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
         existing_user = cursor.fetchall()
+        # cursor.execute(f"""SELECT row_index, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
+        #                 FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+        #                     FROM rul_1) AS temp
+        #                 WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
+        # existing_user = cursor.fetchall()
 
 
         line_lis = []
