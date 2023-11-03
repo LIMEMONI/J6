@@ -231,7 +231,7 @@ def fetch_bar_lis_from_database(n=1):
         ## rul이 일정 수치 아래로 가면 해당 row의 index를 list형태로 반환한다.
         cursor.execute(f"""SELECT row_index, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
                         FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                            FROM rul_1) AS temp
+                            FROM rul_{n}_avg) AS temp
                         WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
         existing_user = cursor.fetchall()
 
@@ -597,7 +597,7 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
         ### 중복되는 알람이 있을 수 있다. 
         cursor.execute(f"""SELECT row_index, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
                         FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                            FROM rul_1) AS temp
+                            FROM rul_1_avg) AS temp
                         WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
         existing_user = cursor.fetchall()
 
