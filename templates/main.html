@@ -74,9 +74,16 @@
 
             setInterval(async function() {
                 let response = await fetch("/main.html");
-                let text = await response.text();
-                document.body.innerHTML = text; // 화면 갱신
-                checkTools();
+                if (response.ok) {
+                    let text = await response.text();
+                    let updateElement = document.getElementById("updateMe");
+                    if (updateElement) {
+                        updateElement.innerHTML = text;
+                        checkTools();
+                    }
+                } else {
+                    console.error("Failed to fetch updated-content.html:", response.statusText);
+                }
             }, 4000);
         };
 
