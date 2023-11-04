@@ -28,9 +28,13 @@ import io
 import base64
 import logging
 import re
+import model_conn_1_rev_4_avg as md_1
 
 # FastAPI 애플리케이션 초기화
 app = FastAPI()
+
+# 전역 변수로 program_running 초기화
+program_running = False
 
 # -------------------------------------------------------------------------------------- 여기부터 기능 처리 코드 ---------------------------------------------------------------------------------------------------
 
@@ -736,7 +740,20 @@ async def render_profile_page(request: Request):
 
     return templates.TemplateResponse("profile1.html", {"request": request, "mem_id": mem_id, "mem_ph" : mem_ph, "mem_name": mem_name, "bar_lis": bar_lis})
 
-    
+@app.post("/toggle_program/")
+def toggle_program():
+    global program_running
+    if program_running:
+        md_1.main()
+        program_running = False
+        return {"status": "Program stopped!"}
+    else:
+        md_1.main()
+        program_running = True
+        return {"status": "Program started!"} 
+
+
+
 
 
 # -------------------------------------------------------------------------------------- 여기까지 HTML 주소 코드 ---------------------------------------------------------------------------------------------------

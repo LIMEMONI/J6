@@ -76,7 +76,9 @@
                 let response = await fetch("/main.html");
                 let text = await response.text();
                 document.body.innerHTML = text; // 화면 갱신
-                                // checkTools();
+                var $iconElement = $("#iconToggle");
+                $iconElement.prependTo($iconElement.parent());
+                // checkTools();
             }, 4000);
         };
 
@@ -180,6 +182,20 @@
             $(".view-more").click(function() {
                 // "alram.html"로 이동
                 window.location.href = "alram.html";
+            });
+        });
+    </script>
+    <script>
+        $("#iconToggle").click(function (event) {
+            alert("iconToggle clicked!"); // 이 부분이 추가됨
+            // event.stopPropagation();  // Stops the click event from bubbling up to parent elements
+            $.post("/toggle_program/", function (data) {
+                if (data.status == "Program started!") {
+                    $("#iconToggle").css("color", "#f26464");
+                } else {
+                    $("#iconToggle").css("color", "#93db93");
+                }
+                alert(data.status);
             });
         });
     </script>
@@ -289,7 +305,6 @@
         }
     </style>  
 </head>
-
 <body>
     <!-- WRAPPER -->
     <div id="wrapper">
@@ -427,11 +442,9 @@
                             
                                 <div class="panel-heading">
                                     <!--상태표시 초록원-->
-                                    <span class="normal-status-topRight">
+                                    <span class="normal-status-topRight" >
                                         <i class="fa-solid fa-power-off fa-fade"
-                                        style="{% if tool1_status == 0 %} color : #93db93; margin-right : 10px;
-                                            {% elif tool1_status == 1 %} color : #f26464; margin-right : 10px;
-                                            {% endif %}"></i>
+                                        style="margin-right : 10px;"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M01</b></h3>
                                         </span> 
                                     </div>
