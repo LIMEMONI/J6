@@ -250,55 +250,58 @@ def main():
     
     # DataFrame에서 튜플 리스트로 데이터 변환
     data_tuples = list(df.itertuples(index=False, name=None))
+    while True:
+        # 시작시 진행 상황 파일이 존재하는지 확인
+        if os.path.exists('./test_file/progress_file_1.txt'):
+            with open('./test_file/progress_file_1.txt', 'r') as f:
+                last_processed = int(f.read())
+                start_index = last_processed + 1
+        else:
+            start_index = 0
     
-    # 시작시 진행 상황 파일이 존재하는지 확인
-    if os.path.exists('./test_file/progress_file_1.txt'):
-        with open('./test_file/progress_file_1.txt', 'r') as f:
-            last_processed = int(f.read())
-            start_index = last_processed + 1
-    else:
-        start_index = 0
-    
 
 
-    ## 데이터를 한줄 씩 밀어넣으면서 진행하는 방식
+        ## 데이터를 한줄 씩 밀어넣으면서 진행하는 방식
 
-    for index, single_data in enumerate(data_tuples[start_index:], start=start_index):
-        try:
-            start_time = time.time()
-            current_time = insert_single_data(connection, single_data)
-            data = fetch_recent_logs(length=avg_len)
-            data_for_multi = fetch_recent_logs_for_multi()
+        for index, single_data in enumerate(data_tuples[start_index:], start=start_index):
+            try:
+                start_time = time.time()
+                current_time = insert_single_data(connection, single_data)
+                data = fetch_recent_logs(length=avg_len)
+                data_for_multi = fetch_recent_logs_for_multi()
 
-            # 가져온 데이터로 예측 실시
-            rul_predictions = predict_with_xgb_model_optimized(data)
-            multi_predictions = predict_with_xgb_multi_model_optimized(data_for_multi)
+                # 가져온 데이터로 예측 실시
+                rul_predictions = predict_with_xgb_model_optimized(data)
+                multi_predictions = predict_with_xgb_multi_model_optimized(data_for_multi)
 
-            insert_single_rul_data(connection, rul_predictions, current_time)
-            insert_single_multi_data(connection, multi_predictions, current_time)
+                insert_single_rul_data(connection, rul_predictions, current_time)
+                insert_single_multi_data(connection, multi_predictions, current_time)
 
-            # 이동평균을 위한 예측 실시
-            data_for_rul = fetch_recent_rul_logs()
-            array_data = dict_to_array(data_for_rul)
-            avg_data_0 = compute_moving_average(array_data[:,0],500)
-            avg_data_1 = compute_moving_average(array_data[:,1],500)
-            avg_data_2 = compute_moving_average(array_data[:,2],500)
-            avg_pred = (float(avg_data_0),float(avg_data_1),float(avg_data_2))
+                # 이동평균을 위한 예측 실시
+                data_for_rul = fetch_recent_rul_logs()
+                array_data = dict_to_array(data_for_rul)
+                avg_data_0 = compute_moving_average(array_data[:,0],500)
+                avg_data_1 = compute_moving_average(array_data[:,1],500)
+                avg_data_2 = compute_moving_average(array_data[:,2],500)
+                avg_pred = (float(avg_data_0),float(avg_data_1),float(avg_data_2))
 
-            insert_single_rul_avg_data(connection, avg_pred, current_time)
+                insert_single_rul_avg_data(connection, avg_pred, current_time)
 
-            elapsed_time = time.time() - start_time  # 루프 실행 시간 계산
-            sleep_time = max(4 - elapsed_time, 0)  # 음수가 되지 않도록 최소값을 0으로 설정
-            time.sleep(sleep_time)  # 조절된 sleep 시간만큼 대기
+                elapsed_time = time.time() - start_time  # 루프 실행 시간 계산
+                sleep_time = max(4 - elapsed_time, 0)  # 음수가 되지 않도록 최소값을 0으로 설정
+                time.sleep(sleep_time)  # 조절된 sleep 시간만큼 대기
 
-            # 진행 상황을 파일에 기록
-            with open('./test_file/progress_file_1.txt', 'w') as f:
-                f.write(str(index))
+                # 진행 상황을 파일에 기록
+                with open('./test_file/progress_file_1.txt', 'w') as f:
+                    f.write(str(index))
 
 
-        except Exception as e:
-            print(f"Error: {e}")
+            except Exception as e:
+                print(f"Error: {e}")
 
+        # 모든 데이터를 처리한 후 진행 상황 파일을 삭제하거나 리셋합니다.
+        if os.path.exists('./test_file/progress_file_1.txt'):
+            os.remove('./test_file/progress_file_1.txt')
             
     
     # 연결 종료
@@ -309,5 +312,5 @@ def main():
 
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()

@@ -425,18 +425,18 @@
                                 {% elif tool1_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
                                 {% endif %}"> -->
                             
-                                <a id="tool1_link" href="dashboard.html?tab=dashboard1" style="color: #392f31;"> <!-- M01설비의 Dashboard 페이지로 이동 -->
-                                    <div class="panel-heading">
-                                        <!--상태표시 초록원-->
-                                        <span class="normal-status-topRight">
-                                            <i class="fa-solid fa-power-off fa-fade"
-                                            style="{% if tool1_status == 0 %} color : #93db93; margin-right : 10px;
+                                <div class="panel-heading">
+                                    <!--상태표시 초록원-->
+                                    <span class="normal-status-topRight">
+                                        <i class="fa-solid fa-power-off fa-fade"
+                                        style="{% if tool1_status == 0 %} color : #93db93; margin-right : 10px;
                                             {% elif tool1_status == 1 %} color : #f26464; margin-right : 10px;
                                             {% endif %}"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M01</b></h3>
                                         </span> 
                                     </div>
                                     <hr class="head-line"> <!--설비 이름-내용 구분선-->
+                                    <a id="tool1_link" href="dashboard.html?tab=dashboard1" style="color: #392f31;"> 
                                     <div class="panel-body" style="display: flex; align-items: center;">
                                         <!-- 설비 아이콘 -->
                                         <img class="tool-icon" src="static/img/tool.png"> 
@@ -453,7 +453,7 @@
                                             <span class="panel-body-text">
                                                 - <b>잔여 수명 시간</b> :
                                                 {% if (tool1_rul[0] == 0) and (tool1_rul[1] < 1) %}
-                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">{{ tool1_rul[0] }} Month {{ tool1_rul[1] }} Day</span>
+                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">고장 시간이 하루 미만 남았습니다.</span>
                                                 {% else %}
                                                 {{ tool1_rul[0] }} Month {{ tool1_rul[1] }} Day
                                                 {% endif %}
@@ -490,7 +490,6 @@
                                 {% elif tool2_status ==  0 %} border: 6px solid #93db93; margin-left: 42px;
                                 {% elif tool2_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
                                 {% endif %}"> -->
-                            <a id="tool2_link" href="dashboard.html?tab=dashboard2" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
                                 <div class="panel-heading" style="">
                                     <!--상태 표시 초록원-->
                                     <span class="normal-status-topRight">
@@ -502,6 +501,7 @@
                                     </span>
                                 </div>
                                 <hr class="head-line"> <!--설비 이름-내용 구분선-->
+                                <a id="tool2_link" href="dashboard.html?tab=dashboard2" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
                                 <div class="panel-body" style="display: flex; align-items: center;">
                                     <img class="tool-icon" src="static/img/tool.png">
                                     <div style="display: flex; flex-direction: column; width: 250%;">
@@ -516,7 +516,7 @@
                                         <span class="panel-body-text">
                                             - <b>잔여 수명 시간</b> :
                                             {% if (tool2_rul[0] == 0) and (tool2_rul[1] < 1) %}
-                                            <span style="color: rgb(241, 83, 31); margin-left: 5px;">{{ tool2_rul[0] }} Month {{ tool2_rul[1] }} Day</span>
+                                            <span style="color: rgb(241, 83, 31); margin-left: 5px;">고장 시간이 하루 미만 남았습니다.</span>
                                             {% else %}
                                             {{ tool2_rul[0] }} Month {{ tool2_rul[1] }} Day
                                             {% endif %}
@@ -557,18 +557,18 @@
                                 {% elif tool3_status ==  0 %} border: 6px solid #93db93; margin-left: 42px;
                                 {% elif tool3_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
                                 {% endif %}">                 -->
-                                <a id="tool3_link" href="dashboard.html?tab=dashboard3" style="color: #392f31;"> <!-- M03설비의 Dashboard 페이지로 이동 -->
-                                    <div class="panel-heading">
-                                        <!--상태 표시 초록원-->
-                                        <span class="normal-status-topRight">
-                                            <i class="fa-solid fa-power-off fa-fade"
-                                            style="{% if tool3_status == 0 %} color : #93db93;  margin-right : 10px;
+                                <div class="panel-heading">
+                                    <!--상태 표시 초록원-->
+                                    <span class="normal-status-topRight">
+                                        <i class="fa-solid fa-power-off fa-fade"
+                                        style="{% if tool3_status == 0 %} color : #93db93;  margin-right : 10px;
                                             {% elif tool3_status == 1 %} color : #f26464; margin-right : 10px;
                                             {% endif %}"></i>
                                             <h3 class="panel-title"><b>Ion_Miller_M03</b></h3>
                                         </span> 
                                     </div>
                                     <hr class="head-line"> <!--설비 이름-내용 구분선-->
+                                    <a id="tool3_link" href="dashboard.html?tab=dashboard3" style="color: #392f31;"> <!-- M03설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-body" style="display: flex; align-items: center;">
                                         <img class="tool-icon" src="static/img/tool.png">
                                         <div style="display: flex; flex-direction: column; width: 250%;">
@@ -583,7 +583,7 @@
                                             <span class="panel-body-text">
                                                 - <b>잔여 수명 시간</b> :
                                                 {% if (tool3_rul[0] == 0) and (tool3_rul[1] < 1) %}
-                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">{{ tool3_rul[0] }} Month {{ tool3_rul[1] }} Day</span>
+                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">고장 시간이 하루 미만 남았습니다.</span>
                                                 {% else %}
                                                 {{ tool3_rul[0] }} Month {{ tool3_rul[1] }} Day
                                                 {% endif %}
@@ -622,7 +622,6 @@
                                 style="{% if tool4_status == 0 %} border: 6px solid #93db93; margin-left: 42px; 
                                 {% elif tool4_status == 1 or (tool4_rul[0] == 0 and tool4_rul[1] == 0)%} border: 6px solid #f26464; margin-left: 42px;
                                 {% endif %}">
-                                <a id="tool4_link" href="dashboard.html?tab=dashboard4" style="color: #392f31;"> <!-- M04설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-heading">
                                         <!--상태 표시 초록원-->
                                         <span class="normal-status-topRight">
@@ -634,6 +633,7 @@
                                         </span> 
                                     </div>
                                     <hr class="head-line"> <!--설비 이름-내용 구분선-->
+                                    <a id="tool4_link" href="dashboard.html?tab=dashboard4" style="color: #392f31;"> <!-- M04설비의 Dashboard 페이지로 이동 -->
                                     <div class="panel-body" style="display: flex; align-items: center;">
                                         <img class="tool-icon" src="static/img/tool.png">
                                         <div style="display: flex; flex-direction: column; width: 250%;">
@@ -648,7 +648,7 @@
                                             <span class="panel-body-text">
                                                 - <b>잔여 수명 시간</b> :
                                                 {% if (tool4_rul[0] == 0) and (tool4_rul[1] < 1) %}
-                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">{{ tool4_rul[0] }} Month {{ tool4_rul[1] }} Day</span>
+                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">고장 시간이 하루 미만 남았습니다.</span>
                                                 {% else %}
                                                 {{ tool4_rul[0] }} Month {{ tool4_rul[1] }} Day
                                                 {% endif %}
