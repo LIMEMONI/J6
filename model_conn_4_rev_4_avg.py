@@ -11,13 +11,11 @@ from keras.models import load_model
 import os
 import threading
 
-
-
 # 테이블 변수
-input_data = 'input_data_1'
-rul = 'rul_1'
-multi = 'multi_1'
-file = 'file_1'
+input_data = 'input_data_4'
+rul = 'rul_4'
+multi = 'multi_4'
+file = 'file_4'
 
 # 경고 숨기기
 warnings.filterwarnings(action='ignore', category=UserWarning, module='xgboost')
