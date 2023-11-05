@@ -318,8 +318,8 @@ def main():
                 break
 
         # 모든 데이터를 처리한 후 진행 상황 파일을 삭제하거나 리셋합니다.
-        if os.path.exists(f'./test_file/progress_{file}.txt'):
-            os.remove(f'./test_file/progress_{file}.txt')
+        # if os.path.exists(f'./test_file/progress_{file}.txt'):
+        #     os.remove(f'./test_file/progress_{file}.txt')
             
     
     # 연결 종료
