@@ -93,28 +93,66 @@
                         localStorage.setItem(`${iconId}Color`, '#f26464');
                         let lastDigit = iconId.slice(-1);
                         alert(`M0${lastDigit}설비를 정지합니다`);
+
+                        // 아이콘이 빨간색으로 변경되면 가동 시간의 HTML 내용을 변경합니다.
+                        const toolNumber = iconId.replace('iconToggle', '');
+                        $(`#tool${toolNumber}_runtime`).parent().html('- <b>가동 시간</b> :  --');
                     }
                 });
             });
         }
 
         function setIconColor(iconId) {
-            const toolStatusIndex = iconId.replace('iconToggle', 'tool_status_index');
-            let toolStatus = $(`#${iconId}`).data(toolStatusIndex);
-            if (toolStatus == 1 && $(`#${iconId}`).css("color") === "#93db93") {
+            // iconToggle 뒤의 숫자를 추출
+            const iconNumber = iconId.match(/\d+$/)[0];
+            const toolStatusIndex = `tool${iconNumber}_status`;
+            const toolStatus = $(`#tool_data`).data(toolStatusIndex);
+            let prevColor = localStorage.getItem(`${iconId}Color`);
+            if (!prevColor) {
+                localStorage.setItem(`${iconId}Color`, '#f26464')
+                alert(prevColor)
+            } else if (toolStatus == 1 && prevColor === "#93db93") {
                 $(`#${iconId}`).css("color", "#f26464");
                 localStorage.setItem(`${iconId}Color`, '#f26464');
                 $.post(`/toggle_program_${iconId}/`);
+                let lastDigit = iconId.slice(-1);
+                alert(`M0${lastDigit}설비 이상이 감지되어 정지합니다`);
+            }
+            
+            if ( $(`#${iconId}`).css("color", prevColor) === "#f26464") {
+                const toolNumber = iconId.replace('iconToggle', '');
+                $(`#tool${toolNumber}_runtime`).parent().html('- <b>가동 시간</b> :  --');
             }
         }
 
 
         window.onload = function() {
+            ["iconToggle1", "iconToggle2", "iconToggle3", "iconToggle4"].forEach(iconId => {
+                    var $iconElement = $(`#${iconId}`);
+                    $iconElement.prependTo($iconElement.parent());
+                    
+                    const toolStatusIndex = iconId.replace('iconToggle', 'tool_status_index');
+                    let toolStatus = $(`#${iconId}`).data(toolStatusIndex);
+                    let prevColor = localStorage.getItem(`${iconId}Color`);
+                    if (prevColor === "#f26464") {
+                        $(`#${iconId}`).css("color", prevColor);
+                        const toolNumber = iconId.replace('iconToggle', '');
+                        $(`#tool${toolNumber}_runtime`).parent().html('- <b>가동 시간</b> :  --');
+                    } else if (prevColor === "#93db93") {
+                        $(`#${iconId}`).css("color", prevColor);
+                        localStorage.setItem(`${iconId}Color`, '#93db93');
+                    } else {
+                        $(`#${iconId}`).css("color", '#93db93');
+                        localStorage.setItem(`${iconId}Color`, '#93db93');
+                    }
+                    setIconColor(iconId);
+                    initializeIcon(iconId); // 아이콘 초기화
+                });
             setInterval(async function() {
                 let response = await fetch("/main.html");
                 let text = await response.text();
                 document.body.innerHTML = text;
-
+                
                 ["iconToggle1", "iconToggle2", "iconToggle3", "iconToggle4"].forEach(iconId => {
                     var $iconElement = $(`#${iconId}`);
                     $iconElement.prependTo($iconElement.parent());
@@ -122,13 +160,18 @@
                     const toolStatusIndex = iconId.replace('iconToggle', 'tool_status_index');
                     let toolStatus = $(`#${iconId}`).data(toolStatusIndex);
                     let prevColor = localStorage.getItem(`${iconId}Color`);
-                    if (prevColor) {
+                    if (prevColor === "#f26464") {
                         $(`#${iconId}`).css("color", prevColor);
+                        const toolNumber = iconId.replace('iconToggle', '');
+                        $(`#tool${toolNumber}_runtime`).parent().html('- <b>가동 시간</b> :  --');
+                    } else if (prevColor === "#93db93") {
+                        $(`#${iconId}`).css("color", prevColor);
+                        localStorage.setItem(`${iconId}Color`, '#93db93');
                     } else {
                         $(`#${iconId}`).css("color", '#93db93');
                         localStorage.setItem(`${iconId}Color`, '#93db93');
                     }
-
+                    setIconColor(iconId);
                     initializeIcon(iconId); // 아이콘 초기화
                 });
             }, 4000);
@@ -521,16 +564,14 @@
                                             <span class="panel-body-text">
                                                 - <b>잔여 수명 시간</b> :
                                                 {% if (tool1_rul[0] == 0) and (tool1_rul[1] < 1) %}
-                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">고장 시간이 하루 미만 남았습니다.</span>
+                                                <span style="font-weight: bold; color: rgb(241, 83, 31); margin-left: 3px;">고장 시간: 1일 미만</span>
                                                 {% else %}
                                                 {{ tool1_rul[0] }} Month {{ tool1_rul[1] }} Day
                                                 {% endif %}
                                             </span>
                                             <span class="panel-body-text">
                                                 - <b>가동 시간</b> : 
-                                                {% if (tool1_rul[0] == 0 and tool1_rul[1] == 0) %}
-                                                --
-                                                {% elif  tool1_status == 0 %}
+                                                {% if  tool1_status == 0 %}
                                                 <span id="tool1_runtime"></span>
                                                 {% else %}
                                                 --
@@ -581,16 +622,14 @@
                                             <span class="panel-body-text">
                                                 - <b>잔여 수명 시간</b> :
                                                 {% if (tool2_rul[0] == 0) and (tool2_rul[1] < 1) %}
-                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">고장 시간이 하루 미만 남았습니다.</span>
+                                                <span style="font-weight: bold; color: rgb(241, 83, 31); margin-left: 3px;">고장 시간: 1일 미만</span>
                                                 {% else %}
                                                 {{ tool2_rul[0] }} Month {{ tool2_rul[1] }} Day
                                                 {% endif %}
                                             </span>
                                             <span class="panel-body-text">
                                                 - <b>가동 시간</b> : 
-                                                {% if (tool2_rul[0] == 0 and tool2_rul[1] == 0) %}
-                                                --
-                                                {% elif  tool2_status == 0 %}
+                                                {% if  tool2_status == 0 %}
                                                 <span id="tool2_runtime"></span>
                                                 {% else %}
                                                 --
@@ -643,16 +682,14 @@
                                         <span class="panel-body-text">
                                             - <b>잔여 수명 시간</b> :
                                             {% if (tool3_rul[0] == 0) and (tool3_rul[1] < 1) %}
-                                            <span style="color: rgb(241, 83, 31); margin-left: 5px;">고장 시간이 하루 미만 남았습니다.</span>
+                                            <span style="font-weight: bold; color: rgb(241, 83, 31); margin-left: 3px;">고장 시간: 1일 미만</span>
                                             {% else %}
                                             {{ tool3_rul[0] }} Month {{ tool3_rul[1] }} Day
                                             {% endif %}
                                         </span>
                                         <span class="panel-body-text">
                                             - <b>가동 시간</b> : 
-                                            {% if (tool3_rul[0] == 0 and tool3_rul[1] == 0) %}
-                                            --
-                                            {% elif  tool3_status == 0 %}
+                                            {% if  tool3_status == 0 %}
                                             <span id="tool3_runtime"></span>
                                             {% else %}
                                             --
@@ -702,16 +739,14 @@
                                         <span class="panel-body-text">
                                             - <b>잔여 수명 시간</b> :
                                             {% if (tool4_rul[0] == 0) and (tool4_rul[1] < 1) %}
-                                            <span style="color: rgb(241, 83, 31); margin-left: 5px;">고장 시간이 하루 미만 남았습니다.</span>
+                                            <span style="font-weight: bold; font-size: 14px; color: rgb(241, 83, 31); margin-left: 2px;">고장 시간: 하루 미만</span>
                                             {% else %}
                                             {{ tool4_rul[0] }} Month {{ tool4_rul[1] }} Day
                                             {% endif %}
                                         </span>
                                         <span class="panel-body-text">
                                             - <b>가동 시간</b> : 
-                                            {% if (tool4_rul[0] == 0 and tool4_rul[1] == 0) %}
-                                            --
-                                            {% elif  tool4_status == 0 %}
+                                            {% if  tool4_status == 0 %}
                                             <span id="tool4_runtime"></span>
                                             {% else %}
                                             --

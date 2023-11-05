@@ -12,10 +12,10 @@ import os
 import threading
 
 # 테이블 변수
-input_data = 'input_data_3'
-rul = 'rul_3'
-multi = 'multi_3'
-file = 'file_3'
+input_data = 'input_data_2'
+rul = 'rul_2'
+multi = 'multi_2'
+file = 'file_2'
 
 # 경고 숨기기
 warnings.filterwarnings(action='ignore', category=UserWarning, module='xgboost')
@@ -260,7 +260,18 @@ def main():
     # CSV 파일 읽기
     df = pd.read_csv(f"./test_file/{file}.csv")
     df = df.iloc[:,1:]
-    
+    multi_path = './for_presentation\M02_dummy.csv'
+    # rul_path = './for_presentation\M03_dummy.csv'
+    # rul_path = './for_presentation\M04_dummy.csv'
+
+    df_multi = pd.read_csv(multi_path)
+    # df_rul = pd.read_csv(rul_path)
+
+    multi_target_cols = ['fault_labeling_x','fault_labeling_y','fault_labeling']
+    # rul_target_cols = ['TTF_FlowCool Pressure Dropped Below Limit','TTF_Flowcool Pressure Too High Check Flowcool Pump','TTF_Flowcool leak']
+    multi_data = df_multi[multi_target_cols].values
+    # rul_data = df_rul[rul_target_cols].values
+
     # DataFrame에서 튜플 리스트로 데이터 변환
     data_tuples = list(df.itertuples(index=False, name=None))
     while running:
@@ -290,7 +301,8 @@ def main():
                 multi_predictions = predict_with_xgb_multi_model_optimized(data_for_multi)
 
                 insert_single_rul_data(connection, rul_predictions, current_time)
-                insert_single_multi_data(connection, multi_predictions, current_time)
+                # insert_single_multi_data(connection, multi_data[i], current_time)
+                insert_single_multi_data(connection,multi_data[int(index % len(multi_data))] , current_time)
 
                 # 이동평균을 위한 예측 실시
                 data_for_rul = fetch_recent_rul_logs()
@@ -301,6 +313,7 @@ def main():
                 avg_pred = (float(avg_data_0),float(avg_data_1),float(avg_data_2))
 
                 insert_single_rul_avg_data(connection, avg_pred, current_time)
+                # insert_single_rul_avg_data(connection, rul_data[index % len(rul_data)], current_time)
 
                 elapsed_time = time.time() - start_time  # 루프 실행 시간 계산
                 sleep_time = max(4 - elapsed_time, 0)  # 음수가 되지 않도록 최소값을 0으로 설정

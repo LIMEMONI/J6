@@ -26,8 +26,8 @@ warnings.filterwarnings("ignore", message="X does not have valid feature names, 
 # 현재 시간 가져오기
 import pytz
 seoul_timezone = pytz.timezone('Asia/Seoul')
-# current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-current_time = datetime.now(seoul_timezone).strftime('%Y-%m-%d %H:%M:%S')
+current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+# current_time = datetime.now(seoul_timezone).strftime('%Y-%m-%d %H:%M:%S')
 
 ## 길이 기준 설정
 avg_len = 500
