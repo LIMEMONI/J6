@@ -110,7 +110,7 @@
             let prevColor = localStorage.getItem(`${iconId}Color`);
             if (!prevColor) {
                 localStorage.setItem(`${iconId}Color`, '#f26464')
-                alert(prevColor)
+                // alert(prevColor)
             } else if (toolStatus == 1 && prevColor === "#93db93") {
                 $(`#${iconId}`).css("color", "#f26464");
                 localStorage.setItem(`${iconId}Color`, '#f26464');

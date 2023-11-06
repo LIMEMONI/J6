@@ -260,9 +260,9 @@ def main():
     # CSV 파일 읽기
     df = pd.read_csv(f"./test_file/{file}.csv")
     df = df.iloc[:,1:]
-    # multi_path = './for_presentation\M02_dummy.csv'
-    rul_path = './for_presentation\M03_dummy.csv'
-    # rul_path = './for_presentation\M04_dummy.csv'
+    # multi_path = './for_presentation/M02_dummy.csv'
+    rul_path = './for_presentation/M03_dummy.csv'
+    # rul_path = './for_presentation/M04_dummy.csv'
 
     # df_multi = pd.read_csv(multi_path)
     df_rul = pd.read_csv(rul_path)
