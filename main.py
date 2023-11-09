@@ -28,9 +28,17 @@ import io
 import base64
 import logging
 import re
-
+import model_conn_1_rev_4_avg as md_1
+import model_conn_2_rev_4_avg as md_2
+import model_conn_3_rev_4_avg as md_3
+import model_conn_4_rev_4_avg as md_4
+import threading
+import threading
 # FastAPI 애플리케이션 초기화
 app = FastAPI()
+
+# 전역 변수로 program_running 초기화
+program_running = False
 
 # -------------------------------------------------------------------------------------- 여기부터 기능 처리 코드 ---------------------------------------------------------------------------------------------------
 
@@ -222,6 +230,17 @@ async def process_registration(request: Request, user: User):
     # / 페이지로 리디렉트
     return RedirectResponse(url="/", status_code=HTTP_303_SEE_OTHER)
 
+## 인덱스 찾기용 함수
+
+def find_status(lst):
+    indices = [0, 1, 2]
+    status_name = ['Flow leak','Flow Pressure High','Flow Pressure Low']
+    for index in indices:
+        if lst[index] == 1:
+            return status_name[index]
+    return None
+
+
 # 데이터베이스에서 필요한 데이터를 쿼리하여 bar_lis를 생성
 def fetch_bar_lis_from_database(n=1):
     line_lis = None
@@ -231,9 +250,14 @@ def fetch_bar_lis_from_database(n=1):
         ## rul이 일정 수치 아래로 가면 해당 row의 index를 list형태로 반환한다.
         cursor.execute(f"""SELECT row_index, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
                         FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                            FROM rul_1) AS temp
+                            FROM rul_{n}_avg) AS temp
                         WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
         existing_user = cursor.fetchall()
+        # cursor.execute(f"""SELECT row_index, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
+        #                 FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+        #                     FROM rul_{n}) AS temp
+        #                 WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
+        # existing_user = cursor.fetchall()
 
 
         line_lis = []
@@ -247,6 +271,8 @@ def fetch_bar_lis_from_database(n=1):
                             FROM multi_{n}) AS temp
                         WHERE (multi_pred_fl = 1) or (multi_pred_pb = 1) or (multi_pred_ph = 1);""")
         existing_user = cursor.fetchall()
+
+        
     
         bar_lis = []
         for idx, row in enumerate(existing_user[:-1]):
@@ -254,7 +280,8 @@ def fetch_bar_lis_from_database(n=1):
                 current_datetime = row[3]
                 current_value = row[-2]
                 next_value = existing_user[idx - 1][-2]
-                bar_lis.append((current_datetime, next_value, current_value))
+                current_status = find_status(row)
+                bar_lis.append((current_datetime, next_value, current_value,current_status))
 
         # 전체 순서 역으로 정렬
         bar_lis = sorted(bar_lis, key=lambda x: x[0], reverse=True)
@@ -298,6 +325,17 @@ def get_tool_data(cursor, tool_number):
         LEFT JOIN rul_{tool_number} ON multi_{tool_number}.input_time = rul_{tool_number}.input_time
         LEFT JOIN input_data_{tool_number} ON multi_{tool_number}.input_time = input_data_{tool_number}.input_time
         ORDER BY multi_{tool_number}.input_time DESC
+        LIMIT 1;
+    """)
+    return cursor.fetchone()
+# 데이터베이스에서 Tool 데이터 가져오기
+def get_tool_avg_data(cursor, tool_number):
+    cursor.execute(f"""
+        SELECT multi_{tool_number}.*, rul_{tool_number}_avg.*, input_data_{tool_number}.*
+        FROM rul_{tool_number}_avg
+        LEFT JOIN multi_{tool_number} ON rul_{tool_number}_avg.input_time = multi_{tool_number}.input_time
+        LEFT JOIN input_data_{tool_number} ON input_data_{tool_number}.input_time = multi_{tool_number}.input_time
+        ORDER BY rul_{tool_number}_avg.input_time DESC
         LIMIT 1;
     """)
     return cursor.fetchone()
@@ -361,7 +399,8 @@ async def render_main_page(request: Request):
             mem_name = user_dict.get("mem_name", mem_name)
 
         # 각 Tool의 데이터를 가져온다.
-        tool_data_list = [get_tool_data(cursor, i) for i in range(1, 5)]
+        # tool_data_list = [get_tool_data(cursor, i) for i in range(1, 5)]
+        tool_data_list = [get_tool_avg_data(cursor, i) for i in range(1, 5)]
         status_rul_list = [compute_tool_status_and_rul(tool_data) for tool_data in tool_data_list]
         rul_converted_list = [convert_to_year_month_day_hour(rul[2]) for rul in status_rul_list]
     
@@ -597,9 +636,14 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
         ### 중복되는 알람이 있을 수 있다. 
         cursor.execute(f"""SELECT row_index, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
                         FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
-                            FROM rul_1) AS temp
+                            FROM rul_1_avg) AS temp
                         WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
         existing_user = cursor.fetchall()
+        # cursor.execute(f"""SELECT row_index, (row_index - LAG(row_index) OVER (ORDER BY row_index)) as diff
+        #                 FROM (SELECT rul_fl, rul_pb, rul_ph, input_time, ROW_NUMBER() OVER (ORDER BY input_time) AS row_index
+        #                     FROM rul_1) AS temp
+        #                 WHERE (rul_fl < 100) or (rul_pb < 100) or (rul_ph < 100);""")
+        # existing_user = cursor.fetchall()
 
 
         line_lis = []
@@ -620,7 +664,8 @@ async def page_alram(request: Request, time: str, xlim_s: int, xlim_e: int):
                 current_datetime = row[3]
                 current_value = row[-2]
                 next_value = existing_user[idx - 1][-2]
-                bar_lis.append((current_datetime, next_value, current_value))
+                current_status = find_status(row)
+                bar_lis.append((current_datetime, next_value, current_value,current_status))
 
         # 전체 순서 역으로 정렬
         bar_lis = sorted(bar_lis, key=lambda x: x[0], reverse=True)
@@ -699,7 +744,61 @@ async def render_profile_page(request: Request):
 
     return templates.TemplateResponse("profile1.html", {"request": request, "mem_id": mem_id, "mem_ph" : mem_ph, "mem_name": mem_name, "bar_lis": bar_lis})
 
-    
+
+
+
+program_running = {
+    "iconToggle1": False,
+    "iconToggle2": False,
+    "iconToggle3": False,
+    "iconToggle4": False
+}
+
+class ToggleResponse(BaseModel):
+    status: str
+
+@app.post('/toggle_program_{iconId}/', response_model=ToggleResponse)
+def toggle_program(iconId: str):
+    global program_running
+
+    if program_running[iconId]:
+        # 아이콘 id에 따라 특정 기능을 중지
+        stop_function_by_iconId(iconId)
+        program_running[iconId] = False
+        return {"status": '0'}
+    else:
+        # 아이콘 id에 따라 특정 기능을 시작
+        threading.Thread(target=start_function_by_iconId, args=(iconId,)).start()
+        program_running[iconId] = True
+        return {"status": '1'}
+
+def stop_function_by_iconId(iconId):
+    # 아이콘 id에 따른 기능 중지 로직
+    if iconId == "iconToggle1":
+        md_1.stop()
+    elif iconId == "iconToggle2":
+        md_2.stop()
+    elif iconId == "iconToggle3":
+        md_3.stop()
+    elif iconId == "iconToggle4":
+        md_4.stop()
+
+def start_function_by_iconId(iconId):
+    # 아이콘 id에 따른 기능 시작 로직
+    if iconId == "iconToggle1":
+        md_1.main()
+    elif iconId == "iconToggle2":
+        md_2.main()
+    elif iconId == "iconToggle3":
+        md_3.main()
+    elif iconId == "iconToggle4":
+        md_4.main()
+
+if __name__ == "__main__":
+    app.run()
+
+
+
 
 
 # -------------------------------------------------------------------------------------- 여기까지 HTML 주소 코드 ---------------------------------------------------------------------------------------------------
@@ -708,3 +807,4 @@ async def render_profile_page(request: Request):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

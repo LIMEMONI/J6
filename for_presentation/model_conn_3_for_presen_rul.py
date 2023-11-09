@@ -251,7 +251,7 @@ def main():
     df = pd.read_csv("./test_file/file_2.csv")
     # df_multi = pd.read_csv(multi_path)
     df_rul = pd.read_csv(rul_path)
-    # df = df.iloc[:,1:]
+    df = df.iloc[:,1:]
     # multi_target_cols = ['fault_labeling_x','fault_labeling_y','fault_labeling']
     rul_target_cols = ['TTF_FlowCool Pressure Dropped Below Limit','TTF_Flowcool Pressure Too High Check Flowcool Pump','TTF_Flowcool leak']
     # multi_data = df_multi[multi_target_cols].values

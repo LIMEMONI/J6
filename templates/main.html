@@ -57,13 +57,211 @@
         });
 
         // 페이지가 로드된 후 함수 실행
-        // 10초마다 새로운 데이터를 db에서 가져오는 함수
+        // 전역변수 설정
+        var alerted = {
+            tool1_1: false,
+            tool1_2: false,
+            tool2_1: false,
+            tool2_2: false,
+            tool3_1: false,
+            tool3_2: false,
+            tool4_1: false,
+            tool4_2: false
+        };
+
+        $(document).ready(function() {
+            ["iconToggle1", "iconToggle2", "iconToggle3", "iconToggle4"].forEach(initializeIcon);
+        });
+
+        function initializeIcon(iconId) {
+            setIconColor(iconId);
+            attachToggleEventListener(iconId);
+        }
+
+        function attachToggleEventListener(iconId) {
+            $(document).off('click', `#${iconId}`);
+
+            $(document).on('click', `#${iconId}`, function(event) {
+                $.post(`/toggle_program_${iconId}/`, function(data) {
+                    if (data.status == '1') {
+                        $(`#${iconId}`).css("color", "#93db93");
+                        localStorage.setItem(`${iconId}Color`, '#93db93');
+                        let lastDigit = iconId.slice(-1);
+                        alert(`M0${lastDigit}설비를 작동합니다`);
+                    } else {
+                        $(`#${iconId}`).css("color", "#f26464");
+                        localStorage.setItem(`${iconId}Color`, '#f26464');
+                        let lastDigit = iconId.slice(-1);
+                        alert(`M0${lastDigit}설비를 정지합니다`);
+
+                        // 아이콘이 빨간색으로 변경되면 가동 시간의 HTML 내용을 변경합니다.
+                        const toolNumber = iconId.replace('iconToggle', '');
+                        $(`#tool${toolNumber}_runtime`).parent().html('- <b>가동 시간</b> :  --');
+                    }
+                });
+            });
+        }
+
+        function setIconColor(iconId) {
+            // iconToggle 뒤의 숫자를 추출
+            const iconNumber = iconId.match(/\d+$/)[0];
+            const toolStatusIndex = `tool${iconNumber}_status`;
+            const toolStatus = $(`#tool_data`).data(toolStatusIndex);
+            let prevColor = localStorage.getItem(`${iconId}Color`);
+            if (!prevColor) {
+                localStorage.setItem(`${iconId}Color`, '#f26464')
+                // alert(prevColor)
+            } else if (toolStatus == 1 && prevColor === "#93db93") {
+                $(`#${iconId}`).css("color", "#f26464");
+                localStorage.setItem(`${iconId}Color`, '#f26464');
+                $.post(`/toggle_program_${iconId}/`);
+                let lastDigit = iconId.slice(-1);
+                alert(`M0${lastDigit}설비 이상이 감지되어 정지합니다`);
+            }
+            
+            if ( $(`#${iconId}`).css("color", prevColor) === "#f26464") {
+                const toolNumber = iconId.replace('iconToggle', '');
+                $(`#tool${toolNumber}_runtime`).parent().html('- <b>가동 시간</b> :  --');
+            }
+        }
+
+
         window.onload = function() {
-            setInterval(async function(){
+            ["iconToggle1", "iconToggle2", "iconToggle3", "iconToggle4"].forEach(iconId => {
+                    var $iconElement = $(`#${iconId}`);
+                    $iconElement.prependTo($iconElement.parent());
+                    
+                    const toolStatusIndex = iconId.replace('iconToggle', 'tool_status_index');
+                    let toolStatus = $(`#${iconId}`).data(toolStatusIndex);
+                    let prevColor = localStorage.getItem(`${iconId}Color`);
+                    if (prevColor === "#f26464") {
+                        $(`#${iconId}`).css("color", prevColor);
+                        const toolNumber = iconId.replace('iconToggle', '');
+                        $(`#tool${toolNumber}_runtime`).parent().html('- <b>가동 시간</b> :  --');
+                    } else if (prevColor === "#93db93") {
+                        $(`#${iconId}`).css("color", prevColor);
+                        localStorage.setItem(`${iconId}Color`, '#93db93');
+                    } else {
+                        $(`#${iconId}`).css("color", '#93db93');
+                        localStorage.setItem(`${iconId}Color`, '#93db93');
+                    }
+                    setIconColor(iconId);
+                    initializeIcon(iconId); // 아이콘 초기화
+                });
+            setInterval(async function() {
                 let response = await fetch("/main.html");
                 let text = await response.text();
-                document.body.innerHTML = text; // 화면 갱신
-            }, 4000); // 10초 간격
+                document.body.innerHTML = text;
+                
+                ["iconToggle1", "iconToggle2", "iconToggle3", "iconToggle4"].forEach(iconId => {
+                    var $iconElement = $(`#${iconId}`);
+                    $iconElement.prependTo($iconElement.parent());
+                    
+                    const toolStatusIndex = iconId.replace('iconToggle', 'tool_status_index');
+                    let toolStatus = $(`#${iconId}`).data(toolStatusIndex);
+                    let prevColor = localStorage.getItem(`${iconId}Color`);
+                    if (prevColor === "#f26464") {
+                        $(`#${iconId}`).css("color", prevColor);
+                        const toolNumber = iconId.replace('iconToggle', '');
+                        $(`#tool${toolNumber}_runtime`).parent().html('- <b>가동 시간</b> :  --');
+                    } else if (prevColor === "#93db93") {
+                        $(`#${iconId}`).css("color", prevColor);
+                        localStorage.setItem(`${iconId}Color`, '#93db93');
+                    } else {
+                        $(`#${iconId}`).css("color", '#93db93');
+                        localStorage.setItem(`${iconId}Color`, '#93db93');
+                    }
+                    setIconColor(iconId);
+                    initializeIcon(iconId); // 아이콘 초기화
+                });
+            }, 4000);
+        };
+
+
+
+        
+
+        function checkTools() {
+            // 페이지가 로드될 때 실행되는 함수
+            let toolData = document.getElementById("tool_data");
+    
+            var tool1_month_rul = parseInt(toolData.getAttribute("data-tool1-month-rul"));
+            var tool1_rul = parseInt(toolData.getAttribute("data-tool1-rul"));
+            var tool2_month_rul = parseInt(toolData.getAttribute("data-tool2-month-rul"));
+            var tool2_rul = parseInt(toolData.getAttribute("data-tool2-rul"));
+            var tool3_month_rul = parseInt(toolData.getAttribute("data-tool3-month-rul"));
+            var tool3_rul = parseInt(toolData.getAttribute("data-tool3-rul"));
+            var tool4_month_rul = parseInt(toolData.getAttribute("data-tool4-month-rul"));
+            var tool4_rul = parseInt(toolData.getAttribute("data-tool4-rul"));
+            var tool1_rul_index = toolData.getAttribute("data-tool1-rul-index");
+            var tool2_rul_index = toolData.getAttribute("data-tool2-rul-index");
+            var tool3_rul_index = toolData.getAttribute("data-tool3-rul-index");
+            var tool4_rul_index = toolData.getAttribute("data-tool4-rul-index");
+
+            // tool1 처리
+            var tool1Link = document.getElementById("tool1_link");
+            if (!alerted.tool1_1 && tool1_month_rul == 0 && tool1_rul == 0) {
+                alert(`${tool1_rul_index}!! M01 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요.`);
+                tool1Link.style.pointerEvents = "none";
+                tool1Link.style.color = "#555";
+                alerted.tool1_1 = true;
+            } else if (!alerted.tool1_2 && !alerted.tool1_1 && tool1_month_rul == 0 && tool1_rul <= 3) {
+                alert(`${tool1_rul_index}!! M01의 작동 수명이 얼마 남지 않았습니다.`);
+                // tool1Link.style.pointerEvents = "none";
+                // tool1Link.style.color = "#555";
+                alerted.tool1_2 = true;
+            } else if (alerted.tool1_1) {
+                tool1Link.style.pointerEvents = "none";
+
+            }
+
+            // tool2 처리
+            var tool2Link = document.getElementById("tool2_link");
+            if (!alerted.tool2_1 && tool2_month_rul == 0 && tool2_rul == 0) {
+                alert(`${tool2_rul_index}!! M02 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요.`);
+                tool2Link.style.pointerEvents = "none";
+                tool2Link.style.color = "#555";
+                alerted.tool2_1 = true;
+            } else if (!alerted.tool2_2 && !alerted.tool2_1 && tool2_month_rul == 0 && tool2_rul <= 3) {
+                alert(`${tool2_rul_index}!! M02의 작동 수명이 얼마 남지 않았습니다.`);
+                // tool2Link.style.pointerEvents = "none";
+                // tool2Link.style.color = "#555";
+                alerted.tool2_2 = true;
+            } else if (alerted.tool2_1) {
+                tool2Link.style.pointerEvents = "none";
+            }
+
+            // tool3 처리
+            var tool3Link = document.getElementById("tool3_link");
+            if (!alerted.tool3_1 && tool3_month_rul == 0 && tool3_rul == 0) {
+                alert(`${tool3_rul_index}!! M03 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요.`);
+                tool3Link.style.pointerEvents = "none";
+                tool3Link.style.color = "#555";
+                alerted.tool3_1 = true;
+            } else if (!alerted.tool3_2 && !alerted.tool3_1 && tool3_month_rul == 0 && tool3_rul <= 3) {
+                alert(`${tool3_rul_index}!! M03의 작동 수명이 얼마 남지 않았습니다.`);
+                // tool3Link.style.pointerEvents = "none";
+                // tool3Link.style.color = "#555";
+                alerted.tool3_2 = true;
+            } else if (alerted.tool3_1) {
+                tool3Link.style.pointerEvents = "none";
+            }
+
+            // tool4 처리
+            var tool4Link = document.getElementById("tool4_link");
+            if (!alerted.tool4_1 && tool4_month_rul == 0 && tool4_rul == 0) {
+                alert(`${tool4_rul_index}!! M04 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요.`);
+                tool4Link.style.pointerEvents = "none";
+                tool4Link.style.color = "#555";
+                alerted.tool4_1 = true;
+            } else if (!alerted.tool4_2 && !alerted.tool4_1 && tool4_month_rul == 0 && tool4_rul <= 3) {
+                alert(`${tool4_rul_index}!! M04의 작동 수명이 얼마 남지 않았습니다.`);
+                // tool4Link.style.pointerEvents = "none";
+                // tool4Link.style.color = "#555";
+                alerted.tool4_2 = true;
+            } else if (alerted.tool4_1) {
+                tool4Link.style.pointerEvents = "none";
+            }
         };
         // 시작 시간과 element ID를 전달하여 가동시간 증가 카운트 시작
         startCountingRuntime("{{ start_times['설비 1'] }}", "tool1_runtime");
@@ -71,13 +269,14 @@
         startCountingRuntime("{{ start_times['설비 2'] }}", "tool3_runtime");
         startCountingRuntime("{{ start_times['설비 2'] }}", "tool4_runtime");
     </script>
+ 
     <script>
         $(document).ready(function() {
             // 알람 드롭다운 메뉴를 토글하기
             $("#alarmDropdownButton").click(function() {
                 $(".notifications").toggle();
             });
-    
+            
             // "더 보기" 버튼을 클릭했을 때 이벤트 처리
             $(".view-more").click(function() {
                 // "alram.html"로 이동
@@ -85,6 +284,23 @@
             });
         });
     </script>
+    <!-- <script>
+        $(document).ready(function() { // 2번: 스크립트 실행 순서를 보장
+            // 5번: 이벤트 위임 방식
+            $(document).on('click', '#iconToggle', function(event) {
+                alert("iconToggle clicked!");
+                $.post("/toggle_program/", function(data) {
+                    if (data.status == "Program started!") {
+                        $("#iconToggle").css("color", "#f26464");
+                    } else {
+                        $("#iconToggle").css("color", "#93db93");
+                    }
+                    alert(data.status);
+                });
+            });
+        });
+
+    </script> -->
     <style>
 
         /**********
@@ -191,7 +407,6 @@
         }
     </style>  
 </head>
-
 <body>
     <!-- WRAPPER -->
     <div id="wrapper">
@@ -223,7 +438,8 @@
                                             {% set val = item[0] %}
                                             {% set i_s = item[1] %}
                                             {% set i_e = item[2] %}
-                                            <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> 이상 발생 : {{ val }}</a></li>
+                                            {% set status = item[3] %}
+                                            <li><a class="notification-item" href="/alram.html?time={{ val }}&xlim_s={{ i_s }}&xlim_e={{ i_e }}"> M01 {{status}} 이상 발생 : {{ val }}</a></li>
                                         {% endfor %}
                                         <li><a class="view-more" style="text-align: center;" href="/alram.html?time={{ bar_lis[0][0] }}&xlim_s={{ bar_lis[0][1] }}&xlim_e={{ bar_lis[0][2] }}" ><i class="lnr lnr-alarm" ></i> 더 보기</a></li>
                                     </ul>
@@ -318,22 +534,20 @@
                         <div class="col-md-6">
                             <!-- BASIC TABLE -->
                             <div class="panel-board" id="Ion_Miller_M01" 
-                            style="{% if tool1_status == 0 %} border: 6px solid #93db93; margin-left: 42px;
-                                {% elif tool1_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
+                                style="{% if tool1_status == 0 %} border: 7px solid #93db93; margin-left: 42px;
+                                {% elif tool1_status == 1 %} border: 7px solid #f26464; margin-left: 42px;
                                 {% endif %}">
                             
-                                <a id="tool1_link" href="dashboard.html?tab=dashboard1" style="color: #392f31;"> <!-- M01설비의 Dashboard 페이지로 이동 -->
-                                    <div class="panel-heading">
-                                        <!--상태표시 초록원-->
-                                        <span class="normal-status-topRight">
-                                            <i class="fa-solid fa-power-off fa-fade"
-                                            style="{% if tool1_status == 0 %} color : #93db93; margin-right : 10px;
-                                            {% elif tool1_status == 1 %} color : #f26464; margin-right : 10px;
-                                            {% endif %}"></i>
-                                            <h3 class="panel-title"><b>Ion_Miller_M01</b></h3>
-                                        </span> 
-                                    </div>
-                                    <hr class="head-line"> <!--설비 이름-내용 구분선-->
+                                <div class="panel-heading">
+                                    <!--상태표시 초록원-->
+                                    <span class="normal-status-topRight" >
+                                        <i class="fa-solid fa-power-off fa-fade" id="iconToggle1"
+                                        style="margin-right : 10px;"></i>
+                                        <h3 class="panel-title"><b>Ion_Miller_M01</b></h3>
+                                    </span> 
+                                </div>
+                                <hr class="head-line"> <!--설비 이름-내용 구분선-->
+                                <a id="tool1_link" href="dashboard.html?tab=dashboard1" style="color: #392f31;"> 
                                     <div class="panel-body" style="display: flex; align-items: center;">
                                         <!-- 설비 아이콘 -->
                                         <img class="tool-icon" src="static/img/tool.png"> 
@@ -349,8 +563,8 @@
                                             </span>
                                             <span class="panel-body-text">
                                                 - <b>잔여 수명 시간</b> :
-                                                {% if (tool1_rul[0] == 0) and (tool1_rul[1] < 2) %}
-                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">{{ tool1_rul[0] }} Month {{ tool1_rul[1] }} Day</span>
+                                                {% if (tool1_rul[0] == 0) and (tool1_rul[1] < 1) %}
+                                                <span style="font-weight: bold; color: rgb(241, 83, 31); margin-left: 3px;">고장 시간: 1일 미만</span>
                                                 {% else %}
                                                 {{ tool1_rul[0] }} Month {{ tool1_rul[1] }} Day
                                                 {% endif %}
@@ -375,57 +589,58 @@
                             </div>
                             <!-- END BASIC TABLE -->
                         </div>
+                        
                         <div class="col-md-6">
                             <!-- BASIC TABLE -->
-                            <div class="panel-board" 
+                            <div class="panel-board" id="Ion_Miller_M02" 
                                 style="{% if tool2_status == 0 %} border: 7px solid #93db93; margin-left: 42px;
                                 {% elif tool2_status == 1 %} border: 7px solid #f26464; margin-left: 42px;
                                 {% endif %}">
-                            <a id="tool2_link" href="dashboard.html?tab=dashboard2" style="color: #392f31;"> <!-- M02설비의 Dashboard 페이지로 이동 -->
-                                <div class="panel-heading" style="">
-                                    <!--상태 표시 초록원-->
+                                <div class="panel-heading">
+                                    <!--상태표시 초록원-->
                                     <span class="normal-status-topRight">
-                                        <i class="fa-solid fa-power-off fa-fade"
-                                        style="{% if tool2_status == 0 %} color : #93db93;  margin-right : 10px;
-                                        {% elif tool2_status == 1 %} color : #f26464; margin-right : 10px;
-                                        {% endif %}"></i>
-                                        <h3 class="panel-title"><b>Ion_Miller_M02</b></h3> <!--설비 이름-->
-                                    </span>
+                                        <i class="fa-solid fa-power-off fa-fade" id="iconToggle2"
+                                        style="margin-right : 10px;"></i>
+                                        <h3 class="panel-title"><b>Ion_Miller_M02</b></h3>
+                                    </span> 
                                 </div>
                                 <hr class="head-line"> <!--설비 이름-내용 구분선-->
-                                <div class="panel-body" style="display: flex; align-items: center;">
-                                    <img class="tool-icon" src="static/img/tool.png">
-                                    <div style="display: flex; flex-direction: column; width: 250%;">
-                                        <span class="panel-body-text">
-                                            - <b>공정 이상 여부</b>:
-                                            {% if tool2_status == 0 %}
-                                            정상
-                                            {% else %}
-                                            <span style="color: rgb(37, 208, 227); margin-left: 5px;">{{tool2_status_index}}!</span>
-                                            {% endif %}
-                                        </span>
-                                        <span class="panel-body-text">
-                                            - <b>잔여 수명 시간</b> :
-                                            {% if (tool2_rul[0] == 0) and (tool2_rul[1] < 2) %}
-                                            <span style="color: rgb(241, 83, 31); margin-left: 5px;">{{ tool2_rul[0] }} Month {{ tool2_rul[1] }} Day</span>
-                                            {% else %}
-                                            {{ tool2_rul[0] }} Month {{ tool2_rul[1] }} Day
-                                            {% endif %}
-                                        </span>
-                                        <span class="panel-body-text">
-                                            - <b>가동 시간</b> : 
-                                            {% if  tool2_status == 0 %}
-                                            <span id="tool2_runtime"></span>
-                                            {% else %}
-                                            --
-                                            {% endif %}
-                                        </span>
-                                        <span class="panel-body-text">
-                                            - <b>recipe</b> :  {{tool2_recipe}}
-                                        </span>
-                                        <span class="panel-body-text">
-                                            - <b>stage</b> :  {{tool2_stage}}
-                                        </span>
+                                <a id="tool2_link" href="dashboard.html?tab=dashboard2" style="color: #392f31;"> 
+                                    <div class="panel-body" style="display: flex; align-items: center;">
+                                        <!-- 설비 아이콘 -->
+                                        <img class="tool-icon" src="static/img/tool.png"> 
+                                        <!-- 설비 상태 텍스트 -->
+                                        <div style="display: flex; flex-direction: column; width: 250%;">
+                                            <span class="panel-body-text">
+                                                - <b>공정 이상 여부</b> :
+                                                {% if tool2_status == 0 %}
+                                                정상
+                                                {% else %}
+                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">{{tool2_status_index}}!</span>
+                                                {% endif %}
+                                            </span>
+                                            <span class="panel-body-text">
+                                                - <b>잔여 수명 시간</b> :
+                                                {% if (tool2_rul[0] == 0) and (tool2_rul[1] < 1) %}
+                                                <span style="font-weight: bold; color: rgb(241, 83, 31); margin-left: 3px;">고장 시간: 1일 미만</span>
+                                                {% else %}
+                                                {{ tool2_rul[0] }} Month {{ tool2_rul[1] }} Day
+                                                {% endif %}
+                                            </span>
+                                            <span class="panel-body-text">
+                                                - <b>가동 시간</b> : 
+                                                {% if  tool2_status == 0 %}
+                                                <span id="tool2_runtime"></span>
+                                                {% else %}
+                                                --
+                                                {% endif %}
+                                            </span>
+                                            <span class="panel-body-text">
+                                                - <b>recipe</b> :  {{tool2_recipe}}
+                                            </span>
+                                            <span class="panel-body-text">
+                                                - <b>stage</b> :  {{tool2_stage}}
+                                            </span>
                                         </div>
                                     </div>
                                 </a>
@@ -433,109 +648,146 @@
                             <!-- END BASIC TABLE -->
                         </div>
                         
+                        
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6">
-                            <!-- TABLE STRIPED -->
+                            <!-- BASIC TABLE -->
                             <div class="panel-board" 
-                                style="{% if tool3_status == 0 %} border: 6px solid #93db93; margin-left: 42px; 
-                                {% elif tool3_status == 1 %} border: 6px solid #f26464; margin-left: 42px;
+                                style="{% if tool3_status == 0 %} border: 7px solid #93db93; margin-left: 42px;
+                                {% elif tool3_status == 1 %} border: 7px solid #f26464; margin-left: 42px;
                                 {% endif %}">
+                                <div class="panel-heading">
+                                    <!--상태 표시 초록원-->
+                                    <span class="normal-status-topRight" >
+                                        <i class="fa-solid fa-power-off fa-fade" id="iconToggle3"
+                                        style="margin-right : 10px;"></i>
+                                        <h3 class="panel-title"><b>Ion_Miller_M03</b></h3> <!--설비 이름-->
+                                    </span>
+                                </div>
+                                <hr class="head-line"> <!--설비 이름-내용 구분선-->
                                 <a id="tool3_link" href="dashboard.html?tab=dashboard3" style="color: #392f31;"> <!-- M03설비의 Dashboard 페이지로 이동 -->
-                                    <div class="panel-heading">
-                                        <!--상태 표시 초록원-->
-                                        <span class="normal-status-topRight">
-                                            <i class="fa-solid fa-power-off fa-fade"
-                                            style="{% if tool3_status == 0 %} color : #93db93;  margin-right : 10px;
-                                            {% elif tool3_status == 1 %} color : #f26464; margin-right : 10px;
-                                            {% endif %}"></i>
-                                            <h3 class="panel-title"><b>Ion_Miller_M03</b></h3>
-                                        </span> 
+                                <div class="panel-body" style="display: flex; align-items: center;">
+                                    <img class="tool-icon" src="static/img/tool.png">
+                                    <div style="display: flex; flex-direction: column; width: 250%;">
+                                        <span class="panel-body-text">
+                                            - <b>공정 이상 여부</b>:
+                                            {% if tool3_status == 0 %}
+                                            정상
+                                            {% else %}
+                                            <span style="color: rgb(37, 208, 227); margin-left: 5px;">{{tool3_status_index}}!</span>
+                                            {% endif %}
+                                        </span>
+                                        <span class="panel-body-text">
+                                            - <b>잔여 수명 시간</b> :
+                                            {% if (tool3_rul[0] == 0) and (tool3_rul[1] < 1) %}
+                                            <span style="font-weight: bold; color: rgb(241, 83, 31); margin-left: 3px;">고장 시간: 1일 미만</span>
+                                            {% else %}
+                                            {{ tool3_rul[0] }} Month {{ tool3_rul[1] }} Day
+                                            {% endif %}
+                                        </span>
+                                        <span class="panel-body-text">
+                                            - <b>가동 시간</b> : 
+                                            {% if  tool3_status == 0 %}
+                                            <span id="tool3_runtime"></span>
+                                            {% else %}
+                                            --
+                                            {% endif %}
+                                        </span>
+                                        <span class="panel-body-text">
+                                            - <b>recipe</b> :  {{tool3_recipe}}
+                                        </span>
+                                        <span class="panel-body-text">
+                                            - <b>stage</b> :  {{tool3_stage}}
+                                        </span>
                                     </div>
-                                    <hr class="head-line"> <!--설비 이름-내용 구분선-->
-                                    <div class="panel-body" style="display: flex; align-items: center;">
-                                        <img class="tool-icon" src="static/img/tool.png">
-                                        <div style="display: flex; flex-direction: column; width: 250%;">
-                                            <span class="panel-body-text">
-                                                - <b>공정 이상 여부</b> :
-                                                {% if tool3_status == 0 %}
-                                                정상
-                                                {% else %}
-                                                <span style="color: rgb(37, 208, 227); margin-left: 5px;">{{tool3_status_index}}!</span>
-                                                {% endif %}
-                                            </span>
-                                            <span class="panel-body-text">
-                                                - <b>잔여 수명 시간</b> :
-                                                {% if (tool3_rul[0] == 0) and (tool3_rul[1] < 2) %}
-                                                <span style="color: rgb(241, 83, 31); margin-left: 5px;">{{ tool3_rul[0] }} Month {{ tool3_rul[1] }} Day</span>
-                                                {% else %}
-                                                {{ tool3_rul[0] }} Month {{ tool3_rul[1] }} Day
-                                                {% endif %}
-                                            </span>
-                                            <span class="panel-body-text">
-                                                - <b>가동 시간</b> : 
-                                                {% if  tool3_status == 0 %}
-                                                <span id="tool3_runtime"></span>
-                                                {% else %}
-                                                --
-                                                {% endif %}
-                                            </span>
-                                            <span class="panel-body-text">
-                                                - <b>recipe</b> :  {{tool3_recipe}}
-                                            </span>
-                                            <span class="panel-body-text">
-                                                - <b>stage</b> :  {{tool3_stage}}
-                                            </span>
-                                        </div>
-                                    </div>
+                                </div>
                                 </a>
                             </div>
-                            <!-- END TABLE STRIPED -->
+                            <!-- END BASIC TABLE -->
                         </div>
                         
+                        
                         <div class="col-md-6">
-                            <!-- TABLE HOVER -->
+                            <!-- TABLE STRIPED -->
                             <div class="panel-board" 
-                                style="border: 6px solid #838383; margin-left: 42px;">
-                                <a id="tool4_link" href="dashboard.html?tab=dashboard4"> <!-- M04설비의 Dashboard 페이지로 이동 -->
-                                    <div class="panel-heading">
-                                        <!-- 스위치-->
-                                        <span class="abnormal-status-topRight">
-                                            <i class="fa-solid fa-power-off"
-                                            style="color : #f26464; margin-right : 10px;"></i>
-                                            <h3 class="panel-title"><b>Ion_Miller_M04</b></h3>
-                                        </span> 
-                                    </div>
-                                    <hr class="head-line"> <!--설비 이름-내용 구분선-->
-                                    <div class="panel-body" style="display: flex; align-items: center;">
-                                        <img class="tool-icon" src="static/img/tool.png">
-                                        <div style= "display: flex; flex-direction: column; width: 250%;">
-                                            <span class="panel-body-text" style="display: flex; align-items: center;">
-                                                - <b>공정 이상 여부</b> : 이상
-                                            </span>
-                                            <span class="panel-body-text">
-                                                - <b>잔여 수명 시간</b> : -
-                                            </span>                                            
-                                            <span class="panel-body-text">
-                                                - <b>가동 시간</b>: 15시간 10분 24초
-                                            </span>
+                                style="{% if tool4_status == 0 %} border: 6px solid #93db93; margin-left: 42px; 
+                                {% elif tool4_status == 1 or (tool4_rul[0] == 0 and tool4_rul[1] == 0)%} border: 6px solid #f26464; margin-left: 42px;
+                                {% endif %}">
+                                <div class="panel-heading">
+                                    <!--상태 표시 초록원-->
+                                    <span class="normal-status-topRight" >
+                                        <i class="fa-solid fa-power-off fa-fade" id="iconToggle4"
+                                        style="margin-right : 10px;"></i>
+                                        <h3 class="panel-title"><b>Ion_Miller_M04</b></h3>
+                                    </span> 
+                                </div>
+                                <hr class="head-line"> <!--설비 이름-내용 구분선-->
+                                <a id="tool4_link" href="dashboard.html?tab=dashboard4" style="color: #392f31;"> <!-- M04설비의 Dashboard 페이지로 이동 -->
+                                <div class="panel-body" style="display: flex; align-items: center;">
+                                    <img class="tool-icon" src="static/img/tool.png">
+                                    <div style="display: flex; flex-direction: column; width: 250%;">
                                         <span class="panel-body-text">
-                                            - <b>recipe</b> : -
+                                            - <b>공정 이상 여부</b> :
+                                            {% if tool4_status == 0 %}
+                                            정상
+                                            {% else %}
+                                            <span style="color: rgb(37, 208, 227); margin-left: 5px;">{{tool4_status_index}}!</span>
+                                            {% endif %}
                                         </span>
                                         <span class="panel-body-text">
-                                            - <b>stage</b> : -
+                                            - <b>잔여 수명 시간</b> :
+                                            {% if (tool4_rul[0] == 0) and (tool4_rul[1] < 1) %}
+                                            <span style="font-weight: bold; font-size: 14px; color: rgb(241, 83, 31); margin-left: 2px;">고장 시간: 하루 미만</span>
+                                            {% else %}
+                                            {{ tool4_rul[0] }} Month {{ tool4_rul[1] }} Day
+                                            {% endif %}
                                         </span>
-                                        </div>
+                                        <span class="panel-body-text">
+                                            - <b>가동 시간</b> : 
+                                            {% if  tool4_status == 0 %}
+                                            <span id="tool4_runtime"></span>
+                                            {% else %}
+                                            --
+                                            {% endif %}
+                                        </span>
+                                        <span class="panel-body-text">
+                                            - <b>recipe</b> :  {{tool4_recipe}}
+                                        </span>
+                                        <span class="panel-body-text">
+                                            - <b>stage</b> :  {{tool4_stage}}
+                                        </span>
                                     </div>
-                                </a>
+                                </div>
+                            </a>
                             </div>
-                        <!-- END TABLE HOVER -->
-                    </div>                 
+                        </div>
+                        
+                                   
 			</div>
 			<!-- END MAIN CONTENT -->
 		</div>
-		<!-- END MAIN -->
+        <div id="tool_data" 
+        data-tool1-month-rul="{{tool1_rul[0]}}" 
+        data-tool1-rul="{{tool1_rul[1]}}" 
+        data-tool2-month-rul="{{tool2_rul[0]}}" 
+        data-tool2-rul="{{tool2_rul[1]}}" 
+        data-tool3-month-rul="{{tool3_rul[0]}}" 
+        data-tool3-rul="{{tool3_rul[1]}}" 
+        data-tool4-month-rul="{{tool4_rul[0]}}" 
+        data-tool4-rul="{{tool4_rul[1]}}"
+        data-tool1-rul-index="{{tool1_rul_index}}"
+        data-tool2-rul-index="{{tool2_rul_index}}"
+        data-tool3-rul-index="{{tool3_rul_index}}"
+        data-tool4-rul-index="{{tool4_rul_index}}"
+        data-tool1_status="{{tool1_status}}"
+        data-tool2_status="{{tool2_status}}"
+        data-tool3_status="{{tool3_status}}"
+        data-tool4_status="{{tool4_status}}"
+        >
+        </div>
+        		<!-- END MAIN -->
 		<div class="clearfix"></div>
 		<footer>
 			<div class="container-fluid">
@@ -547,75 +799,75 @@
 	<!-- END WRAPPER -->
 	<!-- Javascript -->
     <script>
-        // 페이지가 로드될 때 실행되는 함수
-            document.addEventListener("DOMContentLoaded", function () {
-                var tool1_month_rul = {{tool1_rul[0]}}; 
-                var tool1_rul = {{tool1_rul[1]}}; 
-                var tool2_month_rul = {{tool2_rul[0]}}; 
-                var tool2_rul = {{tool2_rul[1]}}; 
-                var tool3_month_rul = {{tool3_rul[0]}}; 
-                var tool3_rul = {{tool3_rul[1]}}; 
-                var tool4_month_rul = {{tool4_rul[0]}}; 
-                var tool4_rul = {{tool4_rul[1]}}; 
-                var tool1_rul_index = '{{tool1_rul_index}}'; 
-                var tool2_rul_index = '{{tool2_rul_index}}'; 
-                var tool3_rul_index = '{{tool3_rul_index}}'; 
-                var tool4_rul_index = '{{tool4_rul_index}}'; 
-                var test = 'this is test!!'
+        // // 페이지가 로드될 때 실행되는 함수
+        //     document.addEventListener("DOMContentLoaded", function () {
+        //         var tool1_month_rul = {{tool1_rul[0]}}; 
+        //         var tool1_rul = {{tool1_rul[1]}}; 
+        //         var tool2_month_rul = {{tool2_rul[0]}}; 
+        //         var tool2_rul = {{tool2_rul[1]}}; 
+        //         var tool3_month_rul = {{tool3_rul[0]}}; 
+        //         var tool3_rul = {{tool3_rul[1]}}; 
+        //         var tool4_month_rul = {{tool4_rul[0]}}; 
+        //         var tool4_rul = {{tool4_rul[1]}}; 
+        //         var tool1_rul_index = '{{tool1_rul_index}}'; 
+        //         var tool2_rul_index = '{{tool2_rul_index}}'; 
+        //         var tool3_rul_index = '{{tool3_rul_index}}'; 
+        //         var tool4_rul_index = '{{tool4_rul_index}}'; 
+        //         var test = 'this is test!!'
     
-                // tool1 처리
-                var tool1Link = document.getElementById("tool1_link");
-                if (tool1_month_rul == 0 && tool1_rul == 0) {
-                    alert(`${tool1_rul_index}!! M01 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
-                    tool1Link.style.pointerEvents = "none";
-                    tool1Link.style.color = "#999"; // 링크의 색상을 회색으로 변경 (비활성화 표시)
-                }
-                else if (tool1_month_rul == 0 && tool1_rul <= 3) {
-                    alert(`${tool1_rul_index}!! M01의 작동 수명이 얼마 남지 않았습니다.`);
-                    tool1Link.style.pointerEvents = "none";
-                    tool1Link.style.color = "#999"; // 링크의 색상을 회색으로 변경 (비활성화 표시)
-                }
+        //         // tool1 처리
+        //         var tool1Link = document.getElementById("tool1_link");
+        //         if (tool1_month_rul == 0 && tool1_rul == 0) {
+        //             alert(`${tool1_rul_index}!! M01 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
+        //             tool1Link.style.pointerEvents = "none";
+        //             tool1Link.style.color = "#999"; // 링크의 색상을 회색으로 변경 (비활성화 표시)
+        //         }
+        //         else if (tool1_month_rul == 0 && tool1_rul <= 3) {
+        //             alert(`${tool1_rul_index}!! M01의 작동 수명이 얼마 남지 않았습니다.`);
+        //             tool1Link.style.pointerEvents = "none";
+        //             tool1Link.style.color = "#999"; // 링크의 색상을 회색으로 변경 (비활성화 표시)
+        //         }
     
-                // tool2 처리
-                var tool2Link = document.getElementById("tool2_link");
-                if (tool2_month_rul == 0 && tool2_rul == 0) {
-                    alert(`${tool2_rul_index}!! M02 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
-                    tool2Link.style.pointerEvents = "none";
-                    tool2Link.style.color = "#999";
-                }
-                else if (tool2_month_rul == 0 && tool2_rul <= 3) {
-                    alert(`${tool2_rul_index}!! M02의 작동 수명이 얼마 남지 않았습니다.`);
-                    tool2Link.style.pointerEvents = "none";
-                    tool2Link.style.color = "#999";
-                }
+        //         // tool2 처리
+        //         var tool2Link = document.getElementById("tool2_link");
+        //         if (tool2_month_rul == 0 && tool2_rul == 0) {
+        //             alert(`${tool2_rul_index}!! M02 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
+        //             tool2Link.style.pointerEvents = "none";
+        //             tool2Link.style.color = "#999";
+        //         }
+        //         else if (tool2_month_rul == 0 && tool2_rul <= 3) {
+        //             alert(`${tool2_rul_index}!! M02의 작동 수명이 얼마 남지 않았습니다.`);
+        //             tool2Link.style.pointerEvents = "none";
+        //             tool2Link.style.color = "#999";
+        //         }
     
-                // tool3 처리
-                var tool3Link = document.getElementById("tool3_link");
-                if (tool3_month_rul == 0 && tool3_rul == 0) {
-                    alert(`${tool3_rul_index}!! M03 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
-                    tool3Link.style.pointerEvents = "none";
-                    tool3Link.style.color = "#999";
-                }
-                else if (tool3_month_rul == 0 && tool3_rul <= 3) {
-                    alert(`${tool3_rul_index}!! M03의 작동 수명이 얼마 남지 않았습니다.`);
-                    tool3Link.style.pointerEvents = "none";
-                    tool3Link.style.color = "#999";
-                }
+        //         // tool3 처리
+        //         var tool3Link = document.getElementById("tool3_link");
+        //         if (tool3_month_rul == 0 && tool3_rul == 0) {
+        //             alert(`${tool3_rul_index}!! M03 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
+        //             tool3Link.style.pointerEvents = "none";
+        //             tool3Link.style.color = "#999";
+        //         }
+        //         else if (tool3_month_rul == 0 && tool3_rul <= 3) {
+        //             alert(`${tool3_rul_index}!! M03의 작동 수명이 얼마 남지 않았습니다.`);
+        //             tool3Link.style.pointerEvents = "none";
+        //             tool3Link.style.color = "#999";
+        //         }
     
-                // tool4 처리
-                var tool4Link = document.getElementById("tool4_link");
-                if (tool4_month_rul == 0 && tool4_rul == 0) {
-                    alert(`${tool4_rul_index}!! M04 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
-                    tool4Link.style.pointerEvents = "none";
-                    tool4Link.style.color = "#999";
-                }
-                else if (tool4_month_rul == 0 && tool4_rul <= 3) {
-                    alert(`${tool4_rul_index}!! M04의 작동 수명이 얼마 남지 않았습니다.`);
-                    tool4Link.style.pointerEvents = "none";
-                    tool4Link.style.color = "#999";
-                }
-            });
-        </script>
+        //         // tool4 처리
+        //         var tool4Link = document.getElementById("tool4_link");
+        //         if (tool4_month_rul == 0 && tool4_rul == 0) {
+        //             alert(`${tool4_rul_index}!! M04 장비의 작동 수명이 0입니다. 즉시 교체하거나 점검하세요. `);
+        //             tool4Link.style.pointerEvents = "none";
+        //             tool4Link.style.color = "#999";
+        //         }
+        //         else if (tool4_month_rul == 0 && tool4_rul <= 3) {
+        //             alert(`${tool4_rul_index}!! M04의 작동 수명이 얼마 남지 않았습니다.`);
+        //             tool4Link.style.pointerEvents = "none";
+        //             tool4Link.style.color = "#999";
+        //         }
+        //     });
+        // </script>
     <!-- <script>
         // JavaScript로 설정한 시작 시간으로부터 1초씩 시간을 증가시키는 함수
         function startCountingRuntime(startTime, elementId) {
