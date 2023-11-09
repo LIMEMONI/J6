@@ -379,6 +379,60 @@ def convert_to_year_month_day_hour(rul_value):
     return (month,day)
 
 
+
+program_running = {
+    "iconToggle1": False,
+    "iconToggle2": False,
+    "iconToggle3": False,
+    "iconToggle4": False
+}
+
+class ToggleResponse(BaseModel):
+    status: str
+
+@app.post('/toggle_program_{iconId}/', response_model=ToggleResponse)
+def toggle_program(iconId: str):
+    global program_running
+
+    if program_running[iconId]:
+        # 아이콘 id에 따라 특정 기능을 중지
+        stop_function_by_iconId(iconId)
+        program_running[iconId] = False
+        return {"status": '0'}
+    else:
+        # 아이콘 id에 따라 특정 기능을 시작
+        threading.Thread(target=start_function_by_iconId, args=(iconId,)).start()
+        program_running[iconId] = True
+        return {"status": '1'}
+
+def stop_function_by_iconId(iconId):
+    # 아이콘 id에 따른 기능 중지 로직
+    if iconId == "iconToggle1":
+        md_1.stop()
+    elif iconId == "iconToggle2":
+        md_2.stop()
+    elif iconId == "iconToggle3":
+        md_3.stop()
+    elif iconId == "iconToggle4":
+        md_4.stop()
+
+def start_function_by_iconId(iconId):
+    # 아이콘 id에 따른 기능 시작 로직
+    if iconId == "iconToggle1":
+        md_1.main()
+    elif iconId == "iconToggle2":
+        md_2.main()
+    elif iconId == "iconToggle3":
+        md_3.main()
+    elif iconId == "iconToggle4":
+        md_4.main()
+
+
+
+
+
+
+
 # 메인 페이지를 랜더링하는 엔드포인트
 @app.get("/main.html", response_class=HTMLResponse)
 async def render_main_page(request: Request):
@@ -426,6 +480,10 @@ async def render_main_page(request: Request):
             
 
         return templates.TemplateResponse("main.html", {
+            "program_running_1": program_running['iconToggle1'],
+            "program_running_2": program_running['iconToggle2'],
+            "program_running_3": program_running['iconToggle3'],
+            "program_running_4": program_running['iconToggle4'],
             "request": request,
             'mem_name':mem_name,
             "tool1_data_combined": tool_data_list[0],
@@ -745,54 +803,6 @@ async def render_profile_page(request: Request):
     return templates.TemplateResponse("profile1.html", {"request": request, "mem_id": mem_id, "mem_ph" : mem_ph, "mem_name": mem_name, "bar_lis": bar_lis})
 
 
-
-
-program_running = {
-    "iconToggle1": False,
-    "iconToggle2": False,
-    "iconToggle3": False,
-    "iconToggle4": False
-}
-
-class ToggleResponse(BaseModel):
-    status: str
-
-@app.post('/toggle_program_{iconId}/', response_model=ToggleResponse)
-def toggle_program(iconId: str):
-    global program_running
-
-    if program_running[iconId]:
-        # 아이콘 id에 따라 특정 기능을 중지
-        stop_function_by_iconId(iconId)
-        program_running[iconId] = False
-        return {"status": '0'}
-    else:
-        # 아이콘 id에 따라 특정 기능을 시작
-        threading.Thread(target=start_function_by_iconId, args=(iconId,)).start()
-        program_running[iconId] = True
-        return {"status": '1'}
-
-def stop_function_by_iconId(iconId):
-    # 아이콘 id에 따른 기능 중지 로직
-    if iconId == "iconToggle1":
-        md_1.stop()
-    elif iconId == "iconToggle2":
-        md_2.stop()
-    elif iconId == "iconToggle3":
-        md_3.stop()
-    elif iconId == "iconToggle4":
-        md_4.stop()
-
-def start_function_by_iconId(iconId):
-    # 아이콘 id에 따른 기능 시작 로직
-    if iconId == "iconToggle1":
-        md_1.main()
-    elif iconId == "iconToggle2":
-        md_2.main()
-    elif iconId == "iconToggle3":
-        md_3.main()
-    elif iconId == "iconToggle4":
-        md_4.main()
 
 if __name__ == "__main__":
     app.run()
