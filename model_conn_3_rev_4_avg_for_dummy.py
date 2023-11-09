@@ -243,11 +243,12 @@ def insert_single_multi_data(connection, data, current_time):
         connection.rollback()
 
 # 전역 변수 선언
-running = True
+running_3 = True
 
 def main():
 
-    global running ## 전역변수사용
+    global running_3 ## 전역변수사용
+    running_3 = True
 
     # 데이터베이스 연결 설정
 
@@ -274,7 +275,7 @@ def main():
 
     # DataFrame에서 튜플 리스트로 데이터 변환
     data_tuples = list(df.itertuples(index=False, name=None))
-    while running:
+    while running_3:
         # 시작시 진행 상황 파일이 존재하는지 확인
         if os.path.exists(f'./test_file/progress_{file}.txt'):
             with open(f'./test_file/progress_{file}.txt', 'r') as f:
@@ -288,7 +289,7 @@ def main():
         ## 데이터를 한줄 씩 밀어넣으면서 진행하는 방식
 
         for index, single_data in enumerate(data_tuples[start_index:], start=start_index):
-            if not running:
+            if not running_3:
                 break
             try:
                 start_time = time.time()
@@ -327,7 +328,7 @@ def main():
             except Exception as e:
                 print(f"Error: {e}")
             
-            if not running:
+            if not running_3:
                 break
 
         # 모든 데이터를 처리한 후 진행 상황 파일을 삭제하거나 리셋합니다.
@@ -341,8 +342,8 @@ def main():
 # 외부에서 호출하여 main() 함수의 무한루프를 중단시키는 함수
 
 def stop():
-    global running  # 전역 변수 사용 선언
-    running = False
+    global running_3  # 전역 변수 사용 선언
+    running_3 = False
 
 if __name__ == "__main__":
     main()
